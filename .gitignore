@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (too large for git)
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pth
+*.pt
+*.ckpt
+*.bin
+
+# Datasets (download locally)
+data/
+datasets/
+
+# Experiment outputs
+06_experiments/*/results/predictions/*.png
+06_experiments/*/results/predictions/*.jpg
+06_experiments/*/wandb/
+06_experiments/*/tensorboard/
+
+# Whoosh search index
+explorer/data/index/
+
+# Streamlit
+.streamlit/secrets.toml

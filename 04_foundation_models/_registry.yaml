@@ -1,0 +1,70 @@
+section: "04_foundation_models"
+title: "Foundation Models for Segmentation"
+description: "Large-scale foundation models for promptable and universal segmentation"
+
+entries:
+  - id: sam
+    title: "Segment Anything"
+    authors: "Kirillov, A., Mintun, E., Ravi, N., Mao, H., Rolland, C., Gustafson, L., Xiao, T., Whitehead, S., Berg, A.C., Lo, W.-Y., Dollar, P., Girshick, R."
+    year: 2023
+    venue: ICCV
+    arxiv: "2304.02643"
+    tags: [foundation-model, promptable-segmentation, zero-shot, sa-1b]
+    status: planned
+    review_path: "sam/review.md"
+    difficulty: advanced
+
+  - id: sam2
+    title: "SAM 2: Segment Anything in Images and Videos"
+    authors: "Ravi, N., Gabeur, V., Hu, Y.-T., Hu, R., Ryali, C., Ma, T., Khedr, H., Radle, R., Rolland, C., Gustafson, L., Mintun, E., Pan, J., Alwala, K.V., Carion, N., Wu, C.-Y., Girshick, R., Dollar, P., Feichtenhofer, C."
+    year: 2024
+    venue: arXiv
+    arxiv: "2408.00714"
+    tags: [foundation-model, video-segmentation, streaming-memory, sa-v]
+    status: planned
+    review_path: "sam2/review.md"
+    difficulty: advanced
+
+  - id: medsam
+    title: "Segment Anything in Medical Images"
+    authors: "Ma, J., He, Y., Li, F., Han, L., You, C., Wang, B."
+    year: 2024
+    venue: Nature Communications
+    arxiv: null
+    tags: [foundation-model, medical-segmentation, domain-adaptation, sam]
+    status: planned
+    review_path: "medsam/review.md"
+    difficulty: intermediate
+
+  - id: medsam2
+    title: "MedSAM-2: Segment Medical Images As Video Via Segment Anything Model 2"
+    authors: "Zhu, J., Qi, Y., Wu, J."
+    year: 2024
+    venue: arXiv
+    arxiv: "2408.00874"
+    tags: [foundation-model, medical-segmentation, video-as-volume, sam2]
+    status: planned
+    review_path: "medsam2/review.md"
+    difficulty: advanced
+
+  - id: sam_adapter
+    title: "SAM Fails to Segment Anything? -- SAM-Adapter: Adapting SAM in Underperformed Scenes"
+    authors: "Chen, T., Zhu, L., Deng, C., Cao, R., Wang, Y., Zhang, S., Li, Z., Sun, L., Zang, Y., Mao, P."
+    year: 2023
+    venue: arXiv
+    arxiv: "2304.09148"
+    tags: [adapter, parameter-efficient, domain-adaptation, sam]
+    status: planned
+    review_path: "sam_adapter/review.md"
+    difficulty: intermediate
+
+  - id: omg_seg
+    title: "OMG-Seg: Is One Model Good Enough For All Segmentation?"
+    authors: "Li, X., Yuan, H., Li, W., Ding, H., Wu, S., Zhang, W., Li, Y., Chen, K., Loy, C.C."
+    year: 2024
+    venue: CVPR
+    arxiv: "2401.10229"
+    tags: [universal-segmentation, clip, unified-architecture, multi-dataset]
+    status: planned
+    review_path: "omg_seg/review.md"
+    difficulty: advanced

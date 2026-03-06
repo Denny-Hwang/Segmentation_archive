@@ -1,0 +1,81 @@
+section: "03_transformer_segmentation"
+title: "Transformer-Based Segmentation"
+description: "Models leveraging transformer architectures for image and volumetric segmentation"
+
+entries:
+  - id: transunet
+    title: "TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation"
+    authors: "Chen, J., Lu, Y., Yu, Q., Luo, X., Adeli, E., Wang, Y., Lu, L., Yuille, A.L., Zhou, Y."
+    year: 2021
+    venue: arXiv
+    arxiv: "2102.04306"
+    tags: [transformer, cnn-hybrid, medical-segmentation, u-net, vit]
+    status: planned
+    review_path: "transunet/review.md"
+    difficulty: intermediate
+
+  - id: swin_unet
+    title: "Swin-Unet: Unet-like Pure Transformer for Medical Image Segmentation"
+    authors: "Cao, H., Wang, Y., Chen, J., Jiang, D., Zhang, X., Tian, Q., Wang, M."
+    year: 2021
+    venue: arXiv
+    arxiv: "2105.05537"
+    tags: [swin-transformer, pure-transformer, medical-segmentation, u-net]
+    status: planned
+    review_path: "swin_unet/review.md"
+    difficulty: intermediate
+
+  - id: unetr
+    title: "UNETR: Transformers for 3D Medical Image Segmentation"
+    authors: "Hatamizadeh, A., Tang, Y., Nath, V., Yang, D., Myronenko, A., Landman, B., Roth, H.R., Xu, D."
+    year: 2022
+    venue: WACV
+    arxiv: "2103.10504"
+    tags: [vit, 3d-segmentation, medical-segmentation, volumetric]
+    status: planned
+    review_path: "unetr/review.md"
+    difficulty: intermediate
+
+  - id: swin_unetr
+    title: "Swin UNETR: Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images"
+    authors: "Hatamizadeh, A., Nath, V., Tang, Y., Yang, D., Roth, H.R., Xu, D."
+    year: 2022
+    venue: CVPR
+    arxiv: "2201.01266"
+    tags: [swin-transformer, 3d-segmentation, brain-tumor, medical-segmentation]
+    status: planned
+    review_path: "swin_unetr/review.md"
+    difficulty: intermediate
+
+  - id: ds_transunet
+    title: "DS-TransUNet: Dual Swin Transformer U-Net for Medical Image Segmentation"
+    authors: "Lin, A., Chen, B., Xu, J., Zhang, Z., Lu, G., Zhang, D."
+    year: 2022
+    venue: arXiv
+    arxiv: "2106.06716"
+    tags: [dual-scale, swin-transformer, medical-segmentation, feature-fusion]
+    status: planned
+    review_path: "ds_transunet/review.md"
+    difficulty: advanced
+
+  - id: mask2former
+    title: "Masked-attention Mask Transformer for Universal Image Segmentation"
+    authors: "Cheng, B., Misra, I., Schwing, A.G., Kirillov, A., Girdhar, R."
+    year: 2022
+    venue: CVPR
+    arxiv: "2112.01527"
+    tags: [universal-segmentation, masked-attention, panoptic, instance, semantic]
+    status: planned
+    review_path: "mask2former/review.md"
+    difficulty: advanced
+
+  - id: oneformer
+    title: "OneFormer: One Transformer to Rule Universal Image Segmentation"
+    authors: "Jain, J., Li, J., Chiu, M., Hassani, A., Orber, N., Shi, H."
+    year: 2023
+    venue: CVPR
+    arxiv: "2211.06220"
+    tags: [universal-segmentation, task-conditioned, contrastive-learning, multi-task]
+    status: planned
+    review_path: "oneformer/review.md"
+    difficulty: advanced

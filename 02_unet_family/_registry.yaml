@@ -1,0 +1,243 @@
+# =============================================================================
+# U-Net Family Registry
+# Module: 02_unet_family
+# =============================================================================
+
+module:
+  id: "02_unet_family"
+  title: "U-Net Family"
+  description: >
+    The U-Net encoder-decoder architecture and its many descendants,
+    from the original 2015 biomedical segmentation paper through
+    modern adaptations in diffusion models.
+
+papers:
+
+  - id: unet_original
+    title: "U-Net: Convolutional Networks for Biomedical Image Segmentation"
+    authors:
+      - Olaf Ronneberger
+      - Philipp Fischer
+      - Thomas Brox
+    year: 2015
+    venue: "MICCAI 2015"
+    arxiv: "1505.04597"
+    tags:
+      - encoder-decoder
+      - skip-connections
+      - biomedical
+      - segmentation
+      - foundational
+    status: planned
+    review_path: "unet_original/review.md"
+    difficulty: beginner
+
+  - id: vnet
+    title: "V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation"
+    authors:
+      - Fausto Milletari
+      - Nassir Navab
+      - Seyed-Ahmad Ahmadi
+    year: 2016
+    venue: "3DV 2016"
+    arxiv: "1606.04797"
+    tags:
+      - 3d-segmentation
+      - volumetric
+      - dice-loss
+      - medical-imaging
+    status: planned
+    review_path: "vnet/review.md"
+    difficulty: beginner
+
+  - id: 3d_unet
+    title: "3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation"
+    authors:
+      - Ozgun Cicek
+      - Ahmed Abdulkadir
+      - Soeren S. Lienkamp
+      - Thomas Brox
+      - Olaf Ronneberger
+    year: 2016
+    venue: "MICCAI 2016"
+    arxiv: "1606.06650"
+    tags:
+      - 3d-convolution
+      - sparse-annotation
+      - volumetric
+      - biomedical
+    status: planned
+    review_path: "3d_unet/review.md"
+    difficulty: beginner
+
+  - id: attention_unet
+    title: "Attention U-Net: Learning Where to Look for the Pancreas"
+    authors:
+      - Ozan Oktay
+      - Jo Schlemper
+      - Loic Le Folgoc
+      - Matthew Lee
+      - Mattias Heinrich
+      - Kazunari Misawa
+      - Kensaku Mori
+      - Steven McDonagh
+      - Nils Y. Hammerla
+      - Bernhard Kainz
+      - Ben Glocker
+      - Daniel Rueckert
+    year: 2018
+    venue: "MIDL 2018"
+    arxiv: "1804.03999"
+    tags:
+      - attention-mechanism
+      - attention-gate
+      - skip-connections
+      - pancreas-segmentation
+    status: planned
+    review_path: "attention_unet/review.md"
+    difficulty: intermediate
+
+  - id: unetpp
+    title: "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
+    authors:
+      - Zongwei Zhou
+      - Md Mahfuzur Rahman Siddiquee
+      - Nima Tajbakhsh
+      - Jianming Liang
+    year: 2018
+    venue: "DLMIA 2018 / MICCAI Workshop"
+    arxiv: "1807.10165"
+    tags:
+      - nested-architecture
+      - dense-skip-connections
+      - deep-supervision
+      - pruning
+    status: planned
+    review_path: "unetpp/review.md"
+    difficulty: intermediate
+
+  - id: r2unet
+    title: "Recurrent Residual Convolutional Neural Network based on U-Net (R2U-Net) for Medical Image Segmentation"
+    authors:
+      - Md Zahangir Alom
+      - Mahmudul Hasan
+      - Chris Yakopcic
+      - Tarek M. Taha
+      - Vijayan K. Asari
+    year: 2018
+    venue: "arXiv preprint"
+    arxiv: "1802.06955"
+    tags:
+      - recurrent-convolution
+      - residual-learning
+      - medical-segmentation
+    status: planned
+    review_path: "r2unet/review.md"
+    difficulty: intermediate
+
+  - id: resunet
+    title: "Road Extraction by Deep Residual U-Net"
+    authors:
+      - Zhengxin Zhang
+      - Qingjie Liu
+      - Yunhong Wang
+    year: 2018
+    venue: "IEEE Geoscience and Remote Sensing Letters"
+    arxiv: "1711.10684"
+    tags:
+      - residual-learning
+      - road-extraction
+      - remote-sensing
+    status: planned
+    review_path: "resunet/review.md"
+    difficulty: intermediate
+
+  - id: u2net
+    title: "U2-Net: Going Deeper with Nested U-Structure for Salient Object Detection"
+    authors:
+      - Xuebin Qin
+      - Zichen Zhang
+      - Chenyang Huang
+      - Masber Dehghan
+      - Osmar R. Zaiane
+      - Martin Jagersand
+    year: 2020
+    venue: "Pattern Recognition"
+    arxiv: "2005.09007"
+    tags:
+      - nested-u-structure
+      - RSU-block
+      - salient-object-detection
+      - lightweight
+    status: planned
+    review_path: "u2net/review.md"
+    difficulty: intermediate
+
+  - id: unet3plus
+    title: "UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation"
+    authors:
+      - Huimin Huang
+      - Lanfen Lin
+      - Ruofeng Tong
+      - Hongjie Hu
+      - Qiaowei Zhang
+      - Yutaro Iwamoto
+      - Xianhua Han
+      - Yen-Wei Chen
+      - Jian Wu
+    year: 2020
+    venue: "ICASSP 2020"
+    arxiv: "2004.08790"
+    tags:
+      - full-scale-skip
+      - multi-scale-features
+      - deep-supervision
+      - classification-guided
+    status: planned
+    review_path: "unet3plus/review.md"
+    difficulty: intermediate
+
+  - id: nnunet
+    title: "nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation"
+    authors:
+      - Fabian Isensee
+      - Paul F. Jaeger
+      - Simon A. A. Kohl
+      - Jens Petersen
+      - Klaus H. Maier-Hein
+    year: 2021
+    venue: "Nature Methods"
+    arxiv: "1809.10486"
+    tags:
+      - self-configuring
+      - automated-pipeline
+      - medical-segmentation
+      - benchmark
+      - framework
+    status: planned
+    review_path: "nnunet/review.md"
+    difficulty: advanced
+
+  - id: unet_in_diffusion
+    title: "U-Net as Backbone in Denoising Diffusion Probabilistic Models"
+    authors:
+      - Jonathan Ho
+      - Ajay Jain
+      - Pieter Abbeel
+      - Robin Rombach
+      - Andreas Blattmann
+      - Dominik Lorenz
+      - Patrick Esser
+      - Bjorn Ommer
+    year: 2020
+    venue: "NeurIPS 2020 (DDPM) / CVPR 2022 (LDM)"
+    arxiv: "2006.11239"
+    tags:
+      - diffusion-models
+      - denoising
+      - generative
+      - latent-diffusion
+      - stable-diffusion
+    status: planned
+    review_path: "unet_in_diffusion/review.md"
+    difficulty: advanced

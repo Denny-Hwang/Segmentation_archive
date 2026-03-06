@@ -1,0 +1,74 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4a90d9', 'lineColor': '#333'}}}%%
+
+graph TD
+    classDef cnn fill:#4a90d9,stroke:#333,color:#fff
+    classDef attention fill:#e67e22,stroke:#333,color:#fff
+    classDef transformer fill:#27ae60,stroke:#333,color:#fff
+    classDef hybrid fill:#8e44ad,stroke:#333,color:#fff
+    classDef foundation fill:#c0392b,stroke:#333,color:#fff
+    classDef medical fill:#16a085,stroke:#333,color:#fff
+
+    FCN["FCN<br/>(Long et al., 2015)"]:::cnn
+
+    UNET["U-Net<br/>(Ronneberger et al., 2015)"]:::cnn
+    FCN --> UNET
+
+    VNET["V-Net<br/>(Milletari et al., 2016)"]:::medical
+    UNET --> VNET
+
+    RESUNET["ResUNet<br/>(Zhang et al., 2018)"]:::cnn
+    UNET --> RESUNET
+
+    UNETPP["U-Net++<br/>(Zhou et al., 2018)"]:::cnn
+    UNET --> UNETPP
+
+    ATTUNET["Attention U-Net<br/>(Oktay et al., 2018)"]:::attention
+    UNET --> ATTUNET
+
+    R2UNET["R2U-Net<br/>(Alom et al., 2018)"]:::cnn
+    UNET --> R2UNET
+
+    UNET3P["U-Net 3+<br/>(Huang et al., 2020)"]:::cnn
+    UNETPP --> UNET3P
+
+    NNUNET["nnU-Net<br/>(Isensee et al., 2021)"]:::medical
+    UNET --> NNUNET
+    VNET --> NNUNET
+
+    TRANSUNET["TransUNet<br/>(Chen et al., 2021)"]:::hybrid
+    UNET --> TRANSUNET
+
+    SWINUNET["Swin-UNET<br/>(Cao et al., 2022)"]:::transformer
+    TRANSUNET --> SWINUNET
+
+    UCTRANSNET["UCTransNet<br/>(Wang et al., 2022)"]:::hybrid
+    UNET --> UCTRANSNET
+    TRANSUNET --> UCTRANSNET
+
+    MISSFORMER["MISSFormer<br/>(Huang et al., 2022)"]:::transformer
+    SWINUNET --> MISSFORMER
+
+    NNUNETV2["nnU-Net v2<br/>(Isensee et al., 2024)"]:::medical
+    NNUNET --> NNUNETV2
+
+    %% Parallel evolution: Encoder-Decoder without U-Net skip pattern
+    DEEPLABV3["DeepLabV3+<br/>(Chen et al., 2018)"]:::cnn
+    FCN --> DEEPLABV3
+
+    SEGFORMER["SegFormer<br/>(Xie et al., 2021)"]:::transformer
+    DEEPLABV3 --> SEGFORMER
+
+    %% Foundation models branch
+    SAM["SAM<br/>(Kirillov et al., 2023)"]:::foundation
+    SAM2["SAM 2<br/>(Ravi et al., 2024)"]:::foundation
+    SAM --> SAM2
+
+    %% Legend
+    subgraph Legend
+        L1["CNN-based"]:::cnn
+        L2["Attention-based"]:::attention
+        L3["Transformer-based"]:::transformer
+        L4["Hybrid CNN+Transformer"]:::hybrid
+        L5["Foundation Model"]:::foundation
+        L6["Medical-focused"]:::medical
+    end

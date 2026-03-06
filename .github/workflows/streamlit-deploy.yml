@@ -1,0 +1,35 @@
+name: Streamlit Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "explorer/**"
+      - "01_foundations/**"
+      - "02_unet_family/**"
+      - "03_transformer_segmentation/**"
+      - "04_foundation_models/**"
+      - "05_code_analysis/**"
+      - "06_experiments/**"
+      - "07_visualizations/**"
+      - "08_repo_tracker/**"
+      - "09_datasets/**"
+      - "10_references/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r explorer/requirements.txt
+      - name: Validate Streamlit app
+        run: |
+          python -c "import streamlit; print(f'Streamlit {streamlit.__version__} OK')"
+      # Streamlit Cloud handles deployment automatically
+      # This workflow validates the app can be imported

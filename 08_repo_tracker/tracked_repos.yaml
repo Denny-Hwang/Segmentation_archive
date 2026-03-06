@@ -1,0 +1,122 @@
+# Tracked Repositories Registry
+# Last updated: 2026-03-06
+# Each entry tracks a key open-source segmentation repository
+
+repositories:
+  - name: Pytorch-UNet
+    owner: milesial
+    repo: milesial/Pytorch-UNet
+    url: https://github.com/milesial/Pytorch-UNet
+    category: medical
+    framework: pytorch
+    description: >
+      Customized implementation of the U-Net for semantic segmentation
+      in PyTorch. Lightweight and easy to understand.
+    tags: [unet, semantic-segmentation, medical-imaging, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: nnU-Net
+    owner: MIC-DKFZ
+    repo: MIC-DKFZ/nnUNet
+    url: https://github.com/MIC-DKFZ/nnUNet
+    category: medical
+    framework: pytorch
+    description: >
+      nnU-Net is a self-configuring method for deep learning-based
+      biomedical image segmentation. It automatically adapts to any
+      given dataset.
+    tags: [nnunet, self-configuring, medical-imaging, automl, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: SAM 2
+    owner: facebookresearch
+    repo: facebookresearch/sam2
+    url: https://github.com/facebookresearch/sam2
+    category: foundation
+    framework: pytorch
+    description: >
+      Segment Anything Model 2 (SAM 2) for promptable visual segmentation
+      in images and videos with a unified architecture.
+    tags: [sam, foundation-model, promptable, video-segmentation, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: MMSegmentation
+    owner: open-mmlab
+    repo: open-mmlab/mmsegmentation
+    url: https://github.com/open-mmlab/mmsegmentation
+    category: framework
+    framework: pytorch
+    description: >
+      OpenMMLab semantic segmentation toolbox and benchmark. Supports
+      numerous architectures and datasets with a modular design.
+    tags: [mmseg, toolbox, benchmark, semantic-segmentation, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: Segmentation Models PyTorch
+    owner: qubvel-org
+    repo: qubvel-org/segmentation_models.pytorch
+    url: https://github.com/qubvel-org/segmentation_models.pytorch
+    category: framework
+    framework: pytorch
+    description: >
+      Python library with neural networks for image segmentation based
+      on PyTorch. Provides high-level API with pretrained encoder support.
+    tags: [smp, pretrained-encoders, semantic-segmentation, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: Mask2Former
+    owner: facebookresearch
+    repo: facebookresearch/Mask2Former
+    url: https://github.com/facebookresearch/Mask2Former
+    category: panoptic
+    framework: pytorch
+    description: >
+      Masked-attention Mask Transformer for Universal Image Segmentation.
+      Handles semantic, instance, and panoptic segmentation.
+    tags: [mask2former, transformer, panoptic, instance, semantic, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: OneFormer
+    owner: SHI-Labs
+    repo: SHI-Labs/OneFormer
+    url: https://github.com/SHI-Labs/OneFormer
+    category: panoptic
+    framework: pytorch
+    description: >
+      One Transformer to Rule Universal Image Segmentation. A single
+      multi-task model for semantic, instance, and panoptic segmentation.
+    tags: [oneformer, transformer, universal, multi-task, pytorch]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: keras-unet-collection
+    owner: yingkaisha
+    repo: yingkaisha/keras-unet-collection
+    url: https://github.com/yingkaisha/keras-unet-collection
+    category: medical
+    framework: tensorflow
+    description: >
+      Collection of U-Net and its variants implemented in Keras/TensorFlow.
+      Includes UNet, UNet++, Attention UNet, R2UNet, TransUNet, Swin-UNet, etc.
+    tags: [unet, keras, tensorflow, medical-imaging, collection]
+    watch_releases: true
+    added: 2026-03-06
+
+  - name: pytorch-3dunet
+    owner: wolny
+    repo: wolny/pytorch-3dunet
+    url: https://github.com/wolny/pytorch-3dunet
+    category: medical
+    framework: pytorch
+    description: >
+      3D UNet implementation in PyTorch for volumetric segmentation
+      of biomedical images. Supports 3D U-Net and Residual 3D U-Net.
+    tags: [3dunet, volumetric, medical-imaging, 3d-segmentation, pytorch]
+    watch_releases: true
+    added: 2026-03-06

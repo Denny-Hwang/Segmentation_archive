@@ -1,0 +1,160 @@
+# Dataset Registry
+# Machine-readable metadata for all tracked datasets
+
+datasets:
+  # --- Medical ---
+  - id: synapse_multi_organ
+    name: Synapse Multi-Organ Segmentation
+    domain: medical
+    modality: CT
+    task: semantic
+    classes: 13
+    size: "30 cases (3779 axial slices)"
+    url: https://www.synapse.org/#!Synapse:syn3193805
+    license: Custom (Synapse terms)
+    file: medical/synapse_multi_organ.md
+
+  - id: acdc
+    name: Automated Cardiac Diagnosis Challenge
+    domain: medical
+    modality: cardiac_mri
+    task: semantic
+    classes: 4
+    size: "100 patients"
+    url: https://www.creatis.insa-lyon.fr/Challenge/acdc/
+    license: CC BY-NC-SA 4.0
+    file: medical/acdc.md
+
+  - id: brats
+    name: Brain Tumor Segmentation Challenge
+    domain: medical
+    modality: brain_mri
+    task: semantic
+    classes: 4
+    size: "2000+ multi-modal MRI scans"
+    url: https://www.med.upenn.edu/cbica/brats/
+    license: Custom (challenge terms)
+    file: medical/brats.md
+
+  - id: isic
+    name: International Skin Imaging Collaboration
+    domain: medical
+    modality: dermoscopy
+    task: semantic
+    classes: "2-8 (varies by year)"
+    size: "25,000+ images"
+    url: https://www.isic-archive.com/
+    license: CC BY-NC 4.0
+    file: medical/isic.md
+
+  - id: kvasir_seg
+    name: Kvasir-SEG
+    domain: medical
+    modality: endoscopy
+    task: binary
+    classes: 2
+    size: "1,000 images"
+    url: https://datasets.simula.no/kvasir-seg/
+    license: CC BY 4.0
+    file: medical/kvasir_seg.md
+
+  - id: lits
+    name: Liver Tumor Segmentation Challenge
+    domain: medical
+    modality: ct
+    task: semantic
+    classes: 3
+    size: "201 CT scans"
+    url: https://competitions.codalab.org/competitions/17094
+    license: Custom (challenge terms)
+    file: medical/lits.md
+
+  # --- Natural ---
+  - id: coco
+    name: COCO (Common Objects in Context)
+    domain: natural
+    modality: rgb
+    task: instance_panoptic
+    classes: "80 things + 53 stuff"
+    size: "330K images, 1.5M instances"
+    url: https://cocodataset.org/
+    license: CC BY 4.0
+    file: natural/coco.md
+
+  - id: ade20k
+    name: ADE20K
+    domain: natural
+    modality: rgb
+    task: semantic
+    classes: 150
+    size: "25,574 images"
+    url: https://groups.csail.mit.edu/vision/datasets/ADE20K/
+    license: BSD 3-Clause
+    file: natural/ade20k.md
+
+  - id: cityscapes
+    name: Cityscapes
+    domain: natural
+    modality: rgb
+    task: semantic_instance
+    classes: 30
+    size: "5,000 fine + 20,000 coarse"
+    url: https://www.cityscapes-dataset.com/
+    license: Custom (research only)
+    file: natural/cityscapes.md
+
+  - id: pascal_voc
+    name: PASCAL VOC 2012
+    domain: natural
+    modality: rgb
+    task: semantic_instance
+    classes: 21
+    size: "11,530 images"
+    url: http://host.robots.ox.ac.uk/pascal/VOC/voc2012/
+    license: Custom ("Flickr" terms)
+    file: natural/pascal_voc.md
+
+  - id: mapillary_vistas
+    name: Mapillary Vistas
+    domain: natural
+    modality: rgb
+    task: semantic_panoptic
+    classes: "66 categories, 37 instance classes"
+    size: "25,000 images"
+    url: https://www.mapillary.com/dataset/vistas
+    license: CC BY-NC-SA 4.0
+    file: natural/mapillary_vistas.md
+
+  # --- Specialized ---
+  - id: sa1b
+    name: SA-1B (Segment Anything 1 Billion)
+    domain: specialized
+    modality: rgb
+    task: promptable
+    classes: N/A
+    size: "11M images, 1.1B masks"
+    url: https://segment-anything.com/dataset/index.html
+    license: Custom (Meta license)
+    file: specialized/sa1b.md
+
+  - id: sav
+    name: SA-V (Segment Anything Video)
+    domain: specialized
+    modality: video
+    task: video_segmentation
+    classes: N/A
+    size: "50.9K videos, 642.6K masklets"
+    url: https://ai.meta.com/datasets/segment-anything-video/
+    license: Custom (Meta license)
+    file: specialized/sav.md
+
+  - id: remote_sensing
+    name: Remote Sensing Segmentation Datasets
+    domain: specialized
+    modality: satellite
+    task: semantic
+    classes: varies
+    size: varies
+    url: null
+    license: varies
+    file: specialized/remote_sensing.md

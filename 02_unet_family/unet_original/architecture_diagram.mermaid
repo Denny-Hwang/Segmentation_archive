@@ -1,0 +1,80 @@
+%% U-Net Architecture Diagram
+%% Ronneberger et al., 2015
+%% Encoder-Decoder with Skip Connections
+
+graph TD
+    subgraph Encoder ["Contracting Path (Encoder)"]
+        IN["Input Image<br/>572 x 572 x 1"]
+        E1_CONV["Conv 3x3, ReLU x2<br/>570 x 570 x 64"]
+        E1_POOL["Max Pool 2x2<br/>284 x 284 x 64"]
+
+        E2_CONV["Conv 3x3, ReLU x2<br/>280 x 280 x 128"]
+        E2_POOL["Max Pool 2x2<br/>140 x 140 x 128"]
+
+        E3_CONV["Conv 3x3, ReLU x2<br/>136 x 136 x 256"]
+        E3_POOL["Max Pool 2x2<br/>68 x 68 x 256"]
+
+        E4_CONV["Conv 3x3, ReLU x2<br/>64 x 64 x 512"]
+        E4_POOL["Max Pool 2x2<br/>32 x 32 x 512"]
+    end
+
+    subgraph Bottleneck
+        BN["Conv 3x3, ReLU x2<br/>28 x 28 x 1024"]
+    end
+
+    subgraph Decoder ["Expansive Path (Decoder)"]
+        D4_UP["Up-conv 2x2<br/>56 x 56 x 512"]
+        D4_CAT["Crop + Concat<br/>56 x 56 x 1024"]
+        D4_CONV["Conv 3x3, ReLU x2<br/>52 x 52 x 512"]
+
+        D3_UP["Up-conv 2x2<br/>104 x 104 x 256"]
+        D3_CAT["Crop + Concat<br/>104 x 104 x 512"]
+        D3_CONV["Conv 3x3, ReLU x2<br/>100 x 100 x 256"]
+
+        D2_UP["Up-conv 2x2<br/>200 x 200 x 128"]
+        D2_CAT["Crop + Concat<br/>200 x 200 x 256"]
+        D2_CONV["Conv 3x3, ReLU x2<br/>196 x 196 x 128"]
+
+        D1_UP["Up-conv 2x2<br/>392 x 392 x 64"]
+        D1_CAT["Crop + Concat<br/>392 x 392 x 128"]
+        D1_CONV["Conv 3x3, ReLU x2<br/>388 x 388 x 64"]
+    end
+
+    OUT["Conv 1x1<br/>388 x 388 x n_classes"]
+
+    %% Encoder flow
+    IN --> E1_CONV --> E1_POOL
+    E1_POOL --> E2_CONV --> E2_POOL
+    E2_POOL --> E3_CONV --> E3_POOL
+    E3_POOL --> E4_CONV --> E4_POOL
+
+    %% Bottleneck
+    E4_POOL --> BN
+
+    %% Decoder flow
+    BN --> D4_UP --> D4_CAT --> D4_CONV
+    D4_CONV --> D3_UP --> D3_CAT --> D3_CONV
+    D3_CONV --> D2_UP --> D2_CAT --> D2_CONV
+    D2_CONV --> D1_UP --> D1_CAT --> D1_CONV
+
+    %% Skip connections
+    E4_CONV -.->|"skip connection"| D4_CAT
+    E3_CONV -.->|"skip connection"| D3_CAT
+    E2_CONV -.->|"skip connection"| D2_CAT
+    E1_CONV -.->|"skip connection"| D1_CAT
+
+    %% Output
+    D1_CONV --> OUT
+
+    %% Styling
+    style IN fill:#e8f4fd,stroke:#2196F3
+    style OUT fill:#e8f4fd,stroke:#2196F3
+    style BN fill:#fff3e0,stroke:#FF9800
+    style E1_CONV fill:#c8e6c9,stroke:#4CAF50
+    style E2_CONV fill:#c8e6c9,stroke:#4CAF50
+    style E3_CONV fill:#c8e6c9,stroke:#4CAF50
+    style E4_CONV fill:#c8e6c9,stroke:#4CAF50
+    style D4_CONV fill:#bbdefb,stroke:#1976D2
+    style D3_CONV fill:#bbdefb,stroke:#1976D2
+    style D2_CONV fill:#bbdefb,stroke:#1976D2
+    style D1_CONV fill:#bbdefb,stroke:#1976D2

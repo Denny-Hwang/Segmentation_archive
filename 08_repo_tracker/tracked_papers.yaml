@@ -1,0 +1,130 @@
+# Tracked Papers Registry
+# Last updated: 2026-03-06
+# Key segmentation papers tracked for citations and impact
+
+papers:
+  # --- Classic / CNN-based ---
+  - title: "U-Net: Convolutional Networks for Biomedical Image Segmentation"
+    authors: [Olaf Ronneberger, Philipp Fischer, Thomas Brox]
+    year: 2015
+    arxiv: "1505.04597"
+    venue: MICCAI
+    category: architecture
+    tags: [unet, encoder-decoder, skip-connections, medical]
+
+  - title: "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
+    authors: [Zongwei Zhou, Md Mahfuzur Rahman Siddiquee, Nima Tajbakhsh, Jianming Liang]
+    year: 2018
+    arxiv: "1807.10165"
+    venue: DLMIA/ML-CDS Workshop at MICCAI
+    category: architecture
+    tags: [unet++, nested, dense-skip, medical]
+
+  - title: "Attention U-Net: Learning Where to Look for the Pancreas"
+    authors: [Ozan Oktay, Jo Schlemper, Loic Le Folgoc, Matthew Lee, Mattias Heinrich]
+    year: 2018
+    arxiv: "1804.03999"
+    venue: MIDL
+    category: architecture
+    tags: [attention, unet, gating, medical]
+
+  - title: "nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation"
+    authors: [Fabian Isensee, Paul F. Jaeger, Simon A. A. Kohl, Jens Petersen, Klaus H. Maier-Hein]
+    year: 2021
+    arxiv: "1809.10486"
+    venue: Nature Methods
+    category: framework
+    tags: [nnunet, self-configuring, automl, medical]
+
+  # --- Transformer-based ---
+  - title: "TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation"
+    authors: [Jieneng Chen, Yongyi Lu, Qihang Yu, Xiangde Luo, Ehsan Adeli, Yan Wang, Le Lu, Alan L. Yuille, Yuyin Zhou]
+    year: 2021
+    arxiv: "2102.04306"
+    venue: arXiv
+    category: architecture
+    tags: [transunet, transformer, hybrid, medical]
+
+  - title: "Swin-Unet: Unet-like Pure Transformer for Medical Image Segmentation"
+    authors: [Hu Cao, Yueyue Wang, Joy Chen, Dongsheng Jiang, Xiaopeng Zhang, Qi Tian, Manning Wang]
+    year: 2021
+    arxiv: "2105.05537"
+    venue: ECCV 2022 Workshops
+    category: architecture
+    tags: [swin-unet, swin-transformer, pure-transformer, medical]
+
+  - title: "SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers"
+    authors: [Enze Xie, Wenhai Wang, Zhiding Yu, Anima Anandkumar, Jose M. Alvarez, Ping Luo]
+    year: 2021
+    arxiv: "2105.15203"
+    venue: NeurIPS
+    category: architecture
+    tags: [segformer, transformer, efficient, semantic]
+
+  # --- Panoptic / Universal ---
+  - title: "Masked-attention Mask Transformer for Universal Image Segmentation"
+    authors: [Bowen Cheng, Ishan Misra, Alexander G. Schwing, Alexander Kirillov, Rohit Girdhar]
+    year: 2022
+    arxiv: "2112.01527"
+    venue: CVPR
+    category: architecture
+    tags: [mask2former, universal, panoptic, instance, semantic]
+
+  - title: "OneFormer: One Transformer to Rule Universal Image Segmentation"
+    authors: [Jitesh Jain, Jiachen Li, MangTik Chiu, Ali Hassani, Nikita Orlov, Humphrey Shi]
+    year: 2023
+    arxiv: "2211.06220"
+    venue: CVPR
+    category: architecture
+    tags: [oneformer, universal, multi-task, panoptic]
+
+  # --- Foundation Models ---
+  - title: "Segment Anything"
+    authors: [Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura Gustafson, Tete Xiao, Spencer Whitehead, Alexander C. Berg, Wan-Yen Lo, Piotr Dollar, Ross Girshick]
+    year: 2023
+    arxiv: "2304.02643"
+    venue: ICCV
+    category: foundation
+    tags: [sam, foundation-model, promptable, zero-shot]
+
+  - title: "SAM 2: Segment Anything in Images and Videos"
+    authors: [Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman Radle, Chloe Rolland, Laura Gustafson, Eric Mintun, Junting Pan, Kalyan Vasudev Alwala, Nicolas Carion, Chao-Yuan Wu, Ross Girshick, Piotr Dollar, Christoph Feichtenhofer]
+    year: 2024
+    arxiv: "2408.00714"
+    venue: arXiv
+    category: foundation
+    tags: [sam2, video-segmentation, foundation-model, promptable]
+
+  # --- Loss Functions ---
+  - title: "The Lovasz-Softmax loss: A tractable surrogate for the optimization of the intersection-over-union measure in neural networks"
+    authors: [Maxim Berman, Amal Rannen Triki, Matthew B. Blaschko]
+    year: 2018
+    arxiv: "1705.08790"
+    venue: CVPR
+    category: loss-function
+    tags: [lovasz, iou-optimization, loss-function]
+
+  - title: "Unified Focal loss: Generalising Dice and cross entropy-based losses to handle class imbalanced medical image segmentation"
+    authors: [Michael Yeung, Evis Sala, Carola-Bibiane Schonlieb, Leonardo Rundo]
+    year: 2022
+    arxiv: "2102.04427"
+    venue: Computerized Medical Imaging and Graphics
+    category: loss-function
+    tags: [focal-loss, dice-loss, class-imbalance, unified]
+
+  # --- 3D / Volumetric ---
+  - title: "3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation"
+    authors: [Ozgun Cicek, Ahmed Abdulkadir, Soeren S. Lienkamp, Thomas Brox, Olaf Ronneberger]
+    year: 2016
+    arxiv: "1606.06650"
+    venue: MICCAI
+    category: architecture
+    tags: [3d-unet, volumetric, sparse-annotation, medical]
+
+  - title: "V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation"
+    authors: [Fausto Milletari, Nassir Navab, Seyed-Ahmad Ahmadi]
+    year: 2016
+    arxiv: "1606.04797"
+    venue: 3DV
+    category: architecture
+    tags: [vnet, volumetric, dice-loss, medical]
