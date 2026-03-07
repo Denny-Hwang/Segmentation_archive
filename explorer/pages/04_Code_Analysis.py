@@ -15,7 +15,7 @@ except ImportError:
 st.set_page_config(page_title="Code Analysis - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
-CODE_DIR = ARCHIVE_ROOT / "03_code_analysis"
+CODE_DIR = ARCHIVE_ROOT / "05_code_analysis"
 
 
 def load_code_analyses() -> list[dict]:
@@ -58,7 +58,7 @@ def main():
     if not analyses:
         st.info(
             "No code analyses found. Add Markdown files to "
-            "`03_code_analysis/` to populate this page."
+            "`05_code_analysis/` to populate this page."
         )
 
         # Show placeholder content

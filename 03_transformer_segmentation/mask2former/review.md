@@ -1,7 +1,7 @@
 ---
 title: "Masked-attention Mask Transformer for Universal Image Segmentation"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [universal-segmentation, masked-attention, panoptic, instance, semantic]
 difficulty: advanced
 ---
@@ -25,11 +25,11 @@ Mask2Former introduces masked attention in a transformer decoder to restrict cro
 
 ## Motivation and Problem Statement
 
-<!-- Why was this work needed? What gap does it address compared to MaskFormer? -->
+MaskFormer demonstrated that segmentation tasks could be unified as mask classification, but its performance on instance and panoptic segmentation lagged behind specialized architectures. Standard cross-attention attends to the entire feature map for every query, which is wasteful and leads to slow convergence. Mask2Former restricts cross-attention to within predicted mask regions, improving both efficiency and accuracy across all segmentation tasks.
 
 ## Architecture Overview
 
-<!-- High-level description of the model architecture with diagram reference -->
+Three components: (1) backbone (Swin-L or ResNet) with multi-scale deformable pixel decoder producing multi-scale feature maps; (2) transformer decoder with masked attention processing N=100 learnable queries to predict binary masks and class labels; (3) Hungarian matching for training. The architecture is identical across all three segmentation tasks.
 
 ### Key Components
 
@@ -40,50 +40,65 @@ Mask2Former introduces masked attention in a transformer decoder to restrict cro
 
 ### Backbone and Pixel Decoder
 
-<!-- Feature extraction and multi-scale feature maps -->
+The backbone extracts multi-scale features at 1/4, 1/8, 1/16, 1/32 resolutions. A multi-scale deformable attention pixel decoder (from Deformable DETR) enhances features via lateral connections and top-down fusion, outputting three scales (1/8, 1/16, 1/32) used in round-robin by decoder layers.
 
 ### Transformer Decoder with Masked Attention
 
-<!-- How masked attention improves over standard cross-attention -->
+9 decoder layers organized in groups of 3, cycling through three feature scales. Each layer: self-attention → masked cross-attention → FFN. Each query only attends to locations within its predicted mask from the previous layer, focusing attention on the target region and preventing cross-object interference.
 
 ### Query Design
 
-<!-- Learnable queries and their role -->
+N=100 learnable content queries, each predicting one binary mask and class label. Queries are refined through all 9 decoder layers, with auxiliary losses at layers 3, 6, and 9.
 
 ### Multi-Scale Strategy
 
-<!-- How multi-scale features are leveraged -->
+Round-robin across scales: layers 1,4,7 use 1/32 features; layers 2,5,8 use 1/16; layers 3,6,9 use 1/8. This ensures interaction with features at every scale without processing all scales simultaneously.
 
 ### Loss Function
 
-<!-- Training objectives including Hungarian matching -->
+Hungarian matching assigns predictions to ground truth. Loss combines binary CE + Dice for masks and CE for classification. Auxiliary losses from intermediate decoder layers.
 
 ## Experiments and Results
 
 ### Datasets
 
-<!-- Benchmark datasets used (ADE20K, Cityscapes, COCO) -->
+ADE20K (150 semantic classes), Cityscapes (semantic/instance/panoptic), COCO (80 things + 53 stuff).
 
 ### Key Results
 
-<!-- Main quantitative results across all three segmentation tasks -->
+| Task | Dataset | Backbone | Metric | Score |
+|------|---------|----------|--------|-------|
+| Semantic | ADE20K | Swin-L | mIoU | 57.8% |
+| Panoptic | COCO | Swin-L | PQ | 57.8% |
+| Instance | COCO | Swin-L | AP | 50.1% |
+| Semantic | Cityscapes | Swin-L | mIoU | 83.3% |
+
+Outperforms specialized models across all three tasks with the same architecture.
 
 ### Ablation Studies
 
-<!-- Important ablations and findings -->
+Masked attention: +4.4 PQ over standard cross-attention. Multi-scale features: +2.1 PQ. 9 layers optimal. Round-robin outperforms attending to all scales simultaneously.
 
 ## Strengths
 
-<!-- List key strengths of the approach -->
+- Single architecture achieves SOTA across all three segmentation tasks
+- Masked attention improves convergence 3-4× and gives clear accuracy gains
+- Multi-scale round-robin is elegant and efficient
+- Strong with both CNN and transformer backbones
 
 ## Limitations
 
-<!-- List key limitations -->
+- Hungarian matching adds training complexity
+- N=100 queries may be insufficient for dense instance scenes
+- Task-specific post-processing still required
+- Training cost ~50 GPU-hours on 8 V100s for COCO
 
 ## Connections
 
-<!-- How this work relates to MaskFormer, DETR, and other papers -->
+Evolves from MaskFormer by adding masked attention and multi-scale features. Influenced by Deformable DETR. Inspired OneFormer's joint training approach. The mask classification formulation was later extended by SAM for promptable segmentation.
 
 ## References
 
-<!-- Key references cited in the paper -->
+- Cheng et al., "MaskFormer," NeurIPS 2021
+- Zhu et al., "Deformable DETR," ICLR 2021
+- Carion et al., "DETR," ECCV 2020

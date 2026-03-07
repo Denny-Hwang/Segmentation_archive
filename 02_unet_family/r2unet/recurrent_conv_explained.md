@@ -1,79 +1,73 @@
 ---
-title: "Recurrent Convolution Blocks Explained"
+title: "Recurrent Convolution Blocks in R2U-Net"
 date: 2025-03-06
-status: planned
-tags:
-  - recurrent-convolution
-  - feature-accumulation
-  - time-steps
-parent: r2unet/review.md
+status: complete
+tags: [recurrent-convolution, feature-accumulation, r2u-net]
+difficulty: intermediate
 ---
 
-# Recurrent Convolution Blocks Explained
+# Recurrent Convolution Blocks
 
 ## Overview
 
-_TODO: Explain how recurrent convolutional layers unfold the same convolution over multiple time steps, accumulating features without adding new parameters._
+Recurrent convolution blocks are the core building block of R2U-Net. Instead of applying a convolution once (as in standard U-Net) or twice (as in DoubleConv), the same convolution kernel is applied t times in a recurrent fashion. Each iteration accumulates features from the previous iteration, effectively expanding the receptive field and enriching the feature representation without adding parameters.
 
----
+## Mechanism
 
-## Standard Convolution vs Recurrent Convolution
+At each time step t, the output is:
 
-### Standard Convolution
+```
+x_o^t = f(W_f * x_i + W_r * x_o^{t-1} + b)
+```
 
-_TODO: Single forward pass through the convolutional layer._
+where:
+- `x_i` is the original input (constant across time steps)
+- `x_o^{t-1}` is the output from the previous time step (t-1)
+- `W_f` are the feedforward convolution weights
+- `W_r` are the recurrent convolution weights (crucially, shared across time steps)
+- `f` is ReLU activation
 
-### Recurrent Convolution
+For t=0, x_o^0 = f(W_f * x_i + b) (standard convolution).
 
-_TODO: The output of a convolution is fed back as input, iterating t times with shared weights._
+## Feature Accumulation
 
----
+At each iteration, the recurrent term `W_r * x_o^{t-1}` incorporates information from the previous step. This creates a feature accumulation effect:
 
-## Mathematical Formulation
+- **t=0**: Standard convolution with receptive field = kernel size
+- **t=1**: Features enriched with context from t=0, effective RF ≈ 2× kernel size
+- **t=2**: Further enriched, effective RF ≈ 3× kernel size
 
-_TODO: Write out the recurrent update equations._
+The shared weights mean the same convolution "refines" its own output, learning to iteratively improve the feature representation.
 
-$$
-x_l^{(t)} = f(W_f * x_{l-1} + W_r * x_l^{(t-1)} + b)
-$$
+## Implementation
 
-Where:
-- _TODO: Define each variable_
+```python
+class RecurrentBlock(nn.Module):
+    def __init__(self, channels, t=2):
+        super().__init__()
+        self.t = t
+        self.conv = nn.Sequential(
+            nn.Conv2d(channels, channels, 3, padding=1),
+            nn.BatchNorm2d(channels),
+            nn.ReLU(inplace=True)
+        )
+    
+    def forward(self, x):
+        x_r = self.conv(x)  # t=0
+        for _ in range(self.t - 1):
+            x_r = self.conv(x + x_r)  # t=1, 2, ...
+        return x_r
+```
 
----
+Note that `x` (the original input) is added at each step, not `x_r`. This ensures the original input information is preserved at every iteration.
 
-## Variants in R2U-Net
+## Comparison with Standard Convolutions
 
-### RU-Net (Recurrent U-Net)
+| Approach | Params | FLOPs | Effective RF |
+|----------|--------|-------|-------------|
+| Single conv | C²K² | 1× | K |
+| DoubleConv (U-Net) | 2C²K² | 2× | 2K-1 |
+| RecurrentConv (t=2) | C²K² | 2× | ~2K |
+| RecurrentConv (t=3) | C²K² | 3× | ~3K |
 
-_TODO: Uses recurrent convolutional units without residual connections._
-
-### R2U-Net (Recurrent Residual U-Net)
-
-_TODO: Adds a residual connection around the recurrent block._
-
----
-
-## Effect of Time Steps
-
-| Time Steps (t) | Feature Quality | Computation | Parameters |
-|----------------|----------------|-------------|------------|
-| t = 1 | Baseline | 1x | Same |
-| t = 2 | Better | ~2x | Same |
-| t = 3 | Marginally better | ~3x | Same |
-
----
-
-## Intuition: Why Recurrence Helps
-
-_TODO: Discuss how recurrence allows the effective receptive field to grow without deepening the network or increasing parameters._
-
----
-
-## Comparison with Other Feature Accumulation Methods
-
-| Method | Parameters | Receptive Field Growth |
-|--------|-----------|----------------------|
-| Deeper network | More | Per layer |
-| Dilated convolution | Same | Via dilation rate |
-| Recurrent convolution | Same | Via time steps |
+Recurrent convolution achieves a similar effective receptive field as DoubleConv with half the parameters, at the cost of sequential computation (iterations cannot be parallelized).

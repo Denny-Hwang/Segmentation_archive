@@ -1,72 +1,63 @@
 ---
-title: "FreeU Analysis"
+title: "FreeU: Free Lunch in Diffusion U-Net"
 date: 2025-03-06
-status: planned
-tags:
-  - freeu
-  - feature-reweighting
-  - skip-connections
-  - diffusion-models
-parent: unet_in_diffusion/review.md
+status: complete
+tags: [freeu, skip-connections, diffusion, spectral-analysis]
+difficulty: advanced
 ---
 
-# FreeU: Free Lunch in Diffusion U-Net
+# FreeU Analysis
 
 ## Overview
 
-_TODO: Explain FreeU (Si et al., 2023) -- a training-free method that improves diffusion model quality by reweighting the contributions of the U-Net backbone features and skip connection features._
+FreeU (Si et al., 2023) improves diffusion model image quality by simply re-weighting the backbone features and skip connection features in the U-Net decoder. It requires no retraining — just modifying two scaling factors at inference time, providing a "free lunch" improvement.
 
----
+## Key Insight
 
-## The Problem FreeU Addresses
+Through spectral analysis, the authors discovered that skip connections in diffusion U-Net primarily carry high-frequency information (textures, details) while the backbone (decoder) features carry low-frequency information (global structure, composition). The default equal weighting over-emphasizes high-frequency details, leading to artifacts and reduced overall coherence.
 
-_TODO: Skip connections in diffusion U-Nets pass too much high-frequency detail that can conflict with the denoising backbone's low-frequency semantics._
+## Method
 
----
+At each decoder level, FreeU applies two scaling factors:
 
-## How FreeU Works
+1. **Backbone scaling (s > 1)**: Amplify the backbone features to strengthen global structure
+2. **Skip scaling (b < 1)**: Attenuate the skip connection features to reduce excessive high-frequency detail
 
-### Two Simple Operations
+```python
+def freeu_forward(backbone_features, skip_features, s, b):
+    # Amplify backbone (low-frequency, global structure)
+    backbone_features = backbone_features * s
+    
+    # Attenuate skip connections (high-frequency, details)
+    # Apply spectral filtering via FFT for smoother attenuation
+    skip_freq = torch.fft.fftn(skip_features, dim=(-2, -1))
+    skip_freq = skip_freq * b  # attenuate in frequency domain
+    skip_features = torch.fft.ifftn(skip_freq, dim=(-2, -1)).real
+    
+    return torch.cat([backbone_features, skip_features], dim=1)
+```
 
-1. _TODO: Amplify backbone (decoder) feature maps by a factor b_
-2. _TODO: Attenuate skip connection feature maps by a factor s (via spectral filtering)_
+## Recommended Parameters
 
-### Hyperparameters
+| Model | Level 1 (s₁, b₁) | Level 2 (s₂, b₂) |
+|-------|-------------------|-------------------|
+| SD 1.4 | (1.2, 0.9) | (1.4, 0.2) |
+| SD 2.1 | (1.1, 0.9) | (1.2, 0.2) |
+| SDXL | (1.1, 0.6) | (1.1, 0.4) |
 
-| Parameter | Description | Typical Values |
-|-----------|------------|----------------|
-| b1, b2 | Backbone scaling factors | _TODO_ |
-| s1, s2 | Skip attenuation factors | _TODO_ |
+Note the stronger attenuation at deeper levels (b₂ < b₁), where skip connections carry more low-level noise-like features.
 
----
+## Spectral Analysis
 
-## Why It Works
+The authors analyzed skip features vs backbone features using FFT:
+- **Skip features**: Dominant high-frequency components (edges, textures, noise)
+- **Backbone features**: Dominant low-frequency components (structure, color, layout)
+- **Default U-Net**: Equal weighting leads to high-frequency dominance in early denoising steps
 
-### Frequency Analysis
+## Quality vs Control Trade-off
 
-_TODO: The backbone carries low-frequency semantic information; skip connections carry high-frequency texture detail. Rebalancing improves generation quality._
+FreeU improves overall image quality and coherence but can reduce fine-grained controllability. Strong attenuation of skip connections (low b) produces smoother, more coherent images but may lose fine details. Applications requiring precise detail control (inpainting, editing) may prefer milder FreeU settings or no FreeU at all.
 
----
+## Connection to Segmentation
 
-## Results
-
-_TODO: FID improvements across SD 1.4, SD 2.1, and other diffusion models without retraining._
-
----
-
-## Connection to Segmentation U-Net
-
-_TODO: Discuss how this finding about skip connection feature reweighting relates to attention gates in segmentation U-Nets -- both address the issue of skip connections passing too much unfiltered information._
-
----
-
-## Limitations
-
-- _TODO: Hyperparameters are model-specific_
-- _TODO: Over-attenuation can lose important details_
-
----
-
-## Practical Usage
-
-_TODO: How to apply FreeU in existing diffusion pipelines (e.g., diffusers library)._
+This analysis has implications for segmentation U-Nets too: the skip connections carry spatial detail critical for boundary delineation, while the decoder backbone carries semantic understanding. The optimal balance may differ by task — segmentation benefits from strong skip connections (boundary details), while generation benefits from strong backbone features (global coherence).

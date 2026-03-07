@@ -1,74 +1,62 @@
 ---
-title: "Attention Gate Mechanism"
+title: "Attention Gate Mechanism in Attention U-Net"
 date: 2025-03-06
-status: planned
-tags:
-  - attention-gate
-  - soft-attention
-  - gating-signal
-parent: attention_unet/review.md
+status: complete
+tags: [attention-gate, gating-signal, spatial-attention, skip-connections]
+difficulty: intermediate
 ---
 
 # Attention Gate Mechanism
 
 ## Overview
 
-_TODO: Describe how attention gates selectively highlight salient features from skip connections using contextual information from the gating signal._
+The attention gate (AG) is a lightweight module that learns to spatially weight skip connection features based on contextual information from the decoder. It implements a form of soft attention that highlights salient features and suppresses irrelevant background regions.
 
----
+## Mechanism
 
-## Attention Gate Architecture
+Given skip connection features `x_l` (from encoder level l) and gating signal `g` (from decoder level l+1):
 
-_TODO: Diagram and step-by-step explanation of the attention gate._
+1. **Linear transforms**: Both inputs are projected to a shared intermediate space:
+   - `W_x · x_l` (1×1 convolution, no bias)
+   - `W_g · g` (1×1 convolution, no bias)
 
-### Inputs
+2. **Additive attention**: The transformed features are summed and passed through ReLU:
+   - `q = ReLU(W_x · x_l + W_g · g)`
 
-- _TODO: Feature map from skip connection (x_l) -- high resolution, local features_
-- _TODO: Gating signal (g) -- low resolution, contextual features from deeper layer_
+3. **Attention coefficients**: A 1×1 convolution followed by sigmoid produces spatial attention weights:
+   - `α = σ(ψ · q)` where α ∈ [0, 1] at each spatial position
 
-### Operations
+4. **Feature modulation**: Skip features are element-wise multiplied by attention weights:
+   - `x̂_l = α ⊙ x_l`
 
-1. _TODO: Linear transformations W_x and W_g to map both inputs to the same channel dimension_
-2. _TODO: Element-wise addition of the transformed features_
-3. _TODO: ReLU activation_
-4. _TODO: 1x1 convolution (psi) to produce a single attention map_
-5. _TODO: Sigmoid to obtain attention coefficients alpha in [0, 1]_
-6. _TODO: Element-wise multiplication of alpha with the skip connection features_
+The gating signal `g` comes from one level deeper in the decoder, containing coarser but more semantically meaningful features. This contextual information guides the attention to focus on regions relevant to the target structures.
 
----
+## Implementation
 
-## Mathematical Formulation
+```python
+class AttentionGate(nn.Module):
+    def __init__(self, F_g, F_l, F_int):
+        super().__init__()
+        self.W_g = nn.Conv2d(F_g, F_int, 1, bias=False)
+        self.W_x = nn.Conv2d(F_l, F_int, 1, bias=False)
+        self.psi = nn.Conv2d(F_int, 1, 1, bias=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.sigmoid = nn.Sigmoid()
 
-_TODO: Write out the equations:_
+    def forward(self, g, x):
+        g1 = self.W_g(g)
+        x1 = self.W_x(x)
+        psi = self.relu(g1 + x1)
+        psi = self.sigmoid(self.psi(psi))
+        return x * psi
+```
 
-$$
-q_{att}^l = \psi^T (\sigma_1 (W_x^T x_i^l + W_g^T g_i + b_g)) + b_\psi
-$$
+`F_int` is the intermediate channel dimension (typically F_l // 2), controlling the capacity of the attention computation. The spatial dimensions of g and x may differ; g is upsampled to match x before addition.
 
-$$
-\alpha_i^l = \sigma_2(q_{att}^l)
-$$
+## Why Additive Attention
 
----
+The paper uses additive attention (Bahdanau-style) rather than multiplicative attention (dot-product). Additive attention is more expressive for combining features of different semantic levels, as it applies a learned nonlinear transformation rather than a simple dot product. The computational overhead is minimal since the attention operates on reduced-channel intermediate representations.
 
-## Additive vs Multiplicative Attention
+## Attention Map Interpretation
 
-_TODO: Compare the additive attention used here with multiplicative (dot-product) attention used in transformers._
-
----
-
-## Grid-Based Gating
-
-_TODO: Explain the grid-based gating signal strategy for computational efficiency._
-
----
-
-## Computational Cost
-
-_TODO: Analyze the additional parameters and FLOPs introduced by attention gates._
-
----
-
-## Visualizing Attention Maps
-
-_TODO: Reference [attention_visualization.md](./attention_visualization.md) for examples of learned attention maps._
+The attention coefficients α form a spatial map where values near 1 indicate regions the model considers relevant and values near 0 indicate suppressed regions. For pancreas segmentation, attention maps typically show high activation around the pancreas and nearby organs, with near-zero values in distant background regions. These maps provide model interpretability.

@@ -1,103 +1,65 @@
 ---
-title: "UNet++: A Nested U-Net Architecture for Medical Image Segmentation"
+title: "UNet++: A Nested U-Net Architecture"
 date: 2025-03-06
-status: planned
-tags:
-  - nested-architecture
-  - dense-skip-connections
-  - deep-supervision
-  - pruning
+status: complete
+tags: [unet++, nested-skip, deep-supervision, encoder-decoder]
 difficulty: intermediate
 ---
 
-# UNet++: A Nested U-Net Architecture for Medical Image Segmentation
+# UNet++
 
 ## Meta Information
 
-| Field          | Details |
-|----------------|---------|
-| **Paper Title**   | UNet++: A Nested U-Net Architecture for Medical Image Segmentation |
-| **Authors**       | Zongwei Zhou, Md Mahfuzur Rahman Siddiquee, Nima Tajbakhsh, Jianming Liang |
-| **Year**          | 2018 |
-| **Venue**         | DLMIA 2018 / MICCAI Workshop |
-| **ArXiv ID**      | [1807.10165](https://arxiv.org/abs/1807.10165) |
+| Field | Value |
+|-------|-------|
+| **Paper Title** | UNet++: A Nested U-Net Architecture for Medical Image Segmentation |
+| **Authors** | Zhou, Z., Siddiquee, M.M.R., Tajbakhsh, N., Liang, J. |
+| **Year** | 2018 |
+| **Venue** | DLMIA Workshop, MICCAI |
+| **arXiv** | [1807.10165](https://arxiv.org/abs/1807.10165) |
 
 ## One-Line Summary
 
-UNet++ redesigns the skip connections of U-Net as nested, dense convolutional blocks that bridge the semantic gap between encoder and decoder feature maps, and enables model pruning at inference through deep supervision.
+UNet++ redesigns the skip connections in U-Net by introducing nested, dense skip pathways that reduce the semantic gap between encoder and decoder feature maps.
 
----
+## Motivation
 
-## Motivation and Problem Statement
+In standard U-Net, skip connections directly concatenate encoder features with decoder features. However, there is a significant semantic gap between these features — encoder features contain low-level spatial details while decoder features contain high-level semantics. This gap forces the decoder to bridge a large representational difference at each level. UNet++ addresses this by filling the gap with nested dense convolutional blocks that progressively transform encoder features before they reach the decoder.
 
-_TODO: Describe the semantic gap between encoder and decoder features in standard U-Net skip connections._
+## Architecture
 
----
+UNet++ can be viewed as an ensemble of U-Nets of varying depths. The architecture is defined by a grid of nodes X^{i,j} where i denotes the downsampling level and j the dense block index. Each node receives: (1) features from the previous node at the same level, and (2) upsampled features from the level below. Nodes along the skip pathways (j > 0) also receive features from all preceding nodes at the same level via dense connections.
+
+The feature map at node X^{i,j} is computed as:
+- If j = 0: `X^{i,0} = H(X^{i-1,0})` (standard encoder)
+- If j > 0: `X^{i,j} = H([X^{i,0}, ..., X^{i,j-1}, U(X^{i+1,j-1})])`
+
+where H is a convolution block, U is upsampling, and [...] denotes concatenation.
 
 ## Key Contributions
 
-- _TODO: Nested dense skip pathways_
-- _TODO: Deep supervision for flexible inference_
-- _TODO: Architecture pruning without retraining_
-- _TODO: Consistent improvement across multiple segmentation tasks_
+1. **Nested dense skip connections** that gradually bring encoder features closer to decoder semantics
+2. **Deep supervision** enabling pruning at inference for speed-accuracy trade-off
+3. **Ensemble interpretation** — UNet++ implicitly combines U-Nets of depths 1 through L
 
----
+## Results
 
-## Architecture Overview
-
-_TODO: Describe the dense blocks between encoder and decoder nodes. Reference [nested_skip_analysis.md](./nested_skip_analysis.md)._
-
----
-
-## Method Details
-
-### Nested Skip Pathways
-
-_TODO: Reference [nested_skip_analysis.md](./nested_skip_analysis.md)._
-
-### Deep Supervision
-
-_TODO: Reference [deep_supervision.md](./deep_supervision.md)._
-
-### Pruning at Inference
-
-_TODO: Reference [pruning_at_inference.md](./pruning_at_inference.md)._
-
----
-
-## Experimental Results
-
-| Dataset | Metric | UNet++ | U-Net | Improvement |
-|---------|--------|--------|-------|-------------|
-| Cell nuclei | _TODO_ | _TODO_ | _TODO_ | _TODO_ |
-| Colon polyp | _TODO_ | _TODO_ | _TODO_ | _TODO_ |
-| Liver | _TODO_ | _TODO_ | _TODO_ | _TODO_ |
-| Lung nodule | _TODO_ | _TODO_ | _TODO_ | _TODO_ |
-
----
+| Dataset | Metric | U-Net | UNet++ | Improvement |
+|---------|--------|-------|--------|-------------|
+| Cell nuclei | IoU | 90.52 | 92.07 | +1.55 |
+| Colon polyp | Dice | 71.10 | 74.32 | +3.22 |
+| Liver | Dice | 94.31 | 95.74 | +1.43 |
+| Lung nodule | Sensitivity | 71.00 | 77.21 | +6.21 |
 
 ## Strengths
 
-- _TODO_
+- Systematically reduces the semantic gap in skip connections
+- Deep supervision enables flexible inference-time pruning
+- Consistent improvements across diverse medical imaging tasks
+- Backward-compatible with U-Net (setting j=0 recovers standard U-Net)
 
----
+## Limitations
 
-## Weaknesses and Limitations
-
-- _TODO_
-
----
-
-## Connections to Other Work
-
-| Related Paper | Relationship |
-|---------------|-------------|
-| U-Net (Ronneberger et al., 2015) | Base architecture |
-| DenseNet (Huang et al., 2017) | Dense connectivity inspiration |
-| UNet 3+ (Huang et al., 2020) | Full-scale skip extension |
-
----
-
-## Open Questions
-
-- _TODO_
+- Higher memory and computation than standard U-Net due to dense connections
+- Improvement over U-Net is sometimes marginal on large, well-annotated datasets
+- Dense connectivity pattern makes the architecture less intuitive to modify

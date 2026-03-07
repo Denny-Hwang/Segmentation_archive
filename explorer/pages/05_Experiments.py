@@ -21,7 +21,7 @@ except ImportError:
 st.set_page_config(page_title="Experiments - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
-EXPERIMENTS_DIR = ARCHIVE_ROOT / "04_experiments"
+EXPERIMENTS_DIR = ARCHIVE_ROOT / "06_experiments"
 
 
 def load_experiment_configs() -> list[dict]:
@@ -56,7 +56,7 @@ def main():
     if not configs:
         st.info(
             "No experiment configurations found. Add YAML files to "
-            "`04_experiments/` to populate this dashboard."
+            "`06_experiments/` to populate this dashboard."
         )
 
         # Placeholder data
