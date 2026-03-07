@@ -58,6 +58,41 @@ def render_knowledge_graph(
             st.markdown(f"- {edge['source']} --[{label}]--> {edge['target']}")
         return
 
+    # Graph controls toolbar
+    ctrl_cols = st.columns([1, 1, 1, 1, 4])
+    with ctrl_cols[0]:
+        if st.button("🔄 Reset View", key=f"reset_graph_{title}", help="Reset zoom and position to default"):
+            # Increment a counter to force re-render of the graph
+            reset_key = f"_graph_reset_{title}"
+            st.session_state[reset_key] = st.session_state.get(reset_key, 0) + 1
+    with ctrl_cols[1]:
+        physics = st.checkbox("Physics", value=physics, key=f"physics_{title}", help="Toggle physics simulation")
+    with ctrl_cols[2]:
+        hierarchical = st.checkbox("Hierarchical", value=False, key=f"hier_{title}", help="Toggle hierarchical layout")
+    with ctrl_cols[3]:
+        height = st.select_slider(
+            "Height",
+            options=[400, 600, 800, 1000],
+            value=height,
+            key=f"height_{title}",
+        )
+
+    # Legend
+    used_categories = {node.get("category", "default") for node in nodes_data}
+    legend_items = []
+    for cat, color in CATEGORY_COLORS.items():
+        if cat in used_categories:
+            legend_items.append(f'<span style="color:{color}">●</span> {cat}')
+    if legend_items:
+        st.markdown(
+            " &nbsp;&nbsp; ".join(legend_items),
+            unsafe_allow_html=True,
+        )
+
+    # Build graph version key to force re-render on reset
+    reset_key = f"_graph_reset_{title}"
+    version = st.session_state.get(reset_key, 0)
+
     nodes = []
     for node in nodes_data:
         category = node.get("category", "default")
@@ -84,7 +119,7 @@ def render_knowledge_graph(
         height=height,
         directed=True,
         physics=physics,
-        hierarchical=False,
+        hierarchical=hierarchical,
     )
 
     agraph(nodes=nodes, edges=edges, config=config)

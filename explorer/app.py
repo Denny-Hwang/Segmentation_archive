@@ -92,6 +92,16 @@ def main():
         """
     )
 
+    # Quick search on landing page
+    st.markdown("---")
+    st.subheader("Quick Search")
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from components.search_bar import render_search_bar, display_search_results
+    results = render_search_bar(ARCHIVE_ROOT, placeholder="Search papers, concepts, architectures...")
+    if results:
+        display_search_results(results)
+
     # Quick stats
     st.markdown("---")
     col1, col2, col3, col4 = st.columns(4)
