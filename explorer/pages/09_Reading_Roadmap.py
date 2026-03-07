@@ -2,6 +2,11 @@
 
 import streamlit as st
 from pathlib import Path
+import sys
+
+# Add explorer to path for component imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from components.paper_figures import render_paper_figures_inline
 
 st.set_page_config(page_title="Reading Roadmap - Segmentation Archive", layout="wide")
 
@@ -143,8 +148,16 @@ ROADMAP = {
 }
 
 
+def _on_checkbox_change(title: str, key: str):
+    """Callback to sync checkbox state with completed_papers immediately."""
+    if st.session_state[key]:
+        st.session_state.completed_papers.add(title)
+    else:
+        st.session_state.completed_papers.discard(title)
+
+
 def main():
-    st.title("Reading Roadmap")
+    st.title("📚 Reading Roadmap")
     st.markdown(
         "A structured learning path from beginner to cutting-edge "
         "in image segmentation research."
@@ -157,8 +170,22 @@ def main():
     total_papers = sum(len(level["papers"]) for level in ROADMAP.values())
     completed = len(st.session_state.completed_papers)
 
-    st.progress(completed / total_papers if total_papers > 0 else 0)
-    st.caption(f"Progress: {completed}/{total_papers} papers read")
+    # Progress bar with percentage
+    progress_pct = completed / total_papers if total_papers > 0 else 0
+    st.progress(progress_pct)
+    st.caption(f"Progress: {completed}/{total_papers} papers read ({progress_pct:.0%})")
+
+    # Reset button
+    if completed > 0:
+        if st.button("Reset progress", type="secondary"):
+            st.session_state.completed_papers = set()
+            # Clear all checkbox keys
+            for level_data in ROADMAP.values():
+                for paper in level_data["papers"]:
+                    key = f"paper_{paper['arxiv']}"
+                    if key in st.session_state:
+                        st.session_state[key] = False
+            st.rerun()
 
     st.markdown("---")
 
@@ -167,34 +194,61 @@ def main():
             1 for p in level_data["papers"]
             if p["title"] in st.session_state.completed_papers
         )
+        total_in_level = len(level_data["papers"])
+        all_done = level_completed == total_in_level
 
-        st.subheader(f"{level_name} ({level_completed}/{len(level_data['papers'])})")
+        level_icon = "✅" if all_done else "📖"
+        st.subheader(f"{level_icon} {level_name} ({level_completed}/{total_in_level})")
         st.markdown(f"*{level_data['description']}*")
 
         for paper in level_data["papers"]:
+            key = f"paper_{paper['arxiv']}"
+            is_done = paper["title"] in st.session_state.completed_papers
+
             col1, col2 = st.columns([4, 1])
 
-            with col1:
-                is_done = paper["title"] in st.session_state.completed_papers
-                prefix = "[Done]" if is_done else ""
-                st.markdown(
-                    f"**{prefix} {paper['title']}** "
-                    f"({paper['authors']}, {paper['year']})"
-                )
-                st.caption(
-                    f"Why read this: {paper['reason']} | "
-                    f"[arXiv:{paper['arxiv']}](https://arxiv.org/abs/{paper['arxiv']})"
+            with col2:
+                st.checkbox(
+                    "Read",
+                    value=is_done,
+                    key=key,
+                    on_change=_on_checkbox_change,
+                    args=(paper["title"], key),
                 )
 
-            with col2:
-                if st.checkbox(
-                    "Read",
-                    value=paper["title"] in st.session_state.completed_papers,
-                    key=f"paper_{paper['arxiv']}",
-                ):
-                    st.session_state.completed_papers.add(paper["title"])
+            with col1:
+                if is_done:
+                    st.markdown(
+                        f"~~**{paper['title']}**~~ ✅ "
+                        f"({paper['authors']}, {paper['year']})"
+                    )
                 else:
-                    st.session_state.completed_papers.discard(paper["title"])
+                    st.markdown(
+                        f"**{paper['title']}** "
+                        f"({paper['authors']}, {paper['year']})"
+                    )
+                st.caption(
+                    f"Why read this: {paper['reason']} | "
+                    f"[arXiv:{paper['arxiv']}](https://arxiv.org/abs/{paper['arxiv']}) | "
+                    f"[PDF](https://arxiv.org/pdf/{paper['arxiv']})"
+                )
+
+                # Personal notes per paper
+                notes_key = f"notes_{paper['arxiv']}"
+                if st.session_state.get(f"show_notes_{paper['arxiv']}", False):
+                    st.text_area(
+                        "My notes",
+                        key=notes_key,
+                        height=80,
+                        placeholder="Write your notes about this paper...",
+                    )
+                st.button(
+                    "📝 Notes" if not st.session_state.get(f"show_notes_{paper['arxiv']}", False) else "Hide notes",
+                    key=f"toggle_notes_{paper['arxiv']}",
+                    on_click=lambda k=f"show_notes_{paper['arxiv']}": st.session_state.update({k: not st.session_state.get(k, False)}),
+                )
+                # Show key architecture figure if available
+                render_paper_figures_inline(paper["arxiv"])
 
         st.markdown("---")
 
