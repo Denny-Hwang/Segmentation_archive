@@ -1,7 +1,11 @@
 """Code Analysis Viewer - Explore implementation details and code patterns."""
 
+import sys
 import streamlit as st
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from components.frontmatter import strip_frontmatter
 
 try:
     from pygments import highlight
@@ -28,7 +32,8 @@ def load_code_analyses() -> list[dict]:
         if md_file.name.startswith("_") or md_file.name == "README.md":
             continue
         try:
-            content = md_file.read_text(encoding="utf-8")
+            raw = md_file.read_text(encoding="utf-8")
+            content = strip_frontmatter(raw)
             analyses.append({
                 "name": md_file.stem.replace("_", " ").title(),
                 "content": content,

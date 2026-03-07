@@ -9,6 +9,7 @@ from pathlib import Path
 # Add explorer to path for component imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.paper_figures import render_paper_figures
+from components.frontmatter import strip_frontmatter
 
 st.set_page_config(page_title="Paper Reviews - Segmentation Archive", layout="wide")
 
@@ -18,55 +19,6 @@ REVIEW_DIRS = [
     ARCHIVE_ROOT / "03_transformer_segmentation",
     ARCHIVE_ROOT / "04_foundation_models",
 ]
-
-# Regex to strip YAML frontmatter (---\n...\n---) from raw markdown.
-# Handles optional BOM, leading whitespace, and \r\n line endings.
-_FRONTMATTER_RE = re.compile(
-    r"\A[\ufeff\s]*---[ \t]*\r?\n.*?\r?\n---[ \t]*\r?\n?", re.DOTALL
-)
-
-# Secondary pattern: strip orphaned YAML-like lines at the very start of
-# content (title: ...\ndate: ...\n...) that remain when a library strips
-# the --- delimiters but leaves the YAML body.
-_YAML_LINES_RE = re.compile(
-    r"\A([ \t]*\w[\w-]*[ \t]*:.*\r?\n)+", re.MULTILINE
-)
-
-
-def _strip_frontmatter(text: str) -> str:
-    """Remove YAML frontmatter block from markdown text.
-
-    Handles three cases:
-    1. Full frontmatter with --- delimiters
-    2. Orphaned YAML key-value lines at the start (no --- delimiters)
-    3. Clean content (no-op)
-    """
-    # Case 1: standard ---...--- frontmatter
-    cleaned = _FRONTMATTER_RE.sub("", text)
-    if cleaned != text:
-        return cleaned.lstrip("\r\n")
-
-    # Case 2: YAML lines without --- delimiters (library stripped them)
-    # Only strip if the first non-blank content looks like key: value
-    stripped = text.lstrip()
-    if stripped and re.match(r"\w[\w-]*\s*:", stripped):
-        # Find where the YAML-like block ends (first blank line or markdown heading)
-        lines = stripped.split("\n")
-        content_start = 0
-        for i, line in enumerate(lines):
-            s = line.strip()
-            if not s or s.startswith("#") or s.startswith("```"):
-                content_start = i
-                break
-            # If line doesn't look like yaml key: value or continuation, stop
-            if not re.match(r"(\w[\w-]*\s*:|- |\s+\w)", line):
-                content_start = i
-                break
-        else:
-            content_start = len(lines)
-        return "\n".join(lines[content_start:]).lstrip("\r\n")
-
-    return text.lstrip("\r\n")
 
 
 def _parse_markdown_file(file_path: Path) -> dict:
@@ -102,7 +54,8 @@ def _parse_markdown_file(file_path: Path) -> dict:
 
         meta["content"] = content.lstrip("\r\n")
     else:
-        meta["content"] = raw
+        # No --- delimiters found; use shared stripper as fallback
+        meta["content"] = strip_frontmatter(raw)
 
     return meta
 
@@ -194,7 +147,7 @@ def main():
             with cols[0]:
                 # Ensure content is clean of frontmatter
                 content = review.get("content", "")
-                content = _strip_frontmatter(content)
+                content = strip_frontmatter(content)
                 content_preview = content[:800]
                 st.markdown(content_preview)
                 if len(content) > 800:
