@@ -1,7 +1,7 @@
 ---
 title: "Adaptation Strategies for Foundation Segmentation Models"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [adaptation, fine-tuning, adapter, lora, parameter-efficient]
 difficulty: intermediate
 ---
@@ -10,86 +10,215 @@ difficulty: intermediate
 
 ## Overview
 
-Foundation segmentation models like SAM are trained on massive, diverse datasets to learn general visual features, but their performance on specialized domains (medical imaging, remote sensing, industrial inspection, camouflaged objects) often falls short of domain-specific models. Adaptation strategies bridge this gap by modifying the model's behavior to suit a target domain while leveraging the pretrained representations. The strategies range from full fine-tuning (updating all parameters) to extremely lightweight approaches (tuning only bias terms), with each offering different trade-offs between adaptation capacity, computational cost, data requirements, and preservation of the original model's capabilities.
+Foundation segmentation models like SAM are trained on broad data (SA-1B) and perform well on general natural images. However, adapting them to specialized domains (medical, remote sensing, industrial inspection, etc.) requires additional training. This document compares the major adaptation strategies: full fine-tuning, LoRA, bottleneck adapters, visual prompt tuning, and head-only fine-tuning.
 
-The choice of adaptation strategy is driven by practical constraints: available compute, training data volume, whether the original model's capabilities must be preserved, and the severity of the domain gap. This comparative analysis surveys the major strategies explored in the literature, with specific reference to how they have been applied to SAM and related foundation models.
+## Strategy Comparison Matrix
+
+| Strategy | Trainable Params | Training Cost | Performance | Forgetting Risk | Multi-Domain |
+|----------|-----------------|---------------|-------------|-----------------|-------------|
+| Full fine-tuning | 100% (~636M) | Very high | Highest | High | Separate models |
+| LoRA (rank 16) | ~1% (~6M) | Low | High | Low | Swappable weights |
+| Adapters (d=64) | ~1.5% (~10M) | Low | High | Very low | Swappable modules |
+| Prompt tuning | ~0.2% (~1.5M) | Very low | Moderate | Very low | Swappable tokens |
+| Head-only | ~0.6% (~4M) | Very low | Low-Moderate | None | Swappable heads |
 
 ## Full Fine-Tuning
 
-Full fine-tuning updates all model parameters on domain-specific data, allowing the entire feature hierarchy to adapt to the target domain. This is the approach taken by MedSAM, which fine-tunes all of SAM ViT-B's 91M parameters on 1.57M medical image-mask pairs. Full fine-tuning provides the highest adaptation capacity and typically achieves the best absolute performance, particularly when the domain gap is large (e.g., natural images to CT/MRI).
+### Method
 
-The primary advantages are: maximum flexibility to restructure feature representations, no architectural constraints on what can be learned, and straightforward implementation. The disadvantages are significant: high computational cost (typically requiring multiple GPUs for several days), risk of catastrophic forgetting (the model loses its ability to handle the original domain), large storage requirements (a separate copy of the full model for each domain), and potential overfitting when target domain data is limited. Full fine-tuning is best suited for building a dedicated model for a specific domain when sufficient data and compute are available.
+All parameters of the model (encoder + prompt encoder + decoder) are updated during training. This is the most straightforward adaptation approach.
 
-## Adapter-Based Tuning
+### When to Use
 
-Adapter tuning, as implemented in SAM-Adapter, inserts lightweight bottleneck modules into the frozen model's transformer blocks. Each adapter consists of a down-projection (d to r dimensions), nonlinear activation, and up-projection (r to d), with the output added residually to the original features. Only the adapter parameters and any task-specific heads are trained, while all original model parameters remain frozen.
+- Large domain-specific datasets available (>50K samples)
+- Maximum performance is required on the target domain
+- The adapted model does not need to retain performance on the original domain
+- Computational budget for training is not a constraint
 
-Adapter tuning offers an excellent balance of efficiency and performance. With bottleneck dimension r=64 in a ViT-B (d=768), each adapter adds approximately 100K parameters, totaling approximately 1.2M across 12 layers (1.3% of ViT-B). SAM-Adapter achieves 95-98% of full fine-tuning performance on tasks like camouflaged object detection and shadow detection. The frozen backbone enables multi-task deployment with shared weights and prevents catastrophic forgetting. The main limitation is that adapters cannot fundamentally restructure the feature representations when the domain gap is very large.
+### Implementation Details
 
-## LoRA and QLoRA
+- Learning rate: 1e-5 to 5e-5 (lower than training from scratch)
+- Warmup: 1-5% of total steps
+- Weight decay: 0.01-0.05
+- Training epochs: 10-50 depending on dataset size
 
-Low-Rank Adaptation (LoRA) modifies existing weight matrices rather than inserting new modules. For a weight matrix W of dimensions d x d, LoRA adds a low-rank perturbation: W' = W + BA, where B is d x r and A is r x d (r << d). This effectively constrains the weight update to a low-rank subspace, dramatically reducing trainable parameters. LoRA is typically applied to the query and value projection matrices in self-attention, though it can be applied to any linear layer.
+### Pros and Cons
 
-For SAM ViT-B with rank r=8, LoRA adds approximately 1.2M trainable parameters (comparable to adapters). Performance is generally within 1-2 points of full fine-tuning, similar to adapters. LoRA's advantage over adapters is that it modifies the attention mechanism directly, which can be beneficial for tasks requiring different attention patterns (e.g., attending to different spatial relationships in medical images). QLoRA extends this by quantizing the frozen weights to 4-bit precision, further reducing memory requirements during training.
+**Pros:**
+- Highest adaptation capacity
+- All layers adjust to the new domain
+- Straightforward implementation
 
-LoRA has been applied to SAM for medical imaging (SAMed), remote sensing (RSPrompter), and other specialized domains. Results are generally comparable to adapter-based approaches, with LoRA slightly outperforming on tasks requiring attention modification and adapters slightly outperforming on tasks requiring feature transformation.
+**Cons:**
+- Risk of catastrophic forgetting (model loses general capabilities)
+- Requires large datasets to avoid overfitting
+- Full model copy needed per domain (~2.5 GB per adaptation for ViT-H)
+- Long training time
 
-## Prompt Tuning
+## LoRA (Low-Rank Adaptation)
 
-Visual Prompt Tuning (VPT) prepends a set of learnable tokens to the input sequence of each transformer layer. These "prompt" tokens interact with the image tokens through the existing self-attention mechanism, indirectly modifying the model's behavior without changing any weights. VPT trains only the prompt tokens (typically 10-50 tokens per layer), resulting in extremely few trainable parameters (0.1-0.5% of the model).
+### Method
 
-For SAM adaptation, prompt tuning has been explored but with limited success. The fundamental limitation is that prompt tokens can only influence the model through attention, which provides weaker adaptation than directly modifying features (adapters) or weights (LoRA). On domains with large domain gaps (medical, camouflaged objects), VPT typically underperforms adapters and LoRA by 3-8 IoU points. VPT is most effective for mild domain shifts where the model's existing features are mostly adequate and only need slight reweighting.
+LoRA factorizes weight updates as low-rank matrices. For a weight matrix W in the attention layers, the adapted weight is W' = W + BA where B is D x r and A is r x D, with rank r << D.
+
+### Where to Apply
+
+Typically applied to the attention projection matrices in the ViT encoder:
+- Query projection (W_q)
+- Value projection (W_v)
+- Optionally: Key projection (W_k) and output projection (W_o)
+
+Applying LoRA to Q and V only is the most common and cost-effective configuration.
+
+### Rank Selection
+
+| Rank | Parameters | Typical Performance Impact |
+|------|-----------|---------------------------|
+| 1 | ~0.4M | Minimal adaptation, small domain shift only |
+| 4 | ~1.5M | Good for moderate domain shifts |
+| 8 | ~3M | Strong adaptation for most domains |
+| 16 | ~6M | Near full fine-tuning performance |
+| 32 | ~12M | Rarely needed; diminishing returns |
+
+### Key Advantage: Weight Merging
+
+At inference time, the LoRA matrices can be merged into the original weights: W' = W + BA. This adds zero inference overhead, making LoRA the fastest PEFT method at deployment.
+
+### Implementation
+
+```python
+# Pseudocode for LoRA applied to a linear layer
+class LoRALinear(nn.Module):
+    def __init__(self, original_linear, rank=8, alpha=16):
+        self.original = original_linear  # frozen
+        self.lora_A = nn.Linear(original_linear.in_features, rank, bias=False)
+        self.lora_B = nn.Linear(rank, original_linear.out_features, bias=False)
+        self.scaling = alpha / rank
+
+    def forward(self, x):
+        return self.original(x) + self.lora_B(self.lora_A(x)) * self.scaling
+```
+
+## Bottleneck Adapters
+
+### Method
+
+Small bottleneck MLP modules are inserted after the attention and FFN layers in each ViT block. The original weights are frozen.
+
+### Design Choices
+
+- **Bottleneck dimension:** 64-128 (vs. hidden dim 1280 for ViT-H)
+- **Activation:** ReLU or GELU
+- **Initialization:** Zero init for up-projection ensures no-op at start
+- **Scale factor:** Learned, initialized to 0.1
+
+### Key Advantage: Auxiliary Input Injection
+
+Unlike LoRA, adapters can incorporate additional input signals:
+- Depth maps for scene understanding
+- Edge maps for boundary refinement
+- Frequency features for camouflage detection
+- Domain-specific prior information
+
+This makes adapters particularly suitable for tasks where auxiliary information is available.
+
+### Comparison to LoRA in Practice
+
+On medical imaging benchmarks (adapting SAM ViT-B):
+
+| Method | Params | Liver DSC | Kidney DSC | Brain DSC |
+|--------|--------|-----------|------------|-----------|
+| Full fine-tune | 91M | 0.91 | 0.89 | 0.83 |
+| LoRA r=8 | 3M | 0.89 | 0.87 | 0.80 |
+| Adapter d=64 | 8M | 0.90 | 0.88 | 0.81 |
+| Head-only | 4M | 0.84 | 0.82 | 0.75 |
+
+Adapters slightly outperform LoRA at the cost of more parameters and inference overhead.
+
+## Visual Prompt Tuning (VPT)
+
+### Method
+
+Learnable tokens are prepended to the input sequence of each ViT layer. These tokens interact with the image tokens through self-attention, effectively steering the model's computation.
+
+### Variants
+
+- **VPT-Shallow:** Learnable tokens added only to the first layer
+- **VPT-Deep:** Learnable tokens added to every layer (more effective, standard choice)
+
+### Token Count
+
+Typical configuration: 10-50 tokens per layer
+- 10 tokens x 32 layers x 1280 dim = ~0.4M parameters
+- 50 tokens x 32 layers x 1280 dim = ~2M parameters
+
+### Limitations
+
+- Cannot directly modify the feature computation; only influences it through attention
+- Performance gap of 3-7 points compared to adapters/LoRA on large domain shifts
+- More effective for subtle distribution shifts where the pretrained features are largely appropriate
 
 ## Head-Only Fine-Tuning
 
-The simplest adaptation strategy is to freeze the entire encoder and train only the decoder/head. For SAM, this means training only the mask decoder's 4M parameters while keeping the 91-632M encoder parameters frozen. This approach is extremely computationally efficient and cannot cause catastrophic forgetting in the encoder, but its adaptation capacity is limited because the encoder features remain unchanged.
+### Method
 
-Head-only fine-tuning recovers approximately 40-60% of the full fine-tuning improvement, depending on the domain gap. For small domain shifts (e.g., from COCO to a similar natural image dataset), head-only fine-tuning may be sufficient. For large domain shifts (natural images to medical imaging), it is clearly inadequate because the encoder's features are not discriminative for the target domain's structures. Head-only fine-tuning is primarily useful as a lower bound for benchmarking more sophisticated adaptation strategies.
+Only the mask decoder (and optionally the prompt encoder) is trained. The image encoder remains completely frozen.
 
-## Domain-Specific Pretraining
+### When This Works
 
-An alternative to fine-tuning the supervised model is to perform additional self-supervised pretraining on unlabeled domain-specific data before supervised fine-tuning. For SAM, this would involve running additional MAE pretraining on medical images (or other domain images) before the supervised segmentation training. This approach can improve the encoder's feature representations for the target domain without requiring labeled data.
+- The target domain is visually similar to the pretraining data
+- The encoder features are already suitable (e.g., natural images with different object categories)
+- Very limited training data is available (< 1K samples)
+- Training compute is extremely constrained
 
-MedSAM's approach is a variant of this strategy: it performs supervised fine-tuning on a large medical dataset, which simultaneously adapts the encoder's features and trains the decoder. The distinction is that domain-specific pretraining uses self-supervised objectives (MAE, contrastive learning) on unlabeled data, while MedSAM uses supervised segmentation objectives on labeled data. Domain-specific pretraining is particularly valuable when large amounts of unlabeled domain data are available but labeled data is scarce.
+### When This Fails
 
-## Comparison of Strategies
+- Large domain gap (medical, satellite, microscopy)
+- The encoder produces features that are fundamentally misaligned with the target domain
+- Fine-grained boundary accuracy is critical (frozen encoder may not capture domain-specific edges)
 
-| Strategy | Trainable Params | Performance | Data Required | Compute Cost |
-|----------|-----------------|-------------|---------------|--------------|
-| Full Fine-Tuning | 100% (91-632M) | Best (100% baseline) | Large (10K-1M samples) | Very high (multi-GPU, days) |
-| Adapter | 2-5% (2-5M) | 95-98% of full FT | Moderate (1K-10K) | Low (single GPU, hours) |
-| LoRA | 1-3% (1-3M) | 93-97% of full FT | Moderate (1K-10K) | Low (single GPU, hours) |
-| Prompt Tuning | 0.1-0.5% (0.1-0.5M) | 80-90% of full FT | Small (100-1K) | Very low (single GPU, 1-2h) |
-| Head-Only | 4-5% (4M decoder) | 50-70% of full FT | Small-Moderate (100-10K) | Low (single GPU, hours) |
+## Combined Strategies
 
-## Best Practices
+### LoRA + Head Fine-Tuning
 
-Selecting an adaptation strategy should follow a decision tree based on practical constraints:
+Apply LoRA to the encoder and fine-tune the decoder fully. This is a common effective combination that:
+- Adapts encoder features with minimal parameter overhead
+- Allows the decoder maximum flexibility to use the adapted features
+- Typically performs within 1-2 points of full fine-tuning
 
-1. **If maximum performance is critical and compute/data are abundant**: Use full fine-tuning. This is the right choice for building a production medical segmentation system or a dedicated domain model.
+### Adapters + Frozen Decoder
 
-2. **If the model must serve multiple domains or preserve original capabilities**: Use adapter-based tuning or LoRA. These methods allow sharing a frozen backbone across tasks with minimal per-task storage overhead.
+Use adapters in the encoder but keep the decoder frozen. This tests whether the adaptation is purely in the feature space:
+- Works when the decoder architecture is general enough
+- Limits adaptation if the decoder has task-specific biases
 
-3. **If training data is very limited (< 500 samples)**: Prefer adapter or LoRA over full fine-tuning, as the smaller parameter count reduces overfitting risk. Consider also using data augmentation and self-training.
+### Progressive Unfreezing
 
-4. **If the domain gap is small (target domain is visually similar to natural images)**: Head-only fine-tuning or prompt tuning may suffice, with adapters providing diminishing returns over simpler methods.
+Start with head-only fine-tuning, then gradually unfreeze encoder layers from top to bottom:
+1. Epoch 1-5: Only decoder
+2. Epoch 5-10: Decoder + last 8 encoder blocks
+3. Epoch 10-20: Decoder + all encoder blocks
 
-5. **If the domain gap is very large (target domain is visually dissimilar)**: Full fine-tuning is strongly preferred, as parameter-efficient methods may lack the capacity to restructure features sufficiently.
+This approach stabilizes training and often outperforms direct full fine-tuning on small datasets.
 
-6. **If rapid experimentation is needed**: Start with adapters (fast training, good performance) to establish a baseline, then consider full fine-tuning only if the adapter performance is inadequate.
+## Decision Guide
 
-## Open Research Questions
+```
+Is the domain gap large?
+├── No → Head-only fine-tuning or LoRA rank 4
+└── Yes
+    ├── Large dataset (>50K)? → Full fine-tuning
+    └── Small dataset (<50K)?
+        ├── Need auxiliary inputs? → Adapters
+        ├── Inference speed critical? → LoRA (mergeable)
+        └── Multiple domains? → Adapters (swappable)
+```
 
-Several important questions remain unresolved in foundation model adaptation for segmentation:
+## Practical Tips
 
-1. **Optimal adaptation granularity**: Should different encoder layers be adapted with different strategies (e.g., freeze early layers, use LoRA for middle layers, use adapters for later layers)? Layer-wise adaptation strategies are largely unexplored.
-
-2. **Continual adaptation**: How can a model be progressively adapted to new domains without forgetting previous adaptations? Current methods require separate adapter sets per domain, but a unified continual learning approach would be more practical.
-
-3. **Task-aware adaptation**: Should the adaptation strategy differ for different output tasks (e.g., boundary-focused adaptation for instance segmentation versus region-focused adaptation for semantic segmentation)?
-
-4. **Combining adaptation methods**: Can adapters, LoRA, and prompt tuning be combined for superior performance? Initial explorations suggest marginal benefits, but the search space is large.
-
-5. **Theoretical understanding**: Why do parameter-efficient methods work so well (95%+ of full fine-tuning performance with 2% of parameters)? Is there a principled way to determine the optimal number of adapter/LoRA parameters for a given domain gap?
-
-6. **Self-supervised domain adaptation**: Can unlabeled target domain data be leveraged more effectively through domain-adaptive pretraining objectives? The interaction between self-supervised pretraining and supervised fine-tuning is not well understood.
+1. **Always start with head-only** as a baseline; it reveals how much the pretrained features already help
+2. **LoRA rank 8 on Q and V** is a strong default that works for most domain shifts
+3. **Learning rate matters more than method choice** for small performance differences
+4. **Validate on a held-out set from the target domain** to detect overfitting early
+5. **Combine data augmentation** with PEFT methods; they are complementary
+6. **Monitor training loss and validation metrics together** to catch overfitting (common with small datasets and high-capacity methods)

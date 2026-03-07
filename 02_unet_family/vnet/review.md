@@ -1,100 +1,48 @@
 ---
 title: "V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation"
 date: 2025-03-06
-status: planned
-tags:
-  - 3d-segmentation
-  - volumetric
-  - dice-loss
-  - medical-imaging
-difficulty: beginner
+status: complete
+tags: [v-net, 3d-segmentation, dice-loss, volumetric]
+difficulty: intermediate
 ---
 
-# V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
+# V-Net
 
 ## Meta Information
 
-| Field          | Details |
-|----------------|---------|
-| **Paper Title**   | V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation |
-| **Authors**       | Fausto Milletari, Nassir Navab, Seyed-Ahmad Ahmadi |
-| **Year**          | 2016 |
-| **Venue**         | 3DV 2016 |
-| **ArXiv ID**      | [1606.04797](https://arxiv.org/abs/1606.04797) |
+| Field | Value |
+|-------|-------|
+| **Paper Title** | V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation |
+| **Authors** | Milletari, F., Navab, N., Ahmadi, S. |
+| **Year** | 2016 |
+| **Venue** | 3DV |
 
 ## One-Line Summary
 
-V-Net extends the U-Net architecture to 3D volumetric data using 3D convolutions and residual connections, and introduces the Dice loss function as a direct optimization of the overlap between predicted and ground truth segmentation volumes.
-
----
-
-## Motivation and Problem Statement
-
-_TODO: Describe the challenge of volumetric segmentation in medical imaging and class imbalance in 3D volumes._
-
----
+V-Net introduces a 3D volumetric CNN for medical image segmentation with residual connections and the first use of Dice loss as a training objective.
 
 ## Key Contributions
 
-- _TODO: 3D convolutional encoder-decoder architecture_
-- _TODO: Residual connections within each stage_
-- _TODO: Dice loss for handling class imbalance_
-- _TODO: Application to prostate MRI segmentation_
+1. **First 3D volumetric segmentation CNN** with an encoder-decoder architecture processing entire volumes
+2. **Dice loss function** — first paper to propose training with the Dice coefficient directly as the loss, addressing the severe class imbalance problem in medical segmentation
+3. **Residual connections** within each encoder/decoder stage (input added to output), improving gradient flow in 3D networks
 
----
+## Architecture
 
-## Architecture Overview
+V-Net processes 3D volumes (128×128×64 voxels) through an encoder with 5 stages using 5×5×5 convolutions, followed by a decoder with upsampling via transposed convolutions. Each stage contains 1-3 convolutional layers with residual connections (stage input added to stage output). Downsampling uses 2×2×2 convolutions with stride 2. The network outputs a voxel-wise probability map.
 
-_TODO: Describe the V-shaped 3D encoder-decoder. Reference [3d_conv_explained.md](./3d_conv_explained.md)._
+## Dice Loss
 
----
+The Dice loss was introduced to handle extreme class imbalance (prostate <5% of volume):
 
-## Method Details
+`L_Dice = 1 - (2 Σ p_i g_i) / (Σ p_i² + Σ g_i²)`
 
-### 3D Convolutions
+This formulation is differentiable and inherently handles class imbalance since it measures overlap between prediction and ground truth regardless of the background size. It became the standard loss for medical segmentation, often combined with cross-entropy.
 
-_TODO: Explain the transition from 2D to 3D convolutions._
+## Results
 
-### Residual Connections
+Evaluated on the PROMISE12 prostate MRI segmentation challenge. Achieved Dice score of 86.9% on the test set, competitive with the challenge leaders. The Dice loss was shown to significantly outperform weighted cross-entropy on this imbalanced dataset.
 
-_TODO: How V-Net incorporates residual learning within each encoder/decoder stage._
+## Impact
 
-### Dice Loss
-
-_TODO: Formulation and advantages over cross-entropy for imbalanced volumes._
-
----
-
-## Experimental Results
-
-| Dataset | Metric | V-Net Result | Notes |
-|---------|--------|-------------|-------|
-| PROMISE12 (Prostate MRI) | Dice | _TODO_ | _TODO_ |
-
----
-
-## Strengths
-
-- _TODO_
-
----
-
-## Weaknesses and Limitations
-
-- _TODO_
-
----
-
-## Connections to Other Work
-
-| Related Paper | Relationship |
-|---------------|-------------|
-| U-Net (Ronneberger et al., 2015) | 2D predecessor |
-| 3D U-Net (Cicek et al., 2016) | Concurrent 3D extension |
-| nnU-Net (Isensee et al., 2021) | Framework that builds on V-Net concepts |
-
----
-
-## Open Questions
-
-- _TODO_
+V-Net established key paradigms: (1) 3D volumetric processing for medical images; (2) Dice loss as the standard training objective; (3) residual connections for deep 3D networks. These contributions influenced virtually all subsequent medical segmentation architectures.

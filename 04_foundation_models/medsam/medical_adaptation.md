@@ -1,7 +1,7 @@
 ---
 title: "Medical Domain Adaptation in MedSAM"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [medical-adaptation, fine-tuning, domain-shift, transfer-learning]
 difficulty: intermediate
 ---
@@ -10,50 +10,151 @@ difficulty: intermediate
 
 ## Overview
 
-Adapting SAM to the medical imaging domain requires bridging a substantial visual domain gap between natural photographs and clinical images. Medical images have fundamentally different characteristics: low contrast between adjacent structures, modality-specific noise patterns (e.g., speckle noise in ultrasound), vastly different spatial resolutions (from sub-micron pathology to millimeter-scale CT), and structures whose significance depends on domain knowledge rather than visual salience. MedSAM addresses this gap through end-to-end fine-tuning on a large-scale, multi-modality medical dataset, adapting all of SAM's learned representations to the medical domain while preserving the general feature extraction capabilities learned from natural images.
+Adapting foundation segmentation models like SAM to medical imaging involves bridging a substantial domain gap. Natural images and medical images differ in fundamental ways, from pixel statistics to semantic content. This document covers the challenges of this domain shift, the strategies used in MedSAM and related work, and practical considerations for medical adaptation.
 
-## Domain Gap Between Natural and Medical Images
+## The Domain Gap
 
-The domain gap between natural and medical images manifests across several dimensions. First, natural images use RGB color channels optimized for human vision, while medical images use modality-specific intensity representations: CT images encode Hounsfield units reflecting tissue density, MRI signal intensities depend on tissue relaxation properties (T1, T2), and ultrasound images display acoustic reflectance patterns. Second, objects in natural images are typically well-defined with clear edges against contrasting backgrounds, while medical structures often have subtle, low-contrast boundaries (e.g., a tumor boundary in soft tissue may differ by only 5-10 Hounsfield units from surrounding tissue).
+### Visual Differences
 
-Third, the visual priors learned from natural images (that objects are roughly convex, have consistent texture, and are visually salient) do not hold in medical imaging, where structures can be highly irregular, have heterogeneous internal texture, and be visually subtle. Quantitative analysis shows that SAM's image encoder activations on medical images have significantly different statistical distributions compared to natural images: the mean activation magnitude is approximately 30% lower, and the spatial attention patterns are less focused, suggesting that the encoder's learned features are less discriminative for medical content.
+| Property | Natural Images | Medical Images |
+|----------|---------------|----------------|
+| Color channels | RGB (3 channels) | Often grayscale (1 channel) or multi-modal |
+| Dynamic range | 8-bit (0-255) | 12-16 bit (CT: -1000 to +3000 HU) |
+| Contrast | High, varied | Often low, tissue-specific |
+| Textures | Diverse, distinctive | Subtle, homogeneous |
+| Boundaries | Sharp edges | Gradual transitions |
+| Objects | Everyday items | Organs, lesions, anatomical structures |
+| Background | Varied scenes | Black (CT/MRI) or uniform |
 
-## Fine-Tuning Approach
+### Statistical Distribution Shift
 
-MedSAM fine-tunes all components of SAM (image encoder, prompt encoder, and mask decoder) end-to-end on medical data. The ViT-B backbone is used rather than ViT-H to balance performance and computational feasibility. All layers are unfrozen, allowing the model to adapt its learned representations at every level of the feature hierarchy. The learning rate is set to 1e-4 with cosine decay, and training proceeds for 100 epochs with a batch size of 16 on 4 A100 GPUs, requiring approximately 5 days of training.
+SAM was trained on SA-1B, which contains virtually no medical images. The feature distributions learned by SAM's ViT encoder are therefore misaligned with medical image characteristics:
 
-The decision to fine-tune all parameters (rather than using parameter-efficient methods like LoRA or adapters) was motivated by the severity of the domain gap. Experiments showed that adapter-only or decoder-only fine-tuning recovered approximately 60-70% of the full fine-tuning improvement, suggesting that the image encoder's representations need substantial modification for medical images. However, full fine-tuning risks catastrophic forgetting of natural image features; MedSAM mitigates this by using a low learning rate and gradual warm-up, preserving useful low-level features while adapting high-level representations.
+- Low-level features (edges, textures) are calibrated for natural image statistics
+- Mid-level features (parts, shapes) encode object categories absent from medical imaging
+- High-level features (object semantics) have no medical knowledge
+
+Empirically, this results in SAM's zero-shot performance dropping by 15-35 DSC points on medical benchmarks compared to natural image benchmarks.
+
+## Fine-Tuning Strategies
+
+### Full Fine-Tuning (MedSAM Approach)
+
+MedSAM fine-tunes all parameters of the SAM architecture (encoder + prompt encoder + decoder) on medical data.
+
+**Advantages:**
+- Maximum capacity for learning domain-specific features
+- All layers can adapt to the new distribution
+- Straightforward implementation
+
+**Disadvantages:**
+- Requires large amounts of medical training data to avoid overfitting
+- Computationally expensive (full backpropagation through ViT)
+- Risk of catastrophic forgetting of natural image capabilities
+- Large storage footprint (one full model copy per adaptation)
+
+### Head-Only Fine-Tuning
+
+Only the mask decoder is fine-tuned while the image encoder remains frozen.
+
+**Advantages:**
+- Fast training (fewer parameters to update)
+- Lower risk of overfitting on small datasets
+- Preserves the encoder's general visual features
+
+**Disadvantages:**
+- Limited adaptation capacity since the encoder features remain fixed
+- If the encoder features are poorly suited to medical data, the decoder cannot compensate
+- Typically 5-10 DSC points below full fine-tuning
+
+### Parameter-Efficient Fine-Tuning (PEFT)
+
+Methods like LoRA and adapters modify only a small subset of parameters.
+
+**Approaches:**
+- **LoRA:** Low-rank updates to attention weight matrices, typically rank 4-16
+- **Adapters:** Bottleneck layers inserted after each transformer block
+- **Prompt tuning:** Learnable tokens prepended to the input sequence
+
+These approaches train only 1-5% of the total parameters while achieving 80-95% of full fine-tuning performance. They are particularly valuable when:
+- Medical data is limited (< 10K samples)
+- Multiple domain-specific adaptations are needed simultaneously
+- Deployment requires a single base model with swappable adapters
 
 ## Multi-Modality Training
 
-Training a single model across 10 imaging modalities presents challenges in data balancing and representation learning. Each modality has different visual characteristics, so naive uniform sampling would lead to the model being dominated by whichever modality has the most training data (CT, with approximately 40% of samples). MedSAM addresses this through proportional sampling with a modality-mixing strategy: within each training batch, samples are drawn from multiple modalities to ensure the model sees diverse inputs throughout training.
+### Challenge
 
-The shared encoder must learn features useful for modalities as different as high-resolution pathology (where texture patterns at cellular scale are informative) and CT (where intensity values and anatomical context are key). Remarkably, the model learns to produce useful representations for all modalities simultaneously, suggesting that certain mid-level visual features (edges, boundaries, region homogeneity) are shared across modalities. However, performance on each modality is lower than what a modality-specific model could achieve: a CT-only fine-tuned SAM achieves approximately 2-3 dice points higher than MedSAM on CT benchmarks.
+Medical imaging spans fundamentally different modalities (CT, MRI, ultrasound, dermoscopy, etc.) with distinct physical imaging principles and visual characteristics. A single model must handle this diversity.
 
-## Data Curation and Preprocessing
+### MedSAM's Approach
 
-The training dataset was curated from over 30 publicly available medical imaging datasets, requiring extensive preprocessing to standardize formats. 3D volumes (CT, MRI) were sliced along the axial plane into individual 2D images, with empty slices (containing no annotated structures) removed. Images were resized to 1024x1024 pixels to match SAM's input resolution. Intensity normalization was applied per-modality: CT images were windowed to clinically relevant Hounsfield unit ranges (e.g., soft tissue window -175 to 250 HU), MRI images were normalized to zero mean and unit variance per volume, and other modalities were normalized to [0, 1] range.
+MedSAM trains on all modalities simultaneously without modality-specific components:
 
-Ground truth masks were converted from various annotation formats (NIfTI, DICOM-SEG, polygon annotations) into binary mask format. For multi-class annotations, each class was treated as a separate binary mask with its own bounding box prompt. This means a single image with liver and kidney annotations would generate two training samples, each with a different box prompt and binary mask target. Data augmentation included random horizontal and vertical flipping, rotation (up to 15 degrees), and elastic deformation.
+1. All images are converted to 3-channel format (grayscale replicated or modality-specific normalization)
+2. Intensity values are normalized to [0, 255] range per modality convention
+3. The model learns shared representations across modalities
+4. No modality indicator is provided to the model; it must infer the modality from visual content
 
-## Impact of Adaptation on Performance
+### Alternative: Modality-Specific Heads
 
-Fine-tuning improved SAM's medical segmentation performance dramatically. On internal validation, MedSAM achieved 87.2% mean dice compared to 62.4% for zero-shot SAM -- an improvement of approximately 25 dice points. The improvement varied by modality: CT and MRI saw the largest gains (28-32 dice points) because they are most dissimilar from natural images. Dermoscopy and endoscopy, which share more visual characteristics with natural photos, showed smaller but still significant gains (15-18 points).
+Some approaches use a shared encoder with modality-specific decoder heads:
+- A routing mechanism selects the appropriate head based on modality
+- Each head specializes in the characteristics of its modality
+- The shared encoder still learns general features
 
-Compared to training a ViT-B segmentation model from scratch on the same medical dataset, MedSAM achieved approximately 4 dice points higher performance, demonstrating that pre-training on SA-1B provides useful features even for the medical domain. The benefit of pre-training was most pronounced in low-data regimes: when only 10% of the medical training data was used, the pre-trained model outperformed the scratch model by 8 dice points, suggesting that SAM's pre-training provides strong regularization for medical segmentation.
+This approach can outperform a single head but increases model complexity and requires modality labels at inference time.
 
-## Generalization to Unseen Modalities
+## 3D Volume Handling
 
-MedSAM's generalization was tested on 19 external datasets containing modalities, anatomies, or imaging protocols not present in the training set. On these unseen domains, MedSAM achieved 78.9% mean dice -- lower than the 87.2% on internal benchmarks but substantially higher than vanilla SAM's 55.1%. The generalization gap was smallest for modalities similar to those in training (e.g., a different MRI sequence or a different CT scanner) and largest for truly novel visual domains (e.g., intraoperative ultrasound or specialized microscopy).
+### The 2D Slice Approach
 
-These results suggest that MedSAM learns generalizable medical image features rather than simply memorizing the training distribution. However, a persistent 8-10 dice point gap between in-distribution and out-of-distribution performance indicates that further domain adaptation (either through additional fine-tuning on target-domain data or through domain-agnostic training strategies) is needed for clinical deployment on novel modalities.
+Most SAM adaptations (including MedSAM) process 3D medical volumes (CT, MRI) as stacks of 2D slices:
 
-## Comparison with Other Adaptation Methods
+1. Each slice is treated as an independent image
+2. Bounding boxes are computed per slice (using the 3D ground truth projected onto each slice)
+3. No inter-slice consistency is enforced during inference
 
-Full fine-tuning (MedSAM's approach) achieves the highest absolute performance but requires the most computational resources and training data. Adapter-based tuning (as in SAM-Adapter) trains only 2-5% of parameters, achieving approximately 80-85% of full fine-tuning performance with significantly less compute. LoRA adaptation of SAM (explored in concurrent works) trains approximately 1-2% of parameters and achieves similar performance to adapters. Head-only fine-tuning (freezing the encoder and training only the decoder) is the most efficient but recovers only about 50% of the full fine-tuning improvement.
+**Limitation:** This ignores valuable volumetric context. Adjacent slices contain highly correlated information that could improve segmentation accuracy and consistency.
 
-The choice of adaptation strategy depends on the use case. For building a general-purpose medical segmentation tool (MedSAM's goal), full fine-tuning is justified because the one-time training cost is amortized across all future users. For adapting to a specific clinical task with limited data (e.g., a rare tumor type), parameter-efficient methods like adapters or LoRA are more appropriate because they reduce overfitting risk and training requirements.
+### Volumetric Extensions
 
-## Implementation Notes
+Subsequent works (including MedSAM-2) address this by:
+- Treating volume slices as video frames and using temporal propagation
+- Adding 3D convolutional layers to the encoder
+- Post-processing with 3D connected component analysis
 
-MedSAM is publicly available through GitHub and Hugging Face, with pre-trained weights for direct inference. The inference pipeline accepts a medical image (any modality) and a bounding box prompt, producing a binary segmentation mask. Input preprocessing (intensity normalization, resizing to 1024x1024) is handled by the provided code. Inference takes approximately 50ms per image on an A100 GPU. For 3D volumes, slices must be processed independently and then stacked, as MedSAM does not incorporate inter-slice context. The model can be further fine-tuned on task-specific data using the provided training scripts, which support custom datasets with minimal configuration.
+## Practical Considerations for Medical Adaptation
+
+### Data Requirements
+
+| Strategy | Minimum Samples | Recommended |
+|----------|----------------|-------------|
+| Zero-shot | 0 | N/A |
+| Head-only fine-tuning | ~500 | ~2,000 |
+| LoRA/Adapter | ~1,000 | ~5,000 |
+| Full fine-tuning | ~10,000 | ~100,000+ |
+
+### Preprocessing Pipeline
+
+Medical images require careful preprocessing before being fed to SAM-based models:
+1. **Window/level adjustment** (CT): Map relevant HU range to [0, 255]
+2. **Intensity normalization** (MRI): Z-score or percentile-based normalization
+3. **Resize:** Scale to 1024x1024 (SAM's expected input size)
+4. **Channel replication:** Convert single-channel to 3-channel if needed
+
+### Evaluation Metrics
+
+Medical segmentation uses specific metrics:
+- **Dice Similarity Coefficient (DSC):** Overlap between prediction and ground truth
+- **Normalized Surface Distance (NSD):** Boundary accuracy within a tolerance
+- **Hausdorff Distance (HD95):** Worst-case boundary error at 95th percentile
+- These differ from COCO-style metrics (AP, AR) used in natural image evaluation
+
+## Open Challenges
+
+1. **Annotation scarcity:** Medical annotations require expert radiologists, making large datasets expensive
+2. **Label noise:** Inter-annotator variability in medical imaging is high (10-20% disagreement)
+3. **Rare conditions:** Uncommon pathologies have very few training samples
+4. **Regulatory requirements:** Clinical deployment requires validation beyond standard benchmarks
+5. **Privacy constraints:** Medical data cannot be freely shared, limiting dataset creation

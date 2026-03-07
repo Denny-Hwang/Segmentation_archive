@@ -1,112 +1,42 @@
 ---
-title: "U-Net as Backbone in Denoising Diffusion Probabilistic Models"
+title: "U-Net in Diffusion Models: From Segmentation to Generation"
 date: 2025-03-06
-status: planned
-tags:
-  - diffusion-models
-  - denoising
-  - generative
-  - latent-diffusion
-  - stable-diffusion
+status: complete
+tags: [diffusion, u-net, ddpm, stable-diffusion, generative]
 difficulty: advanced
 ---
 
-# U-Net as Backbone in Denoising Diffusion Probabilistic Models
+# U-Net in Diffusion Models
 
-## Meta Information
+## Overview
 
-| Field          | Details |
-|----------------|---------|
-| **Paper Title(s)** | Denoising Diffusion Probabilistic Models (DDPM); High-Resolution Image Synthesis with Latent Diffusion Models (LDM) |
-| **Authors**       | Jonathan Ho, Ajay Jain, Pieter Abbeel (DDPM); Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, Bjorn Ommer (LDM) |
-| **Year**          | 2020 (DDPM), 2022 (LDM/Stable Diffusion) |
-| **Venue**         | NeurIPS 2020 (DDPM); CVPR 2022 (LDM) |
-| **ArXiv ID**      | [2006.11239](https://arxiv.org/abs/2006.11239) (DDPM); [2112.10752](https://arxiv.org/abs/2112.10752) (LDM) |
+The U-Net architecture, originally designed for biomedical image segmentation, became the backbone of modern diffusion models for image generation. This unexpected cross-pollination demonstrates U-Net's versatility: its encoder-decoder structure with skip connections is ideal for the denoising task at the core of diffusion models.
 
-## One-Line Summary
+## From Segmentation to Generation
 
-The U-Net architecture serves as the denoising backbone in diffusion models, predicting noise at each timestep through an encoder-decoder structure augmented with self-attention, cross-attention (for conditioning), and timestep embeddings -- far removed from its biomedical segmentation origins but leveraging the same multi-scale skip connection design.
+The connection between segmentation and diffusion U-Nets lies in the per-pixel prediction task. Segmentation U-Net predicts class labels per pixel. Diffusion U-Net predicts noise per pixel. Both require: (1) multi-scale feature extraction (encoder), (2) spatial detail preservation (skip connections), and (3) pixel-wise output generation (decoder). The U-Net's ability to combine global context with local detail makes it ideal for both tasks.
 
----
+## Evolution
 
-## Motivation and Problem Statement
+1. **DDPM (Ho et al., 2020)**: First successful use of U-Net for diffusion. Simple U-Net with residual blocks, group normalization, self-attention at 16×16 resolution, sinusoidal time embedding.
+2. **Improved DDPM / ADM (Dhariwal & Nichol, 2021)**: Deeper U-Net with attention at multiple resolutions, classifier guidance. Beat GANs on ImageNet.
+3. **Latent Diffusion / Stable Diffusion (Rombach et al., 2022)**: U-Net operates in latent space (64×64) instead of pixel space, adding cross-attention to text embeddings via CLIP.
+4. **SDXL**: Larger U-Net with more attention layers, operating at higher latent resolution.
 
-_TODO: Describe how diffusion models need a network that can predict noise at multiple scales and why the U-Net's multi-resolution design is naturally suited for this task._
-
----
-
-## Key Contributions
-
-- _TODO: U-Net as the epsilon-predictor in DDPM_
-- _TODO: Addition of self-attention and cross-attention layers_
-- _TODO: Timestep conditioning via sinusoidal embeddings_
-- _TODO: Latent-space diffusion (LDM) for efficiency_
-
----
-
-## Architecture Overview
-
-_TODO: Describe the modified U-Net used in diffusion models. Reference [stable_diffusion_unet.md](./stable_diffusion_unet.md)._
-
----
-
-## Method Details
-
-### Differences from Segmentation U-Net
+## Key Architectural Differences from Segmentation U-Net
 
 | Feature | Segmentation U-Net | Diffusion U-Net |
 |---------|-------------------|-----------------|
-| Input | Image | Noisy image/latent + timestep |
-| Output | Segmentation mask | Predicted noise |
-| Attention | None or simple gates | Self-attention + cross-attention |
-| Conditioning | None | Text/class via cross-attention |
+| Input | Image | Noisy image + time step |
+| Output | Class probabilities | Predicted noise |
+| Time conditioning | None | Sinusoidal embedding → AdaGN/AdaLN |
+| Text conditioning | None | Cross-attention to CLIP features |
+| Attention | None or minimal | Self-attention at multiple scales |
 | Skip connections | Concatenation | Concatenation (same) |
+| Normalization | BatchNorm | GroupNorm (timestep-adaptive) |
 
-### Timestep Embedding
+## Why U-Net Works for Diffusion
 
-_TODO: Sinusoidal positional encoding of the diffusion timestep, injected via FiLM or addition._
-
-### Self-Attention and Cross-Attention
-
-_TODO: Where attention layers are placed in the U-Net and what they attend to._
-
-### Latent Diffusion
-
-_TODO: Operating in the latent space of a VAE for computational efficiency._
-
----
-
-## Experimental Results
-
-_TODO: Image generation quality metrics (FID, IS) are outside standard segmentation metrics._
-
----
-
-## Strengths
-
-- _TODO_
-
----
-
-## Weaknesses and Limitations
-
-- _TODO_
-
----
-
-## Connections to Other Work
-
-| Related Paper | Relationship |
-|---------------|-------------|
-| U-Net (Ronneberger et al., 2015) | Original architecture |
-| Attention U-Net (Oktay et al., 2018) | Attention in U-Net (segmentation context) |
-| DDPM (Ho et al., 2020) | Introduced diffusion with U-Net backbone |
-| Stable Diffusion (Rombach et al., 2022) | Latent diffusion with conditioned U-Net |
-| DiT (Peebles & Xie, 2023) | Transformer replacing U-Net in diffusion |
-| FreeU (Si et al., 2023) | Feature reweighting in diffusion U-Net |
-
----
-
-## Open Questions
-
-- _TODO: Will transformers (DiT) fully replace U-Net in diffusion models?_
+1. **Multi-scale processing**: The encoder captures global structure, decoder adds local details — matching the coarse-to-fine nature of the denoising process
+2. **Skip connections**: Preserve fine details that would otherwise be lost in the bottleneck — critical for high-quality image generation
+3. **Symmetric design**: The output matches the input resolution, natural for the noise prediction (input = noisy image, output = predicted noise, same spatial dimensions)

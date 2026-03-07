@@ -1,7 +1,7 @@
 ---
 title: "Streaming Memory Architecture in SAM 2"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [streaming-memory, memory-attention, temporal, video]
 difficulty: advanced
 ---
@@ -10,50 +10,166 @@ difficulty: advanced
 
 ## Overview
 
-The streaming memory architecture is the core innovation that enables SAM 2 to extend promptable segmentation from images to video. It works by maintaining a bounded memory bank of past frame representations that condition the processing of each new frame. As each frame is processed, the image encoder extracts features, the memory attention module integrates information from stored memories, and the mask decoder produces predictions. The current frame's features and predicted mask are then compressed into a memory token and added to the memory bank. This design allows SAM 2 to process arbitrarily long videos with constant per-frame computational cost, as the memory bank never exceeds a fixed size.
-
-## Memory Bank Design
-
-The memory bank is a fixed-capacity buffer that stores two types of memory: recent memories and prompted memories. Recent memories follow a FIFO (first-in, first-out) policy with a capacity of 6 frames, meaning that as new frames are processed, the oldest unprompted memories are discarded. Prompted memories -- frames on which the user provided an explicit prompt (click, box, or mask) -- are stored separately with a capacity of 2 and are never evicted by the FIFO policy. This ensures that the model always retains the user's explicit guidance even in very long videos.
-
-Each memory entry consists of a set of spatial memory tokens (at the feature map resolution, typically 64x64) and a compact object pointer token (a single 256-dimensional vector summarizing the object's appearance). The total memory footprint per frame is approximately 0.5 MB, making the full memory bank (8 frames maximum) consume roughly 4 MB -- negligible compared to the model weights and intermediate activations.
+The streaming memory architecture is the central technical contribution of SAM 2. It enables the model to process arbitrarily long videos with bounded memory and computational cost per frame. The architecture consists of three components: a memory encoder, a memory bank, and a memory attention module.
 
 ## Memory Encoder
 
-The memory encoder compresses a frame's representation and predicted mask into a memory token suitable for storage. It takes as input the frame's image features (from the image encoder) and the predicted mask (output of the mask decoder), downsamples the mask to the feature resolution, and concatenates them channel-wise. This concatenated representation is processed through a lightweight convolutional network (3 convolutional layers with skip connections) that produces the spatial memory tokens. Separately, an MLP pool produces the object pointer token by global average pooling over the mask region.
+### Purpose
 
-The memory encoder has approximately 1.2M parameters, making it a negligible fraction of the total model size. The encoding process takes less than 1ms per frame, adding virtually no latency to the pipeline. The key design choice is that the memory encodes both appearance (from image features) and shape (from the mask), allowing the memory attention module to recall both what the object looks like and where it was in previous frames.
+The memory encoder produces compact representations of past frames that capture both spatial features and predicted mask information. These representations are stored in the memory bank and later retrieved by the memory attention module.
 
-## Memory Attention
+### Architecture
 
-The memory attention module is a stack of transformer layers that allow the current frame's image features to attend to the stored memory tokens. Specifically, each layer performs self-attention among the current frame's tokens, followed by cross-attention where current frame tokens are queries and memory tokens are keys and values. This mechanism enables the model to retrieve relevant spatial and appearance information from past frames.
+The memory encoder takes two inputs for each frame:
+1. The image encoder output (multi-scale features from Hiera)
+2. The predicted mask for that frame (after decoding)
 
-The cross-attention operates over all stored memory tokens simultaneously, including both recent and prompted frames. The model learns to weight different memories based on their relevance to the current frame -- for example, assigning higher attention weight to a memory frame where the object had a similar appearance or position. The memory attention module consists of 4 transformer layers with 8 attention heads and adds approximately 5.5M parameters. Processing time is roughly 5ms per frame, regardless of video length (since the memory bank has fixed size).
+The mask is first downsampled and passed through a lightweight convolutional network to produce a mask embedding. This embedding is then combined with the image features via element-wise summation. The result is a per-frame memory representation with spatial dimensions (typically 64x64) and 256 channels.
 
-## Memory Selection Strategy
+### What the Memory Captures
 
-The memory selection strategy balances recency, prompt relevance, and computational cost. The 6-slot FIFO buffer for recent frames ensures the model always has context from the immediate temporal neighborhood. The 2-slot prompted memory buffer ensures user guidance persists throughout the video. When both buffers are full, the oldest FIFO entry is evicted when a new non-prompted frame is added, and the oldest prompted entry is evicted only when a new prompted frame exceeds the prompt buffer capacity.
+Each memory entry encodes:
+- **Spatial layout:** Where objects and boundaries are located in that frame
+- **Appearance features:** What the objects look like (texture, color, shape)
+- **Mask context:** Which pixels belong to the target object, providing explicit segmentation guidance
+- **Positional information:** Spatial positions via positional encodings, enabling spatial alignment across frames
 
-Ablation experiments show that the number of recent memory frames has a significant impact on performance. Reducing from 6 to 1 recent frame drops J&F on DAVIS 2017 by approximately 3 points. Increasing beyond 6 provides diminishing returns (less than 0.5 points improvement with 12 frames) while doubling the memory attention cost. The 2-slot prompted memory buffer is also critical: removing it (relying only on FIFO) drops performance by approximately 2 points on interactive benchmarks where prompts are spread across the video.
+## Memory Bank
 
-## Handling Occlusion and Reappearance
+### Structure
 
-One of the most challenging aspects of video segmentation is handling objects that become fully occluded and later reappear. SAM 2 addresses this through two mechanisms. First, the mask decoder produces an occlusion score alongside its mask predictions, indicating when the target object is not visible in the current frame. When the occlusion score exceeds a threshold, the model outputs an empty mask and does not add the frame to the memory bank, preventing corrupted memories from polluting the bank.
+The memory bank maintains two types of stored memories:
 
-Second, when an occluded object reappears, the memory attention mechanism can retrieve its appearance from pre-occlusion memories that remain in the memory bank. Because prompted frames are retained indefinitely and recent frames from just before the occlusion may still be in the FIFO buffer, the model has access to the object's last known appearance. Experiments show that SAM 2 can recover objects after occlusions of up to approximately 20-30 frames (roughly 1 second at 30fps), though performance degrades for longer occlusions as pre-occlusion memories may be evicted from the FIFO buffer.
+#### FIFO Memory (Recent Frames)
+- Stores memories from the N most recent frames (default N=6)
+- Follows a first-in-first-out replacement policy
+- Captures the recent temporal context and handles gradual appearance changes
+- Does not require any special selection criterion; simply the latest frames
 
-## Computational Efficiency
+#### Prompted Memory (User-Annotated Frames)
+- Stores memories from all frames where the user provided explicit prompts
+- These are never evicted from the bank, regardless of how old they are
+- Captures the user's intent and provides anchor points for the segmentation
+- Typically 1-3 entries for most interactive workflows
 
-The streaming design ensures that per-frame inference cost is O(1) with respect to video length. The dominant cost is the image encoder (approximately 15ms per frame for Hiera-L), followed by memory attention (approximately 5ms), mask decoding (approximately 2ms), and memory encoding (approximately 1ms). Total per-frame inference is approximately 23ms for SAM 2 Large, corresponding to roughly 44 FPS. Memory usage is also constant: approximately 4 MB for the memory bank plus approximately 500 MB for model weights and per-frame activations.
+### Memory Bank Operations
 
-Compared to offline VOS methods that process all frames simultaneously (requiring O(T) memory for a T-frame video), SAM 2's streaming approach is far more scalable. For a 10-minute video at 30fps (18,000 frames), offline methods would require prohibitive GPU memory, while SAM 2 processes each frame in constant time and memory. The trade-off is that SAM 2's memory bank has limited temporal range, which can be a disadvantage for very long videos with infrequent prompts.
+| Operation | Description |
+|-----------|-------------|
+| Insert | Add a new memory after processing a frame |
+| Evict | Remove the oldest FIFO memory when capacity is reached |
+| Retrieve | Return all stored memories for the attention module |
+| Protect | Mark prompted memories as non-evictable |
 
-## Comparison with Non-Streaming Approaches
+### Memory Capacity
 
-Offline VOS methods like STM and STCN process videos by storing features from all past frames and performing space-time attention over the entire history. This provides maximum temporal context but scales linearly in both memory and computation with video length. XMem introduced a hierarchical memory (sensory, working, long-term) that compresses older memories progressively, partially mitigating the scaling problem but still requiring O(T) total memory.
+The bounded size of the memory bank (6 FIFO + all prompted frames) means:
+- Computational cost per frame is roughly constant regardless of video length
+- Very old unprompted frames are forgotten, which can hurt for objects that reappear after long absences
+- The system can process videos of arbitrary length without running out of memory
 
-SAM 2's streaming approach is most similar to online VOS methods but differs in its fixed-capacity memory bank and its integration with the promptable segmentation framework. The key trade-off is temporal context: offline methods can use information from any frame in the video, while SAM 2 is limited to its 8-frame memory bank. In practice, this limitation is rarely problematic because most tracking failures can be corrected with a single prompt on the error frame, which permanently enters the prompted memory buffer.
+## Memory Attention Module
 
-## Implementation Notes
+### Architecture
 
-The memory bank is implemented as a dictionary mapping frame indices to memory tensors. During inference, the `propagate_in_video()` method iterates through frames sequentially, calling the memory encoder after each frame and updating the bank. For bidirectional propagation (when a prompt is given on a middle frame), the video is processed in two passes: forward from the prompted frame to the end, and backward from the prompted frame to the beginning. The memory bank is reset between passes. Multi-object tracking shares the image encoder computation but maintains separate memory banks per object, with memory attention performed independently for each object's tokens.
+The memory attention module is a cross-attention mechanism inserted between the image encoder and the mask decoder. It conditions the current frame's features on the stored memories.
+
+**Attention structure:**
+- **Queries:** Current frame features (64x64 spatial tokens)
+- **Keys and Values:** Concatenated memory entries from the memory bank (each 64x64 spatial tokens)
+- Multiple attention heads allow the model to attend to different aspects of the memories simultaneously
+
+### Attention Flow
+
+```
+Current frame features (Q)
+         |
+         v
+  [Memory Attention]  <--- Memory bank entries (K, V)
+         |
+         v
+Memory-conditioned features
+         |
+         v
+     Mask Decoder
+```
+
+### Spatial Alignment
+
+A key challenge is aligning spatial locations across frames when objects move. The memory attention module handles this implicitly:
+
+- Each spatial position in the current frame can attend to any spatial position in the memory frames
+- The attention weights learn to match corresponding object regions across frames
+- No explicit optical flow or spatial warping is required
+- Positional encodings provide spatial reference, but the attention is free to attend non-locally
+
+This implicit alignment is more flexible than explicit flow-based methods because it can handle:
+- Non-rigid deformation
+- Partial occlusions
+- Appearance changes
+- Scene structure changes
+
+### Self-Attention Integration
+
+Before cross-attending to memories, the current frame's features undergo self-attention. This allows the model to:
+1. First reason about the spatial structure of the current frame
+2. Then incorporate temporal context from memories
+3. The combined representation goes to the mask decoder
+
+## Design Decisions and Tradeoffs
+
+### Why Streaming (Not Global)?
+
+Alternative approaches process all frames simultaneously (e.g., using 3D convolutions or global attention over the full video). SAM 2 uses streaming because:
+
+| Aspect | Streaming | Global |
+|--------|-----------|--------|
+| Memory usage | O(1) per frame | O(T) for T frames |
+| Latency | Real-time capable | Must wait for full video |
+| Video length | Unlimited | Limited by GPU memory |
+| Long-range context | Limited by bank size | Full context |
+
+The streaming design was chosen to support interactive use cases where users need real-time feedback.
+
+### FIFO vs. Learned Selection
+
+The FIFO memory replacement policy is simpler than learned selection strategies (e.g., selecting the most informative frames to keep). The authors found that FIFO performs well in practice because:
+- Recent frames are almost always the most relevant for temporal continuity
+- Prompted frames (which are always kept) provide long-range anchors
+- Learned selection adds complexity without consistent improvement
+
+### Memory Size Sensitivity
+
+Experiments with different FIFO buffer sizes:
+
+| FIFO Size | DAVIS J&F | Notes |
+|-----------|-----------|-------|
+| 1 | 79.2 | Only previous frame; struggles with occlusions |
+| 3 | 81.1 | Good for short-range propagation |
+| 6 | 82.5 | Default; best tradeoff |
+| 12 | 82.3 | Diminishing returns; more compute |
+
+## Connections to Other Architectures
+
+### Relation to XMem
+
+XMem (2022) also uses a multi-store memory architecture for VOS with sensory memory, working memory, and long-term memory. SAM 2 simplifies this to two stores (FIFO and prompted) while achieving better results, suggesting that the large-scale training data compensates for architectural complexity.
+
+### Relation to Transformers in Video
+
+The memory attention module can be viewed as a form of temporal attention restricted to a sliding window of frames plus anchors. This is related to sparse attention patterns in efficient transformers but applied specifically to the video segmentation setting.
+
+## Practical Considerations
+
+### GPU Memory Usage
+
+For a typical video at 1024x1024 resolution:
+- Image encoder: ~2 GB per frame (but only one frame at a time)
+- Memory bank (6 entries): ~150 MB
+- Total inference: ~4 GB GPU memory regardless of video length
+
+### Throughput
+
+- Real-time capable at ~44 FPS for mask decoding (after image encoding)
+- Image encoding is the bottleneck at ~6 FPS for Hiera-L
+- For interactive use, image features can be precomputed and cached

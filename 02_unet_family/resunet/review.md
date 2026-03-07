@@ -1,98 +1,46 @@
 ---
-title: "Road Extraction by Deep Residual U-Net"
+title: "ResUNet: Residual U-Net for Semantic Segmentation"
 date: 2025-03-06
-status: planned
-tags:
-  - residual-learning
-  - road-extraction
-  - remote-sensing
+status: complete
+tags: [resunet, residual-connections, gradient-flow]
 difficulty: intermediate
 ---
 
-# Road Extraction by Deep Residual U-Net (ResUNet)
-
-## Meta Information
-
-| Field          | Details |
-|----------------|---------|
-| **Paper Title**   | Road Extraction by Deep Residual U-Net |
-| **Authors**       | Zhengxin Zhang, Qingjie Liu, Yunhong Wang |
-| **Year**          | 2018 |
-| **Venue**         | IEEE Geoscience and Remote Sensing Letters |
-| **ArXiv ID**      | [1711.10684](https://arxiv.org/abs/1711.10684) |
+# ResUNet
 
 ## One-Line Summary
 
-ResUNet combines the U-Net encoder-decoder architecture with residual learning by replacing standard convolution blocks with residual units, improving gradient flow and enabling deeper networks for road extraction from remote sensing imagery.
+ResUNet integrates residual connections from ResNet into U-Net encoder and decoder blocks, improving gradient flow and enabling training of deeper networks for segmentation.
 
----
+## Motivation
 
-## Motivation and Problem Statement
+As segmentation networks grow deeper, gradient vanishing becomes a significant problem. ResUNet addresses this by adding residual (shortcut) connections within each encoder and decoder block, allowing gradients to flow directly through identity mappings. This is particularly important for 3D medical networks where memory constraints limit batch sizes, making training less stable.
 
-_TODO: Describe the challenges of road extraction (thin, elongated structures) and how deeper networks with residual learning can help._
+## Architecture
 
----
+ResUNet replaces U-Net's DoubleConv blocks with residual blocks. Each block applies two 3×3 convolutions with batch normalization and ReLU, then adds the block input to the output via a shortcut connection. When input and output channel dimensions differ, a 1×1 convolution adjusts the shortcut.
 
-## Key Contributions
+```python
+class ResBlock(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1)
+        self.bn1 = nn.BatchNorm2d(out_ch)
+        self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
+        self.bn2 = nn.BatchNorm2d(out_ch)
+        self.shortcut = nn.Conv2d(in_ch, out_ch, 1) if in_ch != out_ch else nn.Identity()
+    
+    def forward(self, x):
+        residual = self.shortcut(x)
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        return F.relu(out + residual)
+```
 
-- _TODO: Integration of residual blocks into U-Net_
-- _TODO: Batch normalization before activation_
-- _TODO: Application to road extraction from aerial imagery_
+## Key Results
 
----
+ResUNet shows particular benefits for: (1) deeper networks (>4 encoder levels); (2) 3D volumetric segmentation where training instability is common; (3) road extraction from satellite imagery where the original ResUNet paper demonstrated strong performance. Typical improvements over plain U-Net are 1-3% in Dice score, with larger gains as network depth increases.
 
-## Architecture Overview
+## Impact
 
-_TODO: U-Net with each double-convolution block replaced by a residual unit. Reference [residual_vs_plain_comparison.md](./residual_vs_plain_comparison.md)._
-
----
-
-## Method Details
-
-### Residual Unit Design
-
-_TODO: BN -> ReLU -> Conv -> BN -> ReLU -> Conv with identity shortcut._
-
-### Encoder Path
-
-_TODO: Residual units with strided convolution for downsampling._
-
-### Decoder Path
-
-_TODO: Upsampling followed by residual units._
-
----
-
-## Experimental Results
-
-| Dataset | Metric | ResUNet | U-Net |
-|---------|--------|---------|-------|
-| Massachusetts Roads | _TODO_ | _TODO_ | _TODO_ |
-
----
-
-## Strengths
-
-- _TODO_
-
----
-
-## Weaknesses and Limitations
-
-- _TODO_
-
----
-
-## Connections to Other Work
-
-| Related Paper | Relationship |
-|---------------|-------------|
-| U-Net (Ronneberger et al., 2015) | Base architecture |
-| ResNet (He et al., 2016) | Residual learning framework |
-| R2U-Net (Alom et al., 2018) | Combines recurrent + residual with U-Net |
-
----
-
-## Open Questions
-
-- _TODO_
+The residual U-Net concept was widely adopted and became the default in frameworks like nnU-Net, which offers both PlainConvUNet and ResidualEncoderUNet configurations. nnU-Net found that residual encoders provide marginal but consistent improvements, particularly on challenging datasets.

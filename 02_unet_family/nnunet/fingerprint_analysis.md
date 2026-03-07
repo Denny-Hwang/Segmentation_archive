@@ -1,75 +1,57 @@
 ---
 title: "Dataset Fingerprint Analysis in nnU-Net"
 date: 2025-03-06
-status: planned
-tags:
-  - dataset-fingerprint
-  - data-analysis
-  - preprocessing
-parent: nnunet/review.md
+status: complete
+tags: [nnunet, fingerprint, dataset-analysis, auto-configuration]
+difficulty: advanced
 ---
 
 # Dataset Fingerprint Analysis
 
 ## Overview
 
-_TODO: Explain how nnU-Net extracts a "fingerprint" from the dataset that drives all downstream configuration decisions._
-
----
-
-## What Is a Dataset Fingerprint?
-
-_TODO: A compact summary of dataset properties that captures the essential characteristics needed for pipeline configuration._
-
----
+The dataset fingerprint is nnU-Net's mechanism for automatically understanding a new dataset's properties. By analyzing the dataset fingerprint, nnU-Net derives all preprocessing, architecture, and training decisions without manual intervention.
 
 ## Fingerprint Components
 
-### Image Properties
+The DatasetFingerprintExtractor analyzes:
 
-| Property | What It Captures | How It Is Used |
-|----------|-----------------|---------------|
-| Image sizes | Spatial dimensions (x, y, z) | Patch size selection |
-| Voxel spacing | Physical resolution (mm) | Resampling target |
-| Modality | CT, MRI, microscopy, etc. | Normalization strategy |
-| Intensity distribution | Histogram statistics | Clipping and normalization |
+1. **Image properties**: sizes, spacings (voxel dimensions), number of channels, modality
+2. **Intensity statistics**: per-channel mean, std, percentiles (0.5, 99.5) — crucial for normalization
+3. **Label properties**: number of classes, class frequencies, foreground/background ratio
+4. **Spacing analysis**: anisotropy ratio (spacing along z vs x/y), determines 2D vs 3D preference
+5. **Size statistics**: median image size, size range — determines patch size and network depth
 
-### Label Properties
+## Configuration Decisions from Fingerprint
 
-| Property | What It Captures | How It Is Used |
-|----------|-----------------|---------------|
-| Number of classes | Foreground labels | Output channels |
-| Class frequencies | Size of each structure | Loss weighting |
-| Region sizes | Spatial extent of structures | Patch size validation |
-| Class connectivity | Typical topology | Postprocessing |
+| Fingerprint Property | Configuration Decision |
+|---------------------|----------------------|
+| Anisotropy ratio > 3 | Prefer 2D or 3D cascade over 3D full-res |
+| CT modality | Global normalization (clip to [0.5, 99.5] percentile → z-score) |
+| MRI modality | Per-image z-score normalization |
+| Small foreground ratio | Use class-weighted sampling |
+| Large image size | Reduce patch size, increase network depth |
+| Small dataset (<50 cases) | Reduce batch size, increase augmentation |
 
----
+## Normalization Strategies
 
-## Fingerprint Extraction Process
+nnU-Net applies different normalization based on modality:
 
-1. _TODO: Load all training cases_
-2. _TODO: Compute per-case statistics_
-3. _TODO: Aggregate across the dataset (median, percentiles)_
-4. _TODO: Store fingerprint as metadata_
+- **CT**: Global clip to [p0.5, p99.5] across entire dataset → subtract global mean → divide by global std
+- **MRI (per-channel)**: Per-image z-score normalization (subtract mean, divide by std, computed within foreground mask)
+- **Other (RGB, microscopy)**: Per-channel z-score or rescale to [0, 1]
 
----
+The choice is automatic based on the modality field in the dataset descriptor.
 
-## From Fingerprint to Configuration
+## Patch Size and Network Topology
 
-_TODO: Decision tree or flow chart showing how fingerprint properties map to pipeline choices._
+The fingerprint determines the training patch size by considering:
+1. Maximum GPU memory (default: 1 GPU with batch size 2)
+2. Median image size (patches should cover representative regions)
+3. Anisotropy (patches may be non-cubic for anisotropic data)
+4. Network depth = number of pooling operations that fit within the patch size (minimum 32 voxels per dimension)
 
-### Example: CT Dataset
-
-_TODO: Walk through a concrete example._
-
-### Example: MRI Dataset
-
-_TODO: Walk through a second example showing different normalization._
-
----
-
-## Limitations of the Fingerprint Approach
-
-- _TODO: Unusual data distributions may fool the heuristics_
-- _TODO: Does not capture inter-class spatial relationships_
-- _TODO: Fixed rules may not be optimal for novel imaging modalities_
+Example: for a dataset with median size 512×512×150 and spacing 0.8×0.8×2.5mm:
+- Target spacing (resampled): 0.8×0.8×2.5mm (preserve native spacing)
+- Patch size: 128×128×64 (fits in GPU memory)
+- Network depth: 5 levels (128→64→32→16→8)

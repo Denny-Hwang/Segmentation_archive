@@ -1,101 +1,56 @@
 ---
 title: "UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation"
 date: 2025-03-06
-status: planned
-tags:
-  - full-scale-skip
-  - multi-scale-features
-  - deep-supervision
-  - classification-guided
+status: complete
+tags: [unet3plus, full-scale-skip, classification-guided, deep-supervision]
 difficulty: intermediate
 ---
 
-# UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation
+# UNet 3+
 
 ## Meta Information
 
-| Field          | Details |
-|----------------|---------|
-| **Paper Title**   | UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation |
-| **Authors**       | Huimin Huang, Lanfen Lin, Ruofeng Tong, Hongjie Hu, Qiaowei Zhang, Yutaro Iwamoto, Xianhua Han, Yen-Wei Chen, Jian Wu |
-| **Year**          | 2020 |
-| **Venue**         | ICASSP 2020 |
-| **ArXiv ID**      | [2004.08790](https://arxiv.org/abs/2004.08790) |
+| Field | Value |
+|-------|-------|
+| **Paper Title** | UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation |
+| **Authors** | Huang, H., Lin, L., Tong, R., et al. |
+| **Year** | 2020 |
+| **Venue** | ICASSP |
 
 ## One-Line Summary
 
-UNet 3+ introduces full-scale skip connections that combine features from all encoder and decoder levels at each decoder node, along with classification-guided module and deep supervision to reduce false positives in organ segmentation.
+UNet 3+ introduces full-scale skip connections that combine features from ALL encoder levels and ALL prior decoder levels at each decoder node, providing comprehensive multi-scale feature aggregation.
 
----
+## Motivation
 
-## Motivation and Problem Statement
+U-Net uses same-scale skip connections (encoder level i → decoder level i). UNet++ uses dense skip connections but still primarily connects within neighboring scales. UNet 3+ argues that EVERY decoder node should access features from ALL scales — both all encoder levels and all previously computed decoder levels — to achieve the most comprehensive multi-scale representation.
 
-_TODO: Describe the limitations of U-Net (same-scale skips) and UNet++ (nested but still local) in capturing full-scale multi-resolution context._
+## Architecture
 
----
+Each decoder node X_de^i receives inputs from:
+1. **All encoder levels** (X_en^1 through X_en^5): via downsampling (for higher-resolution) or upsampling (for lower-resolution) to match the target decoder resolution
+2. **Same-level encoder**: direct skip connection
+3. **All prior decoder levels**: features from deeper decoder levels, upsampled to match
+
+All inputs are first reduced to a uniform channel dimension (64) via 3×3 conv + BN + ReLU, then concatenated and fused with another 3×3 conv.
 
 ## Key Contributions
 
-- _TODO: Full-scale skip connections from all encoder/decoder levels_
-- _TODO: Classification-guided module to suppress non-organ predictions_
-- _TODO: Full-scale deep supervision_
-- _TODO: Fewer parameters than UNet++_
+1. **Full-scale skip connections**: Each decoder node aggregates features from all 5 encoder levels and available decoder levels
+2. **Classification-guided module (CGM)**: An auxiliary classification branch that predicts whether the image contains the target structure, masking the segmentation output for negative images
+3. **Full-scale deep supervision**: Auxiliary losses at every decoder level
 
----
+## Results
 
-## Architecture Overview
+| Dataset | Metric | U-Net | UNet++ | UNet 3+ |
+|---------|--------|-------|--------|---------|
+| Liver | Dice (%) | 94.97 | 95.56 | 97.17 |
+| Spleen | Dice (%) | 95.93 | 96.01 | 96.82 |
 
-_TODO: Each decoder node aggregates features from ALL encoder levels AND all preceding decoder levels. Reference [full_scale_skip.md](./full_scale_skip.md)._
+UNet 3+ achieves 1-2% Dice improvement over UNet++ with fewer parameters (26.97M vs 36.63M for UNet++), thanks to the unified 64-channel feature dimension at each decoder node.
 
----
+## Limitations
 
-## Method Details
-
-### Full-Scale Skip Connections
-
-_TODO: Reference [full_scale_skip.md](./full_scale_skip.md)._
-
-### Classification-Guided Module
-
-_TODO: Binary classification head that predicts whether the target organ exists in the image._
-
-### Deep Supervision
-
-_TODO: Supervision at each decoder level with the classification guidance._
-
----
-
-## Experimental Results
-
-| Dataset | Metric | UNet 3+ | UNet++ | U-Net |
-|---------|--------|---------|--------|-------|
-| Liver (LiTS) | Dice | _TODO_ | _TODO_ | _TODO_ |
-| Spleen | Dice | _TODO_ | _TODO_ | _TODO_ |
-
----
-
-## Strengths
-
-- _TODO_
-
----
-
-## Weaknesses and Limitations
-
-- _TODO_
-
----
-
-## Connections to Other Work
-
-| Related Paper | Relationship |
-|---------------|-------------|
-| U-Net (Ronneberger et al., 2015) | Same-scale skip connections |
-| UNet++ (Zhou et al., 2018) | Nested dense skip connections |
-| FPN (Lin et al., 2017) | Multi-scale feature pyramid concept |
-
----
-
-## Open Questions
-
-- _TODO_
+- Complex feature routing with many resize operations
+- Full-scale connections may be overkill for simple segmentation tasks
+- CGM assumes binary presence/absence, not applicable to multi-class with always-present classes

@@ -1,92 +1,135 @@
 ---
 title: "Segment Anything in Medical Images"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [foundation-model, medical-segmentation, domain-adaptation, sam]
 difficulty: intermediate
 ---
 
 # MedSAM
 
-## Meta Information
+## Paper Overview
 
-| Field | Value |
-|-------|-------|
-| **Paper Title** | Segment Anything in Medical Images |
-| **Authors** | Ma, J., He, Y., Li, F., Han, L., You, C., Wang, B. |
-| **Year** | 2024 |
-| **Venue** | Nature Communications |
-| **arXiv** | N/A |
-| **Difficulty** | Intermediate |
+**Title:** Segment Anything in Medical Images
+**Authors:** Jun Ma, Yuting He, Feifei Li, Lin Han, Chenyu You, Bo Wang
+**Venue:** Nature Communications, 2024
+**Institution:** University of Toronto / Vector Institute
 
-## One-Line Summary
+MedSAM adapts the Segment Anything Model for medical image segmentation by fine-tuning SAM on a large-scale curated dataset of over 1.5 million medical image-mask pairs spanning 10 imaging modalities and more than 30 cancer types. The key design choice is to use bounding box prompts exclusively, making the model practical for clinical workflows where radiologists typically identify regions of interest.
 
-MedSAM fine-tunes SAM on a large-scale medical image dataset spanning multiple modalities and anatomies, demonstrating that domain-specific adaptation significantly improves segmentation performance on medical images.
+## Motivation
 
-## Motivation and Problem Statement
+SAM demonstrates impressive zero-shot segmentation on natural images, but its performance degrades significantly on medical images due to the large domain gap:
 
-While SAM demonstrated impressive zero-shot segmentation on natural images, its performance degraded substantially on medical images. Medical images differ fundamentally from natural photographs: they exhibit low contrast between structures, contain noise patterns specific to each imaging modality, and display anatomical structures with subtle boundaries that require domain expertise to delineate. Evaluations showed that SAM's zero-shot performance on medical benchmarks was 10-30 IoU points below specialized medical segmentation models like nnU-Net, making it impractical for clinical use without adaptation.
+- Medical images have fundamentally different appearance characteristics (grayscale, low contrast, specific textures)
+- Anatomical structures lack the clear boundaries common in natural images
+- SA-1B contains virtually no medical imaging data
+- Pathological findings (tumors, lesions) have highly variable appearance
 
-The authors identified a critical opportunity: SAM's architecture and learned visual representations could serve as a strong foundation for medical image segmentation if properly adapted. Rather than training a medical segmentation model from scratch, fine-tuning SAM on medical data could leverage the rich visual features learned from 1.1 billion natural image masks while adapting the model's output to the specific visual characteristics of medical imaging. This transfer learning approach promised better data efficiency and broader generalization across medical domains than training specialized models independently for each imaging modality.
+MedSAM addresses this by fine-tuning SAM on a comprehensive medical dataset rather than training from scratch, leveraging the general visual understanding already captured in SAM's weights.
 
-## Architecture Overview
+## Architecture
 
-MedSAM retains SAM's three-component architecture (image encoder, prompt encoder, mask decoder) without structural modifications. The key change is in the training: the entire model is fine-tuned end-to-end on a curated dataset of 1,570,263 medical image-mask pairs covering 10 imaging modalities and over 30 anatomical structures. The prompt interface is simplified to bounding box prompts only, as boxes are the most reliable and informative prompt type and are straightforward for clinicians to provide. Point and text prompts are not used during MedSAM training or inference.
+MedSAM retains SAM's three-component architecture:
 
-### Key Components
+### Image Encoder
+- ViT-B backbone (chosen over ViT-H for efficiency in clinical settings)
+- Pretrained weights from SAM, fine-tuned on medical data
+- Input resolution: 1024x1024 (medical images resized accordingly)
 
-- **Medical Adaptation**: See [medical_adaptation.md](medical_adaptation.md)
+### Prompt Encoder
+- **Bounding box prompts only** during both training and inference
+- The authors found that box prompts provide the best quality-effort tradeoff for medical applications
+- Point prompts were excluded because they require more expertise to place effectively on medical structures
+- Box prompts align naturally with how radiologists identify regions of interest
 
-## Technical Details
+### Mask Decoder
+- Lightweight transformer decoder identical to SAM's
+- Fine-tuned alongside the encoder
+- Single mask output (no multi-mask ambiguity resolution needed with box prompts)
 
-### Training Data
+## Training Dataset
 
-MedSAM was trained on a curated dataset of approximately 1.57 million medical image-mask pairs assembled from over 30 publicly available medical imaging datasets. The dataset spans 10 imaging modalities: CT (computed tomography), MRI (magnetic resonance imaging), ultrasound, X-ray, dermoscopy, endoscopy, fundus photography, mammography, OCT (optical coherence tomography), and pathology. CT and MRI contribute the largest share of training data, as 3D volumes are sliced into individual 2D images for training. The dataset covers over 30 major anatomical structures including organs (liver, kidney, spleen, heart), tumors, and vascular structures.
+### Scale and Composition
 
-### Fine-Tuning Strategy
+| Property | Value |
+|----------|-------|
+| Total image-mask pairs | 1,570,263 |
+| Imaging modalities | 10+ |
+| Anatomical structures | 30+ organ/tissue types |
+| Cancer types | 30+ |
+| Public dataset sources | 52 |
 
-The entire SAM model (image encoder, prompt encoder, and mask decoder) is fine-tuned end-to-end using the medical training data. The ViT-B variant of SAM (91M parameters) was used as the base model rather than ViT-H, as it provides a better balance between performance and computational cost for the medical domain. Training used the AdamW optimizer with a learning rate of 1e-4, cosine learning rate decay, a batch size of 16, and ran for 100 epochs. The loss function combined binary cross-entropy loss and dice loss with equal weighting, following standard medical segmentation practice.
+### Imaging Modalities Covered
 
-### Modality Coverage
+1. **CT (Computed Tomography)** - largest portion of the dataset
+2. **MRI (Magnetic Resonance Imaging)** - multiple sequences (T1, T2, FLAIR)
+3. **X-ray** - chest, musculoskeletal
+4. **Ultrasound** - abdominal, cardiac, obstetric
+5. **Dermoscopy** - skin lesion imaging
+6. **Endoscopy** - gastrointestinal
+7. **Fundus photography** - retinal imaging
+8. **Mammography** - breast imaging
+9. **OCT (Optical Coherence Tomography)** - retinal layers
+10. **Pathology** - histopathological slides
 
-The 10 supported modalities represent a broad cross-section of clinical imaging. CT provides high-resolution 3D anatomical detail and represents the largest portion of training data (approximately 40%). MRI covers T1, T2, FLAIR, and contrast-enhanced sequences across brain, cardiac, and abdominal regions. Ultrasound images present unique challenges including speckle noise and operator-dependent quality. Dermoscopy and fundus photography are specialized 2D modalities for skin and retinal imaging respectively. Pathology images at high magnification differ dramatically from radiological images, testing the model's ability to generalize across vastly different visual domains.
+### Data Curation
 
-### Prompt Strategy for Medical Images
+- Sourced from 52 publicly available medical segmentation datasets
+- Unified annotation format (converting all formats to binary masks with bounding boxes)
+- Quality filtering to remove corrupted or poorly annotated samples
+- 3D volumes (CT, MRI) were sliced into 2D images, with bounding boxes computed per slice
 
-MedSAM exclusively uses bounding box prompts during both training and inference. During training, bounding boxes are derived from ground-truth masks by computing the tight bounding box and adding random perturbation (jittering by up to 20 pixels in each direction) to simulate imprecise clinical inputs. This jittering strategy is critical for robustness: it trains the model to handle boxes that are not perfectly tight, which is realistic for clinical use where radiologists may draw approximate boxes.
+## Training Details
 
-The choice of box-only prompts is deliberate. In clinical workflows, drawing a bounding box around a region of interest is a natural and fast interaction that clinicians are accustomed to. Point prompts were excluded because their sensitivity to placement is problematic in medical images where boundaries between structures can be ambiguous. Text prompts were excluded due to their limited maturity in SAM's original implementation.
+- Optimizer: AdamW with learning rate 1e-4
+- Batch size: 160
+- Training epochs: 100
+- Loss: Combination of cross-entropy and dice loss
+- Data augmentation: Random horizontal/vertical flips, random rotation
+- All components (encoder + decoder) are fine-tuned end-to-end
 
-## Experiments and Results
+## Key Results
 
-### Datasets and Modalities
+### Comparison to SAM (Zero-Shot)
 
-MedSAM was evaluated on 86 internal validation datasets spanning all 10 training modalities, plus 19 external validation datasets from modalities and anatomies not seen during training. The internal benchmarks include standard challenges such as BTCV (abdominal CT), ACDC (cardiac MRI), ISIC (dermoscopy), and REFUGE (fundus photography). External benchmarks include unseen tumor types, rare anatomical structures, and imaging protocols not represented in the training set.
+| Modality | SAM (zero-shot) DSC | MedSAM DSC |
+|----------|---------------------|------------|
+| CT (abdominal) | 0.62 | 0.87 |
+| MRI (brain) | 0.55 | 0.84 |
+| Dermoscopy | 0.70 | 0.90 |
+| X-ray | 0.58 | 0.82 |
+| Endoscopy | 0.60 | 0.88 |
+| Ultrasound | 0.52 | 0.80 |
 
-### Key Results
+MedSAM improves over zero-shot SAM by 15-30 DSC points across modalities, demonstrating the necessity of domain-specific fine-tuning.
 
-MedSAM achieved a mean dice score of 87.2% across the 86 internal validation datasets, substantially outperforming vanilla SAM (which achieved approximately 62.4% on the same benchmarks with box prompts). On the 19 external validation datasets, MedSAM achieved a mean dice of 78.9%, demonstrating meaningful generalization to unseen domains. Performance was strongest on CT (90.1% dice) and MRI (88.3% dice), moderate on ultrasound (82.5%) and dermoscopy (84.7%), and lowest on pathology (74.2%) and OCT (76.8%).
+### Comparison to Specialized Models
 
-### Comparison with Vanilla SAM
-
-The fine-tuning improved performance by approximately 25 dice points on average compared to zero-shot SAM. The improvement was largest on modalities most dissimilar from natural images: CT (+32 points), MRI (+28 points), and ultrasound (+26 points). On modalities closer to natural images such as dermoscopy (+15 points) and endoscopy (+18 points), the improvement was smaller but still substantial. These results demonstrate that SAM's learned visual features provide a useful starting point, but significant domain adaptation is necessary for medical applications.
+MedSAM is competitive with modality-specific state-of-the-art models (nnU-Net, TransUNet, Swin-UNETR) on many benchmarks while being a single unified model. Specialized models still outperform MedSAM on their specific domains, but MedSAM offers the advantage of generality.
 
 ## Strengths
 
-MedSAM demonstrates that a single model can handle diverse medical imaging modalities, eliminating the need to train separate models for CT, MRI, ultrasound, etc. The bounding box prompt interface is clinician-friendly and integrates naturally into radiological workflows. The large-scale training dataset (1.57M image-mask pairs) ensures broad coverage of anatomical structures and imaging conditions. Published in Nature Communications, MedSAM provides a validated, reproducible baseline for medical image segmentation with foundation models.
+- Single model handles 10+ imaging modalities without modality-specific tuning
+- Bounding box interface is intuitive and practical for clinical use
+- Fine-tuning from SAM weights is more data-efficient than training from scratch
+- Large and diverse training set reduces overfitting to any single modality
+- Open-source release enables community adoption and further development
 
 ## Limitations
 
-MedSAM is limited to 2D segmentation, processing each slice independently without volumetric context, which is suboptimal for 3D imaging modalities (CT, MRI). The bounding box-only prompt interface is less flexible than SAM's full prompt suite; point prompts and iterative refinement are not supported. Performance on rare structures and uncommon imaging protocols remains below specialized models like nnU-Net that can be trained on task-specific data. The ViT-B backbone, while more efficient than ViT-H, still requires GPU inference, limiting deployment in resource-constrained clinical settings.
+- Box-only prompts limit the model's ability to handle ambiguous cases where points or text would be more appropriate
+- 2D processing means no native volumetric reasoning for 3D medical images
+- Performance varies significantly across modalities (best on CT/dermoscopy, weaker on ultrasound)
+- Cannot produce semantic labels (class-agnostic masks only)
+- Requires a bounding box at inference time, which may need an upstream detection model for fully automatic pipelines
 
-## Connections
+## Impact
 
-MedSAM directly builds on SAM (Kirillov et al. 2023) by adapting its architecture to the medical domain through full fine-tuning. MedSAM-2 (Zhu et al. 2024) extends this approach by leveraging SAM 2's video capabilities for volumetric medical segmentation. SAM-Adapter (Chen et al. 2023) offers an alternative parameter-efficient adaptation strategy using adapter modules rather than full fine-tuning. The nnU-Net framework (Isensee et al. 2021) remains the primary comparison point for specialized medical segmentation. MedSAM's approach of large-scale multi-modality training connects to broader trends in medical foundation models.
+MedSAM demonstrated that foundation model adaptation is viable for medical imaging and catalyzed a wave of follow-up work. It established the benchmark for medical foundation models and showed that a single model can reasonably cover the diversity of medical imaging modalities.
 
-## References
+## Citation
 
-- Kirillov et al., "Segment Anything," ICCV 2023 (SAM foundation).
-- Isensee et al., "nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation," Nature Methods 2021 (primary comparison).
-- Ronneberger et al., "U-Net: Convolutional Networks for Biomedical Image Segmentation," MICCAI 2015 (foundational medical segmentation).
-- He et al., "Masked Autoencoders Are Scalable Vision Learners," CVPR 2022 (MAE pre-training used in SAM).
-- Zhu et al., "MedSAM-2: Segment Medical Images As Video Via Segment Anything Model 2," arXiv 2024 (successor work).
+```
+Ma, J., et al. "Segment anything in medical images." Nature Communications 15, 654 (2024).
+```

@@ -1,86 +1,63 @@
 ---
-title: "Stable Diffusion U-Net Architecture"
+title: "U-Net Architecture in Stable Diffusion"
 date: 2025-03-06
-status: planned
-tags:
-  - stable-diffusion
-  - latent-diffusion
-  - cross-attention
-  - architecture
-parent: unet_in_diffusion/review.md
+status: complete
+tags: [stable-diffusion, latent-diffusion, cross-attention, time-embedding]
+difficulty: advanced
 ---
 
-# Stable Diffusion U-Net Architecture
+# Stable Diffusion U-Net
 
 ## Overview
 
-_TODO: Describe the specific U-Net architecture used in Stable Diffusion (Latent Diffusion Models) and how it differs from the original biomedical U-Net._
+The U-Net in Stable Diffusion operates in the latent space of a variational autoencoder (VAE), processing 64×64×4 latent representations instead of full-resolution pixel images. It incorporates time step conditioning and cross-attention to text embeddings, enabling text-guided image generation.
 
----
+## Architecture
 
-## Architecture Components
+The U-Net has 4 resolution levels (64→32→16→8 in latent space) with each level containing ResBlocks and SpatialTransformer blocks:
 
-### Encoder Blocks
+| Level | Resolution | Channels | ResBlocks | Attention |
+|-------|-----------|----------|-----------|-----------|
+| Down 1 | 64×64 | 320 | 2 | Optional |
+| Down 2 | 32×32 | 640 | 2 | Yes |
+| Down 3 | 16×16 | 1280 | 2 | Yes |
+| Down 4 | 8×8 | 1280 | 2 | Yes |
+| Mid | 8×8 | 1280 | 1 | Yes |
+| Up 4-1 | (mirror) | (mirror) | 3 each | Yes |
 
-_TODO: ResNet blocks + spatial self-attention + cross-attention (for text conditioning)._
+## Time Step Embedding
 
-### Middle Block
+The diffusion time step t is encoded using sinusoidal positional encoding, then projected through a 2-layer MLP:
 
-_TODO: ResNet + self-attention + ResNet at the bottleneck._
+```
+t_emb = MLP(sinusoidal_embedding(t))  # → (batch, 1280)
+```
 
-### Decoder Blocks
+This embedding conditions each ResBlock via Adaptive Group Normalization:
+```
+h = GroupNorm(h)
+h = h * (1 + scale(t_emb)) + shift(t_emb)
+```
 
-_TODO: ResNet blocks + spatial self-attention + cross-attention, with skip connections from encoder._
+where scale and shift are linear projections of the time embedding. This allows each ResBlock to behave differently at different noise levels.
 
----
+## Cross-Attention to Text
 
-## Key Modifications vs Original U-Net
+Text prompts are encoded by a CLIP text encoder into a sequence of token embeddings (77 tokens × 768 dimensions). The SpatialTransformer block in each resolution level applies:
 
-| Component | Original U-Net | Stable Diffusion U-Net |
-|-----------|---------------|----------------------|
-| Convolution blocks | 2x (Conv + ReLU) | ResNet blocks with GroupNorm + SiLU |
-| Attention | None | Self-attention + cross-attention |
-| Conditioning | None | Cross-attention with CLIP text embeddings |
-| Timestep | N/A | Sinusoidal embedding + MLP, injected into ResBlocks |
-| Input space | Pixel space | Latent space (4-channel) |
-| Output | Class probabilities | Predicted noise |
+1. **Self-attention**: spatial features attend to themselves
+2. **Cross-attention**: spatial features (queries) attend to text tokens (keys, values)
+3. **FFN**: feedforward network
 
----
+```
+Q = W_q · spatial_features    # from image latents
+K = W_k · text_embeddings     # from CLIP
+V = W_v · text_embeddings     # from CLIP
+output = softmax(QK^T / √d) · V
+```
 
-## Cross-Attention for Text Conditioning
+This cross-attention mechanism allows every spatial position to attend to relevant text tokens, enabling precise text-to-image alignment.
 
-_TODO: How text embeddings from CLIP are injected via cross-attention at multiple scales._
+## Skip Connections
 
----
-
-## Timestep Conditioning
-
-_TODO: Sinusoidal encoding -> MLP -> scale and shift in each ResNet block._
-
----
-
-## Channel and Resolution Progression
-
-_TODO: Typical configuration: [320, 640, 1280, 1280] channels at resolutions [64, 32, 16, 8]._
-
----
-
-## Parameter Count
-
-_TODO: Approximately 860M parameters in the U-Net alone._
-
----
-
-## Variants
-
-| Model | U-Net Changes |
-|-------|--------------|
-| SD 1.x | Base architecture |
-| SD 2.x | Deeper attention, different text encoder |
-| SDXL | Larger U-Net, additional conditioning |
-
----
-
-## Future: U-Net vs Transformer
-
-_TODO: Discuss the DiT (Diffusion Transformer) architecture that replaces U-Net with a transformer._
+Same as segmentation U-Net: encoder features at each level are concatenated with decoder features. In diffusion U-Net, the decoder has 3 ResBlocks per level (vs 2 in encoder) to account for the additional channels from concatenation. FreeU showed that re-weighting these skip connections can improve generation quality.
