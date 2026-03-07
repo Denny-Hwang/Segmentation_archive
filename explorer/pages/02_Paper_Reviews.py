@@ -11,33 +11,38 @@ except ImportError:
 st.set_page_config(page_title="Paper Reviews - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
-REVIEWS_DIR = ARCHIVE_ROOT / "01_paper_reviews"
+REVIEW_DIRS = [
+    ARCHIVE_ROOT / "02_unet_family",
+    ARCHIVE_ROOT / "03_transformer_segmentation",
+    ARCHIVE_ROOT / "04_foundation_models",
+]
 
 
 def load_paper_reviews() -> list[dict]:
     """Load all paper review files with their frontmatter metadata."""
     reviews = []
-    if not REVIEWS_DIR.exists():
-        return reviews
+    for reviews_dir in REVIEW_DIRS:
+        if not reviews_dir.exists():
+            continue
 
-    for md_file in sorted(REVIEWS_DIR.rglob("*.md")):
-        if md_file.name.startswith("_") or md_file.name == "README.md":
-            continue
-        try:
-            if frontmatter:
-                post = frontmatter.load(md_file)
-                meta = dict(post.metadata)
-                meta["content"] = post.content
-            else:
-                meta = {"content": md_file.read_text(encoding="utf-8")}
-            meta["file_path"] = str(md_file.relative_to(ARCHIVE_ROOT))
-            meta.setdefault("title", md_file.stem.replace("_", " ").title())
-            meta.setdefault("category", "uncategorized")
-            meta.setdefault("year", "unknown")
-            meta.setdefault("tags", [])
-            reviews.append(meta)
-        except Exception:
-            continue
+        for md_file in sorted(reviews_dir.rglob("*.md")):
+            if md_file.name.startswith("_") or md_file.name == "README.md":
+                continue
+            try:
+                if frontmatter:
+                    post = frontmatter.load(md_file)
+                    meta = dict(post.metadata)
+                    meta["content"] = post.content
+                else:
+                    meta = {"content": md_file.read_text(encoding="utf-8")}
+                meta["file_path"] = str(md_file.relative_to(ARCHIVE_ROOT))
+                meta.setdefault("title", md_file.stem.replace("_", " ").title())
+                meta.setdefault("category", reviews_dir.name)
+                meta.setdefault("year", "unknown")
+                meta.setdefault("tags", [])
+                reviews.append(meta)
+            except Exception:
+                continue
 
     return reviews
 
@@ -51,7 +56,8 @@ def main():
     if not reviews:
         st.info(
             "No paper reviews found. Add Markdown files with YAML frontmatter "
-            "to `01_paper_reviews/` to populate this page."
+            "to `02_unet_family/`, `03_transformer_segmentation/`, or "
+            "`04_foundation_models/` to populate this page."
         )
         return
 

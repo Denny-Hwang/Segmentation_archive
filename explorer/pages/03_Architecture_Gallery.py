@@ -11,28 +11,34 @@ except ImportError:
 st.set_page_config(page_title="Architecture Gallery - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
-ARCH_DIR = ARCHIVE_ROOT / "02_architecture"
+ARCH_DIRS = [
+    ARCHIVE_ROOT / "02_unet_family",
+    ARCHIVE_ROOT / "03_transformer_segmentation",
+    ARCHIVE_ROOT / "04_foundation_models",
+    ARCHIVE_ROOT / "01_foundations",
+]
 
 
 def load_architectures() -> list[dict]:
     """Load architecture documentation files."""
     architectures = []
-    if not ARCH_DIR.exists():
-        return architectures
+    for arch_dir in ARCH_DIRS:
+        if not arch_dir.exists():
+            continue
 
-    for md_file in sorted(ARCH_DIR.rglob("*.md")):
-        if md_file.name.startswith("_") or md_file.name == "README.md":
-            continue
-        try:
-            content = md_file.read_text(encoding="utf-8")
-            architectures.append({
-                "name": md_file.stem.replace("_", " ").title(),
-                "content": content,
-                "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
-                "category": md_file.parent.name if md_file.parent != ARCH_DIR else "general",
-            })
-        except Exception:
-            continue
+        for md_file in sorted(arch_dir.rglob("*.md")):
+            if md_file.name.startswith("_") or md_file.name == "README.md":
+                continue
+            try:
+                content = md_file.read_text(encoding="utf-8")
+                architectures.append({
+                    "name": md_file.stem.replace("_", " ").title(),
+                    "content": content,
+                    "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
+                    "category": arch_dir.name,
+                })
+            except Exception:
+                continue
 
     return architectures
 
@@ -49,7 +55,8 @@ def main():
     if not architectures:
         st.info(
             "No architecture documents found. Add Markdown files to "
-            "`02_architecture/` to populate this gallery."
+            "`02_unet_family/`, `03_transformer_segmentation/`, or "
+            "`04_foundation_models/` to populate this gallery."
         )
 
         # Show placeholder gallery

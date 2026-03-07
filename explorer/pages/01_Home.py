@@ -25,13 +25,16 @@ def main():
     st.subheader("Archive Statistics")
     col1, col2, col3, col4 = st.columns(4)
 
+    # Paper reviews span multiple model-family directories
+    paper_dirs = ["02_unet_family", "03_transformer_segmentation", "04_foundation_models"]
+    paper_count = sum(count_files(ARCHIVE_ROOT / d) for d in paper_dirs)
+
     with col1:
-        paper_count = count_files(ARCHIVE_ROOT / "01_paper_reviews")
         st.metric("Paper Reviews", paper_count)
 
     with col2:
-        arch_count = count_files(ARCHIVE_ROOT / "02_architecture")
-        st.metric("Architecture Docs", arch_count)
+        arch_count = count_files(ARCHIVE_ROOT / "01_foundations")
+        st.metric("Foundation Docs", arch_count)
 
     with col3:
         dataset_count = count_files(ARCHIVE_ROOT / "09_datasets")
@@ -47,13 +50,13 @@ def main():
     st.subheader("Archive Sections")
 
     sections = [
-        ("01_paper_reviews", "Paper Reviews", "Detailed analyses of key segmentation papers"),
-        ("02_architecture", "Architecture", "Model architecture documentation and diagrams"),
-        ("03_code_analysis", "Code Analysis", "Implementation deep-dives and code walkthroughs"),
-        ("04_experiments", "Experiments", "Training experiments, results, and configurations"),
-        ("05_benchmarks", "Benchmarks", "Performance comparisons across models and datasets"),
-        ("06_knowledge_graph", "Knowledge Graph", "Paper relationships and citation networks"),
-        ("07_timeline", "Timeline", "Historical evolution of segmentation methods"),
+        ("01_foundations", "Foundations", "Core concepts, taxonomy, metrics, and loss functions"),
+        ("02_unet_family", "U-Net Family", "U-Net variants: original, ++, Attention, 3D, R2, etc."),
+        ("03_transformer_segmentation", "Transformer Segmentation", "TransUNet, Swin-Unet, SegFormer, Mask2Former, OneFormer"),
+        ("04_foundation_models", "Foundation Models", "SAM, SAM2, MedSAM, and adaptation strategies"),
+        ("05_code_analysis", "Code Analysis", "Implementation deep-dives and code walkthroughs"),
+        ("06_experiments", "Experiments", "Training utilities, metrics, visualization, and augmentation"),
+        ("07_visualizations", "Visualizations", "Evolution trees, timelines, and architecture diagrams"),
         ("08_repo_tracker", "Repo Tracker", "GitHub repository and paper tracking"),
         ("09_datasets", "Datasets", "Dataset documentation and preprocessing guides"),
         ("10_references", "References", "Glossary, surveys, and reading roadmap"),
