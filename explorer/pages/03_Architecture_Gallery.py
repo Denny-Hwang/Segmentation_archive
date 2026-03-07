@@ -1,7 +1,11 @@
 """Architecture Gallery - Visual architecture comparison and exploration."""
 
+import sys
 import streamlit as st
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from components.frontmatter import strip_frontmatter
 
 try:
     import yaml
@@ -30,7 +34,8 @@ def load_architectures() -> list[dict]:
             if md_file.name.startswith("_") or md_file.name == "README.md":
                 continue
             try:
-                content = md_file.read_text(encoding="utf-8")
+                raw = md_file.read_text(encoding="utf-8")
+                content = strip_frontmatter(raw)
                 architectures.append({
                     "name": md_file.stem.replace("_", " ").title(),
                     "content": content,
