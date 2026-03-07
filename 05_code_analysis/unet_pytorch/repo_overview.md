@@ -50,9 +50,9 @@ Pytorch-UNet/
 - **Output**: 1x1 convolution to map to the target number of classes
 
 ### Notable Design Choices
-- TODO: Document bilinear vs transposed convolution option
-- TODO: Document padding strategy
-- TODO: Document batch normalization usage
+- **Bilinear vs Transposed Convolution**: The `UNet` class accepts a `bilinear` boolean parameter (default `False`). When `bilinear=True`, upsampling uses `nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)` followed by a regular convolution to reduce channels. When `bilinear=False`, upsampling uses `nn.ConvTranspose2d(in_ch, in_ch // 2, kernel_size=2, stride=2)`, which is a learned upsampling operation. Bilinear mode halves the parameter count of each `Up` block and avoids potential checkerboard artifacts from transposed convolutions, but transposed convolutions can learn task-specific upsampling patterns.
+- **Padding Strategy**: All convolutions use `padding=1` with `kernel_size=3`, which preserves spatial dimensions within each double convolution block (same-padding). This differs from the original 2015 U-Net paper, which used valid (no-padding) convolutions that progressively reduced spatial dimensions, requiring cropping of skip connections. The same-padding approach simplifies skip connection concatenation since encoder and decoder features at the same stage have identical spatial dimensions.
+- **Batch Normalization**: Every convolution in `DoubleConv` is followed by `nn.BatchNorm2d` and then `nn.ReLU(inplace=True)`, following the Conv-BN-ReLU pattern. The original 2015 U-Net paper did not use batch normalization (it predates BatchNorm's widespread adoption), but modern implementations universally include it for training stability and faster convergence. With the small batch sizes typical in segmentation (2-8), GroupNorm or InstanceNorm could be better alternatives, but BatchNorm remains the default in this implementation.
 
 ## Analysis Files
 

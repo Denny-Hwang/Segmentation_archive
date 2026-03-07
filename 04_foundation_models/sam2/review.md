@@ -1,96 +1,123 @@
 ---
 title: "SAM 2: Segment Anything in Images and Videos"
 date: 2025-03-06
-status: planned
+status: complete
 tags: [foundation-model, video-segmentation, streaming-memory, sa-v]
 difficulty: advanced
 ---
 
 # SAM 2
 
-## Meta Information
+## Paper Overview
 
-| Field | Value |
-|-------|-------|
-| **Paper Title** | SAM 2: Segment Anything in Images and Videos |
-| **Authors** | Ravi, N., Gabeur, V., Hu, Y.-T., Hu, R., Ryali, C., Ma, T., Khedr, H., Radle, R., Rolland, C., Gustafson, L., Mintun, E., Pan, J., Alwala, K.V., Carion, N., Wu, C.-Y., Girshick, R., Dollar, P., Feichtenhofer, C. |
-| **Year** | 2024 |
-| **Venue** | arXiv |
-| **arXiv** | [2408.00714](https://arxiv.org/abs/2408.00714) |
-| **Difficulty** | Advanced |
+**Title:** SAM 2: Segment Anything in Images and Videos
+**Authors:** Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman Radle, Chloe Rolland, Laura Gustafson, Eric Mintun, Junting Pan, Kalyan Vasudev Alwala, Nicolas Carion, Chao-Yuan Wu, Ross Girshick, Piotr Dollar, Christoph Feichtenhofer
+**Venue:** arXiv 2024 (Meta FAIR)
 
-## One-Line Summary
+SAM 2 extends the Segment Anything paradigm from static images to video, creating a unified model that handles both image and video segmentation with a promptable, streaming architecture. It introduces a memory mechanism that allows the model to track and segment objects across video frames while maintaining the interactive prompting interface from SAM.
 
-SAM 2 extends SAM to video by introducing a streaming memory architecture that propagates segmentation across frames, trained on the SA-V dataset with 35.5M masks on 50.9K videos.
+## Key Contributions
 
-## Motivation and Problem Statement
+1. A unified architecture for promptable segmentation in both images and videos
+2. A streaming memory mechanism for temporal propagation without requiring access to all frames simultaneously
+3. The SA-V dataset: the largest video segmentation dataset to date (50.9K videos, 642.6K masklets)
+4. State-of-the-art results on video object segmentation benchmarks while being faster than prior methods
 
-SAM was designed exclusively for single images and had no mechanism for maintaining temporal consistency across video frames. Applying SAM frame-by-frame to video produced flickering, inconsistent masks because each frame was processed independently without knowledge of previous predictions. Dedicated video object segmentation (VOS) methods like XMem and DeAOT addressed temporal consistency but required per-video optimization or were limited to specific object categories. There was a clear need for a unified model that could handle both images and videos with the same promptable interface.
+## Architecture
 
-SAM 2 addresses this by introducing a streaming memory architecture that conditions each frame's prediction on a bank of memories from previously processed frames. This allows the model to track objects across time, handle occlusions, and maintain consistent segmentation. Critically, SAM 2 subsumes SAM's image capability -- when applied to a single image (zero memory frames), it reduces to image segmentation and actually outperforms the original SAM.
+### Image Encoder (Hiera)
 
-## Architecture Overview
+SAM 2 replaces SAM's ViT-H with Hiera, a hierarchical vision transformer:
+- Hiera is pretrained with MAE and produces multi-scale features
+- The hierarchical structure is more efficient than plain ViT for video processing
+- Feature maps at multiple resolutions enable better handling of objects at different scales
+- The image encoder processes each frame independently (no temporal fusion at this stage)
 
-SAM 2 consists of six components: an image encoder (Hiera), a memory attention module, a prompt encoder, a mask decoder, a memory encoder, and a memory bank. For each frame, the image encoder extracts features, the memory attention module conditions these features on stored memories from past frames, and the prompt encoder + mask decoder generate mask predictions. The memory encoder then compresses the current frame's prediction into a memory representation that is added to the memory bank for use by future frames. This streaming design processes one frame at a time with constant memory cost, regardless of video length.
+### Prompt Encoder
 
-### Key Components
+Identical to SAM's prompt encoder, supporting points, boxes, and masks. Prompts can be provided on any frame in the video (not just the first frame), enabling flexible interaction patterns.
 
-- **Streaming Memory**: See [streaming_memory.md](streaming_memory.md)
-- **Video Segmentation**: See [video_segmentation.md](video_segmentation.md)
-- **SA-V Dataset**: See [sav_dataset.md](sav_dataset.md)
+### Memory Architecture
 
-## Technical Details
+The central innovation of SAM 2 is the streaming memory system consisting of:
 
-### Image Encoder
+- **Memory Encoder:** Produces memory representations from predicted masks and image features for frames that have been processed
+- **Memory Bank:** Stores memories from recent frames (FIFO buffer, up to 6 frames) and all prompted frames (frames where the user provided explicit prompts)
+- **Memory Attention Module:** Cross-attention mechanism that conditions the current frame's features on stored memories, enabling temporal propagation
 
-SAM 2 replaces SAM's ViT-H backbone with Hiera, a hierarchical vision transformer that produces multi-scale features more efficiently. Hiera was pre-trained using MAE on images and then on video with temporal masking. The encoder processes each frame independently at 1024x1024 resolution and produces feature maps at multiple scales (1/4, 1/8, 1/16, 1/32). The Hiera-B+ variant (used in SAM 2 base) has 80M parameters, while Hiera-L (used in SAM 2 large) has 214M parameters. Compared to SAM's ViT-H (632M), this represents a 3-8x reduction in encoder parameters while maintaining or improving segmentation quality.
+### Mask Decoder
 
-### Memory Attention Module
+An upgraded version of SAM's decoder that:
+- Attends to both the current frame embedding and memory-conditioned features
+- Produces mask predictions and occlusion scores
+- The occlusion head predicts whether the object is visible in the current frame, enabling graceful handling of objects leaving and re-entering the scene
 
-The memory attention module is the core architectural innovation of SAM 2. It takes the current frame's image features and performs cross-attention to a set of memory tokens from previous frames. Specifically, the module uses stacked transformer blocks where the current frame's tokens serve as queries and the concatenated memory tokens serve as keys and values. This allows the model to retrieve relevant spatial and appearance information from past frames. The module adds roughly 5.5M parameters on top of the image encoder.
+## Training
 
-### Memory Encoder and Memory Bank
+### Data
 
-After generating a mask prediction for a frame, the memory encoder compresses the frame's features and predicted mask into a compact memory representation. This is done by downsampling the mask to the feature resolution and concatenating it with the image features, followed by lightweight convolutional layers that produce memory tokens. The memory bank stores these tokens using a FIFO strategy with a maximum of 6 recent frames, plus up to 2 prompted frames that are retained regardless of recency. This bounded memory ensures constant computational cost per frame.
+- SA-V dataset (50.9K videos) for video training
+- SA-1B dataset (11M images) for image training
+- Combined training on both data sources, treating images as single-frame videos
 
-### Prompt Encoder and Mask Decoder
+### Training Protocol
 
-The prompt encoder and mask decoder share the same design as SAM, accepting points, boxes, and masks as prompts. One key addition is that prompts can be provided on any frame in the video, not just the first frame. When a user provides a prompt on frame t, the model generates a mask for that frame and then propagates it both forward and backward in time using the memory mechanism. The mask decoder still predicts 3 candidate masks with IoU scores for ambiguity resolution.
+- 8-frame training sequences sampled from videos
+- Simulated interactive prompting during training: the model receives corrective clicks on frames with the worst predictions
+- Multi-phase training with increasing data complexity
 
-### Training Strategy
+## Key Results
 
-SAM 2 is trained jointly on images and videos. Image training uses SA-1B data from SAM, while video training uses the new SA-V dataset. The training simulates interactive annotation by sampling 8-frame clips and providing simulated prompts (clicks on errors) during training. The model is trained end-to-end with a combination of focal loss and dice loss, with a batch size of 128 clips across 256 GPUs. Training takes approximately 60 hours on this hardware. Joint image-video training is critical: training on video alone degrades image performance, and training on images alone provides no temporal reasoning.
+### Video Object Segmentation
 
-## Experiments and Results
-
-### Video Segmentation Benchmarks
-
-SAM 2 achieves state-of-the-art results on multiple video object segmentation benchmarks. On DAVIS 2017 (val), SAM 2 Large achieves a J&F score of 82.5, outperforming the previous best interactive method. On SA-V test, SAM 2 achieves 76.0 J&F. On YouTube-VOS 2019, SAM 2 achieves competitive J&F of 81.2. Notably, SAM 2 achieves these results while being approximately 6x faster than previous state-of-the-art methods, processing video at roughly 44 frames per second on a single A100 GPU.
+| Benchmark | Metric | SAM 2 | Previous SOTA |
+|-----------|--------|-------|--------------|
+| DAVIS 2017 (val) | J&F | 82.5 | 79.5 (XMem) |
+| SA-V (test) | J&F | 76.0 | -- |
+| MOSE | J&F | 73.8 | 68.9 |
+| LVOS v2 | J&F | 75.3 | 67.2 |
 
 ### Image Segmentation
 
-Despite being designed for video, SAM 2 also outperforms the original SAM on image segmentation. On the 37-dataset zero-shot benchmark, SAM 2 achieves higher average IoU than SAM across all prompt types. Specifically, SAM 2 Large achieves 2.0 points higher IoU with 1-point prompts and 1.5 points higher with box prompts compared to SAM ViT-H, while using only 1/3 the encoder parameters.
+SAM 2 also improves over SAM on image-only benchmarks, achieving 6x faster inference than SAM with ViT-H while matching or exceeding its mask quality. This is largely due to the more efficient Hiera backbone.
 
-### Key Results
+### Interactive Video Segmentation
 
-The most striking result is the efficiency-accuracy trade-off: SAM 2 Large uses 214M encoder parameters (vs. SAM's 632M) while achieving better image segmentation and adding video capability. On interactive video segmentation, SAM 2 requires 3.0x fewer interactions to reach the same mask quality as SAM applied frame-by-frame, demonstrating the value of temporal propagation. The model supports real-time interactive video annotation at approximately 44 FPS, making it practical for large-scale video annotation workflows.
+With 3 interactive clicks across frames, SAM 2 matches or exceeds the performance of methods that require manual annotation on every frame, demonstrating the effectiveness of its temporal propagation.
+
+## Comparison to SAM
+
+| Aspect | SAM | SAM 2 |
+|--------|-----|-------|
+| Scope | Images only | Images + Videos |
+| Backbone | ViT-H (MAE) | Hiera (MAE) |
+| Memory | None | Streaming memory bank |
+| Occlusion handling | N/A | Explicit occlusion head |
+| Speed | ~8 img/s (ViT-H) | ~44 FPS (video) |
+| Training data | SA-1B (images) | SA-1B + SA-V |
 
 ## Strengths
 
-SAM 2 unifies image and video segmentation in a single architecture, eliminating the need for separate models. The streaming memory design scales to arbitrarily long videos with constant per-frame cost. The model provides state-of-the-art video segmentation while simultaneously improving over SAM on images. Interactive video annotation is significantly more efficient thanks to temporal propagation, reducing human annotation effort by 3x. The Hiera backbone provides a better efficiency-accuracy trade-off than SAM's ViT-H.
+- Unified image and video segmentation eliminates the need for separate models
+- Streaming architecture enables processing arbitrarily long videos with bounded memory
+- Interactive prompting on any frame allows intuitive user workflows
+- The occlusion head enables robust handling of disappearing and reappearing objects
+- Faster than SAM for image segmentation due to the Hiera backbone
 
 ## Limitations
 
-SAM 2 can lose track of objects during prolonged full occlusion (more than approximately 20-30 frames of invisibility). The FIFO memory bank may drop critical frames in very long videos if the object undergoes significant appearance changes early on. Like SAM, SAM 2 does not produce semantic labels. Performance on very small objects (under 32x32 pixels) degrades compared to larger objects. The model also struggles with deformable objects that undergo extreme shape changes between frames, such as liquids or smoke.
+- Performance degrades on very long videos with many occlusions and appearance changes
+- The FIFO memory bank has a fixed size, meaning very old context may be lost
+- Does not explicitly model object interactions or scene-level semantics
+- Requires initial user prompts; fully automatic video segmentation is not addressed
+- The SA-V dataset, while large, is still biased toward certain video types
 
-## Connections
+## Impact
 
-SAM 2 directly builds on SAM (Kirillov et al. 2023), inheriting its prompt interface and mask decoder design while adding temporal reasoning. The Hiera backbone comes from Ryali et al. 2023. The streaming memory design draws inspiration from XMem (Cheng et al. 2022) and other memory-based VOS methods, but integrates memory into a promptable framework. MedSAM-2 (Zhu et al. 2024) adapts SAM 2 for medical volumetric segmentation by treating 3D volumes as video. OMG-Seg (Li et al. 2024) offers an alternative unified approach using CLIP features.
+SAM 2 established a new paradigm for interactive video segmentation and enabled practical tools for video annotation, editing, and analysis. Its streaming architecture influenced subsequent work on memory-efficient video models, and the SA-V dataset became a benchmark for video segmentation research.
 
-## References
+## Citation
 
-- Kirillov et al., "Segment Anything," ICCV 2023 (SAM predecessor).
-- Ryali et al., "Hiera: A Hierarchical Vision Transformer without the Bells-and-Whistles," ICML 2023 (Hiera backbone).
-- Cheng et al., "XMem: Long-Term Video Object Segmentation with an Atkinson-Shiffrin Memory Model," ECCV 2022 (memory-based VOS).
-- Yang et al., "Decoupling Features in Hierarchical Propagation for Video Object Segmentation," NeurIPS 2022 (DeAOT).
-- Oh et al., "Video Object Segmentation using Space-Time Memory Networks," ICCV 2019 (STM, foundational memory-based VOS).
+```
+Ravi, N., et al. "SAM 2: Segment Anything in Images and Videos." arXiv 2024.
+```
