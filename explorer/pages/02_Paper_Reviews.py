@@ -10,11 +10,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.paper_figures import render_paper_figures
 
-try:
-    import frontmatter
-except ImportError:
-    frontmatter = None
-
 st.set_page_config(page_title="Paper Reviews - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -24,33 +19,91 @@ REVIEW_DIRS = [
     ARCHIVE_ROOT / "04_foundation_models",
 ]
 
-# Regex to strip YAML frontmatter (---\n...\n---) from raw markdown
-_FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
+# Regex to strip YAML frontmatter (---\n...\n---) from raw markdown.
+# Handles optional BOM, leading whitespace, and \r\n line endings.
+_FRONTMATTER_RE = re.compile(
+    r"\A[\ufeff\s]*---[ \t]*\r?\n.*?\r?\n---[ \t]*\r?\n?", re.DOTALL
+)
+
+# Secondary pattern: strip orphaned YAML-like lines at the very start of
+# content (title: ...\ndate: ...\n...) that remain when a library strips
+# the --- delimiters but leaves the YAML body.
+_YAML_LINES_RE = re.compile(
+    r"\A([ \t]*\w[\w-]*[ \t]*:.*\r?\n)+", re.MULTILINE
+)
 
 
 def _strip_frontmatter(text: str) -> str:
-    """Remove YAML frontmatter block from markdown text."""
-    return _FRONTMATTER_RE.sub("", text).lstrip("\n")
+    """Remove YAML frontmatter block from markdown text.
+
+    Handles three cases:
+    1. Full frontmatter with --- delimiters
+    2. Orphaned YAML key-value lines at the start (no --- delimiters)
+    3. Clean content (no-op)
+    """
+    # Case 1: standard ---...--- frontmatter
+    cleaned = _FRONTMATTER_RE.sub("", text)
+    if cleaned != text:
+        return cleaned.lstrip("\r\n")
+
+    # Case 2: YAML lines without --- delimiters (library stripped them)
+    # Only strip if the first non-blank content looks like key: value
+    stripped = text.lstrip()
+    if stripped and re.match(r"\w[\w-]*\s*:", stripped):
+        # Find where the YAML-like block ends (first blank line or markdown heading)
+        lines = stripped.split("\n")
+        content_start = 0
+        for i, line in enumerate(lines):
+            s = line.strip()
+            if not s or s.startswith("#") or s.startswith("```"):
+                content_start = i
+                break
+            # If line doesn't look like yaml key: value or continuation, stop
+            if not re.match(r"(\w[\w-]*\s*:|- |\s+\w)", line):
+                content_start = i
+                break
+        else:
+            content_start = len(lines)
+        return "\n".join(lines[content_start:]).lstrip("\r\n")
+
+    return text.lstrip("\r\n")
 
 
-def _parse_yaml_frontmatter(text: str) -> dict:
-    """Minimal YAML frontmatter parser (fallback when python-frontmatter unavailable)."""
+def _parse_markdown_file(file_path: Path) -> dict:
+    """Parse a markdown file, extracting YAML frontmatter and clean content.
+
+    Always uses our own parser for consistent behavior regardless of
+    whether python-frontmatter is installed.
+    """
+    raw = file_path.read_text(encoding="utf-8")
+
+    # Strip BOM if present
+    if raw.startswith("\ufeff"):
+        raw = raw[1:]
+
     meta: dict = {}
-    match = re.match(r"\A---\s*\n(.*?)\n---\s*\n?", text, re.DOTALL)
-    if not match:
-        return {"content": text}
-    yaml_block = match.group(1)
-    content = text[match.end():]
-    for line in yaml_block.splitlines():
-        if ":" not in line:
-            continue
-        key, _, val = line.partition(":")
-        key = key.strip()
-        val = val.strip().strip('"').strip("'")
-        if val.startswith("[") and val.endswith("]"):
-            val = [v.strip().strip('"').strip("'") for v in val[1:-1].split(",")]
-        meta[key] = val
-    meta["content"] = content.lstrip("\n")
+
+    # Try to extract ---...--- frontmatter
+    match = re.match(r"\A\s*---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n?", raw, re.DOTALL)
+    if match:
+        yaml_block = match.group(1)
+        content = raw[match.end():]
+
+        for line in yaml_block.splitlines():
+            line = line.strip()
+            if not line or ":" not in line:
+                continue
+            key, _, val = line.partition(":")
+            key = key.strip()
+            val = val.strip().strip('"').strip("'")
+            if val.startswith("[") and val.endswith("]"):
+                val = [v.strip().strip('"').strip("'") for v in val[1:-1].split(",")]
+            meta[key] = val
+
+        meta["content"] = content.lstrip("\r\n")
+    else:
+        meta["content"] = raw
+
     return meta
 
 
@@ -65,13 +118,7 @@ def load_paper_reviews() -> list[dict]:
             if md_file.name.startswith("_") or md_file.name == "README.md":
                 continue
             try:
-                if frontmatter:
-                    post = frontmatter.load(md_file)
-                    meta = dict(post.metadata)
-                    meta["content"] = post.content
-                else:
-                    raw = md_file.read_text(encoding="utf-8")
-                    meta = _parse_yaml_frontmatter(raw)
+                meta = _parse_markdown_file(md_file)
                 meta["file_path"] = str(md_file.relative_to(ARCHIVE_ROOT))
                 meta.setdefault("title", md_file.stem.replace("_", " ").title())
                 meta.setdefault("category", reviews_dir.name)
