@@ -1,0 +1,45 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9'}}}%%
+flowchart LR
+    subgraph INPUT["1. Data Input"]
+        IMG["Raw Image<br/>(2D / 3D)"]
+        ANN["Annotations<br/>(Masks / Polygons)"]
+    end
+
+    subgraph PREPROC["2. Preprocessing"]
+        RESIZE["Resize /<br/>Normalize"]
+        AUG["Augmentation<br/>(Flip, Rotate,<br/>Color Jitter)"]
+        PATCH["Patch<br/>Extraction<br/>(if needed)"]
+    end
+
+    subgraph MODEL["3. Model"]
+        ENC["Encoder<br/>(CNN / ViT /<br/>Swin)"]
+        NECK["Neck / Bridge<br/>(ASPP, FPN,<br/>Attention)"]
+        DEC["Decoder<br/>(Upsampling /<br/>Transpose Conv)"]
+    end
+
+    subgraph POSTPROC["4. Post-Processing"]
+        THRESH["Thresholding /<br/>Argmax"]
+        CRF["CRF / Morphology<br/>(optional)"]
+        MERGE["Patch Merge /<br/>TTA"]
+    end
+
+    subgraph EVAL["5. Evaluation"]
+        METRICS["mIoU / DSC /<br/>HD95 / AP"]
+        VIS["Overlay<br/>Visualization"]
+        COMPARE["Model<br/>Comparison"]
+    end
+
+    IMG --> RESIZE
+    ANN --> RESIZE
+    RESIZE --> AUG --> PATCH --> ENC
+    ENC --> NECK --> DEC
+    DEC --> THRESH --> CRF --> MERGE
+    MERGE --> METRICS
+    MERGE --> VIS
+    METRICS --> COMPARE
+
+    style INPUT fill:#E8F4FD,stroke:#4A90D9
+    style PREPROC fill:#E8FDE8,stroke:#50C878
+    style MODEL fill:#FDE8E8,stroke:#FF6B6B
+    style POSTPROC fill:#FDF8E8,stroke:#FFD700
+    style EVAL fill:#F0E8FD,stroke:#DA70D6

@@ -1,0 +1,56 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4A90D9', 'secondaryColor': '#50C878', 'tertiaryColor': '#FF6B6B'}}}%%
+graph TB
+    ROOT["Image Segmentation"]
+
+    ROOT --> SEM["Semantic<br/>Segmentation"]
+    ROOT --> INST["Instance<br/>Segmentation"]
+    ROOT --> PAN["Panoptic<br/>Segmentation"]
+    ROOT --> VID["Video<br/>Segmentation"]
+
+    SEM --> CNN_SEM["CNN-Based"]
+    SEM --> TRANS_SEM["Transformer-Based"]
+
+    CNN_SEM --> FCN["FCN<br/>(2014)"]
+    CNN_SEM --> DL["DeepLab v1-v3+<br/>(2015-2018)"]
+    CNN_SEM --> PSP["PSPNet<br/>(2017)"]
+
+    INST --> MRCNN["Mask R-CNN<br/>(2017)"]
+    INST --> SOLO["SOLO / SOLOv2<br/>(2020)"]
+
+    PAN --> M2F["Mask2Former<br/>(2022)"]
+    PAN --> OF["OneFormer<br/>(2023)"]
+
+    TRANS_SEM --> SEGF["SegFormer<br/>(2021)"]
+    TRANS_SEM --> SETR["SETR<br/>(2021)"]
+
+    ROOT --> MED["Medical / Specialized"]
+    MED --> UNET_FAM["U-Net Family"]
+    MED --> TRANS_MED["Transformer Hybrids"]
+
+    UNET_FAM --> UNET["U-Net<br/>(2015)"]
+    UNET_FAM --> UNETPP["UNet++<br/>(2018)"]
+    UNET_FAM --> ATTN["Attention U-Net<br/>(2018)"]
+    UNET_FAM --> NNET["nnU-Net<br/>(2021)"]
+    UNET_FAM --> UNET3D["3D U-Net / V-Net<br/>(2016)"]
+
+    TRANS_MED --> TU["TransUNet<br/>(2021)"]
+    TRANS_MED --> SU["Swin-Unet<br/>(2021)"]
+    TRANS_MED --> UNETR_N["UNETR<br/>(2022)"]
+
+    ROOT --> FOUND["Foundation Models"]
+    FOUND --> SAM["SAM<br/>(2023)"]
+    FOUND --> SAM2["SAM 2<br/>(2024)"]
+    FOUND --> MSAM["MedSAM / MedSAM2"]
+    FOUND --> OMG["OMG-Seg"]
+
+    style ROOT fill:#2C3E50,color:#fff,stroke:#2C3E50
+    style SEM fill:#4A90D9,color:#fff,stroke:#4A90D9
+    style INST fill:#FFD700,color:#333,stroke:#FFD700
+    style PAN fill:#DA70D6,color:#fff,stroke:#DA70D6
+    style VID fill:#20B2AA,color:#fff,stroke:#20B2AA
+    style MED fill:#FF6B6B,color:#fff,stroke:#FF6B6B
+    style FOUND fill:#50C878,color:#fff,stroke:#50C878
+    style UNET_FAM fill:#FF8C8C,color:#fff,stroke:#FF8C8C
+    style TRANS_MED fill:#FFA0A0,color:#fff,stroke:#FFA0A0
+    style CNN_SEM fill:#6AADE4,color:#fff,stroke:#6AADE4
+    style TRANS_SEM fill:#7BBCE8,color:#fff,stroke:#7BBCE8

@@ -49,6 +49,8 @@ def render_sidebar():
         7. Repo Tracker - GitHub repo monitoring
         8. Timeline - Historical evolution
         9. Reading Roadmap - Learning path
+        10. Figures Gallery - Diagrams & charts
+        11. Playground - Try models live
 
         ---
         *Segmentation Archive Explorer*
@@ -83,6 +85,8 @@ def main():
         - **Repo Tracker**: Monitor GitHub repositories and paper citations
         - **Timeline**: Trace the historical evolution of segmentation methods
         - **Reading Roadmap**: Follow a structured learning path
+        - **Figures Gallery**: Browse and download all research diagrams
+        - **Playground**: Run segmentation models on your own images
 
         ### Archive Structure
 
