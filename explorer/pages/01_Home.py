@@ -6,35 +6,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.frontmatter import strip_frontmatter
+from components.mermaid_render import render_mermaid_file
 
 st.set_page_config(page_title="Home - Segmentation Archive", layout="wide")
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
 FIGURES_DIR = ARCHIVE_ROOT / "docs" / "figures"
 
-try:
-    from streamlit_mermaid import st_mermaid
-    HAS_MERMAID = True
-except ImportError:
-    HAS_MERMAID = False
-
 
 def count_files(directory: Path, pattern: str = "*.md") -> int:
     if not directory.exists():
         return 0
     return len(list(directory.rglob(pattern)))
-
-
-def _render_mermaid_file(path: Path, height: int = 400) -> None:
-    """Render a .mermaid file, falling back to code display."""
-    code = path.read_text(encoding="utf-8")
-    if HAS_MERMAID:
-        try:
-            st_mermaid(code, height=height)
-        except Exception:
-            st.code(code, language="mermaid")
-    else:
-        st.code(code, language="mermaid")
 
 
 def main():
@@ -58,12 +41,12 @@ def main():
         taxonomy_mermaid = FIGURES_DIR / "taxonomy_diagram.mermaid"
         if taxonomy_mermaid.exists():
             st.markdown("#### Segmentation Taxonomy")
-            _render_mermaid_file(taxonomy_mermaid, height=500)
+            render_mermaid_file(taxonomy_mermaid, height=520)
 
         pipeline_mermaid = FIGURES_DIR / "pipeline_diagram.mermaid"
         if pipeline_mermaid.exists():
             st.markdown("#### Typical Segmentation Pipeline")
-            _render_mermaid_file(pipeline_mermaid, height=350)
+            render_mermaid_file(pipeline_mermaid, height=380)
 
         timeline_png = FIGURES_DIR / "timeline_evolution_chart.png"
         if timeline_png.exists():

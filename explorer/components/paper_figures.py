@@ -315,17 +315,12 @@ def render_paper_figures(arxiv_id: str) -> bool:
     if not figures:
         return False
 
+    from components.mermaid_render import render_mermaid
+
     st.markdown("**Key Figures:**")
     for fig in figures:
         st.caption(fig["caption"])
-        if HAS_MERMAID:
-            try:
-                from streamlit_mermaid import st_mermaid
-                st_mermaid(fig["mermaid"], height=350)
-            except Exception:
-                st.code(fig["mermaid"], language="mermaid")
-        else:
-            st.code(fig["mermaid"], language="mermaid")
+        render_mermaid(fig["mermaid"], height=350)
     return True
 
 
@@ -342,14 +337,9 @@ def render_paper_figures_inline(arxiv_id: str) -> bool:
     if not figures:
         return False
 
+    from components.mermaid_render import render_mermaid
+
     for fig in figures:
         with st.expander(f"🔍 {fig['caption']}"):
-            if HAS_MERMAID:
-                try:
-                    from streamlit_mermaid import st_mermaid
-                    st_mermaid(fig["mermaid"], height=300)
-                except Exception:
-                    st.code(fig["mermaid"], language="mermaid")
-            else:
-                st.code(fig["mermaid"], language="mermaid")
+            render_mermaid(fig["mermaid"], height=300)
     return True

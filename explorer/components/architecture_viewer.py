@@ -2,27 +2,19 @@
 
 import streamlit as st
 
+from components.mermaid_render import render_mermaid
+
 
 def render_mermaid_diagram(mermaid_code: str, height: int = 400) -> None:
     """Render a Mermaid.js diagram in Streamlit.
 
-    Attempts to use streamlit-mermaid if available, falls back to
-    displaying the raw Mermaid code.
+    Uses the HTML-based renderer for reliable dark-mode support.
 
     Args:
         mermaid_code: Mermaid diagram definition string.
         height: Height of the rendered diagram in pixels.
     """
-    try:
-        from streamlit_mermaid import st_mermaid
-
-        st_mermaid(mermaid_code, height=height)
-    except ImportError:
-        st.info(
-            "Install `streamlit-mermaid` for interactive diagrams: "
-            "`pip install streamlit-mermaid`"
-        )
-        st.code(mermaid_code, language="mermaid")
+    render_mermaid(mermaid_code, height=height)
 
 
 def render_architecture_diagram(
