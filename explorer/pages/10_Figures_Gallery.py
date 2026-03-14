@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.figure_gallery import render_figure_gallery
+from components.mermaid_render import render_mermaid, mermaid_png_download_button
 
 st.set_page_config(page_title="Figures Gallery - Segmentation Archive", layout="wide")
 
@@ -32,15 +33,31 @@ def main():
         st.markdown("### Architecture Evolution Diagrams")
         arch_dir = VIZ_DIR / "architecture_diagrams"
         if arch_dir.exists():
-            for mmd in sorted(arch_dir.glob("*.mermaid")):
-                caption = mmd.stem.replace("_", " ").title()
-                with st.expander(f"**{caption}**", expanded=False):
-                    code = mmd.read_text(encoding="utf-8")
-                    try:
-                        from streamlit_mermaid import st_mermaid
-                        st_mermaid(code, height=400)
-                    except (ImportError, Exception):
-                        st.code(code, language="mermaid")
+            mermaid_files = sorted(arch_dir.glob("*.mermaid"))
+            if mermaid_files:
+                for mmd in mermaid_files:
+                    caption = mmd.stem.replace("_", " ").title()
+                    with st.expander(f"**{caption}**", expanded=True):
+                        code = mmd.read_text(encoding="utf-8")
+                        render_mermaid(code, height=450)
+                        dl_col1, dl_col2 = st.columns(2)
+                        with dl_col1:
+                            st.download_button(
+                                "Download .mermaid source",
+                                code,
+                                file_name=mmd.name,
+                                mime="text/plain",
+                                key=f"dl_arch_src_{mmd.name}",
+                            )
+                        with dl_col2:
+                            mermaid_png_download_button(
+                                code,
+                                filename=mmd.stem + ".png",
+                                label="Download PNG (via mermaid.ink)",
+                                key=f"dl_arch_png_{mmd.name}",
+                            )
+            else:
+                st.info("No `.mermaid` files found in architecture diagrams.")
         else:
             st.info("No architecture diagrams found in `07_visualizations/architecture_diagrams/`.")
 

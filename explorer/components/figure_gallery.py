@@ -6,11 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-try:
-    from streamlit_mermaid import st_mermaid
-    HAS_MERMAID = True
-except ImportError:
-    HAS_MERMAID = False
+from components.mermaid_render import render_mermaid, mermaid_png_download_button
 
 
 def render_figure_gallery(figures_dir: Path) -> None:
@@ -47,24 +43,30 @@ def render_figure_gallery(figures_dir: Path) -> None:
                         key=f"dl_{fig_path.name}",
                     )
 
-    # Mermaid diagrams (interactive)
+    # Mermaid diagrams (interactive via HTML component)
     if mermaid_files:
         st.markdown("### Interactive Diagrams (Mermaid)")
         for mmd_path in mermaid_files:
             caption = mmd_path.stem.replace("_", " ").title()
-            with st.expander(f"**{caption}**", expanded=False):
+            with st.expander(f"**{caption}**", expanded=True):
                 code = mmd_path.read_text(encoding="utf-8")
-                if HAS_MERMAID:
-                    try:
-                        st_mermaid(code, height=450)
-                    except Exception:
-                        st.code(code, language="mermaid")
-                else:
-                    st.code(code, language="mermaid")
-                st.download_button(
-                    f"Download {mmd_path.name}",
-                    code,
-                    file_name=mmd_path.name,
-                    mime="text/plain",
-                    key=f"dl_{mmd_path.name}",
-                )
+                render_mermaid(code, height=480)
+
+                # Download buttons row
+                dl_col1, dl_col2 = st.columns(2)
+                with dl_col1:
+                    st.download_button(
+                        f"Download .mermaid source",
+                        code,
+                        file_name=mmd_path.name,
+                        mime="text/plain",
+                        key=f"dl_src_{mmd_path.name}",
+                    )
+                with dl_col2:
+                    png_name = mmd_path.stem + ".png"
+                    mermaid_png_download_button(
+                        code,
+                        filename=png_name,
+                        label="Download PNG (via mermaid.ink)",
+                        key=f"dl_png_{mmd_path.name}",
+                    )

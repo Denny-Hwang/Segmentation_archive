@@ -117,11 +117,15 @@ def build_class_legend(results) -> str:
         c = colors[i % n]
         hex_color = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
         label = seg.get("label", f"segment_{i}")
-        score = seg.get("score", 0)
+        raw_score = seg.get("score")
+        try:
+            score_pct = f" ({float(raw_score):.0%})" if raw_score is not None else ""
+        except (TypeError, ValueError):
+            score_pct = ""
         lines.append(
             f'<span style="background:{hex_color};padding:2px 8px;'
             f'border-radius:3px;color:#fff;font-size:0.85em;">'
-            f"{label} ({score:.0%})</span>"
+            f"{label}{score_pct}</span>"
         )
     return " ".join(lines)
 

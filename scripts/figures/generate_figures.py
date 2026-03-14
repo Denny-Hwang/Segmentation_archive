@@ -29,6 +29,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 FIGURES_DIR = REPO_ROOT / "docs" / "figures"
 MERMAID_DIR = FIGURES_DIR  # .mermaid sources live alongside .png outputs
 
+# Dark-friendly color scheme
+BG_COLOR = "#1E1E2E"
+TEXT_COLOR = "#E0E0E0"
+GRID_COLOR = "#3A3A4A"
+ACCENT_COLORS = ["#4A90D9", "#50C878", "#FF6B6B", "#FFD700", "#DA70D6", "#20B2AA"]
+
 
 def _has_mmdc() -> bool:
     return shutil.which("mmdc") is not None
@@ -53,8 +59,22 @@ def render_mermaid(src: Path, out: Path) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Matplotlib figures
+# Matplotlib figures — dark-mode friendly
 # ---------------------------------------------------------------------------
+
+def _apply_dark_style(fig, ax_or_axes):
+    """Apply dark theme to matplotlib figure and axes."""
+    fig.patch.set_facecolor(BG_COLOR)
+    axes = ax_or_axes if hasattr(ax_or_axes, '__iter__') else [ax_or_axes]
+    for ax in axes:
+        ax.set_facecolor(BG_COLOR)
+        ax.tick_params(colors=TEXT_COLOR, which='both')
+        ax.xaxis.label.set_color(TEXT_COLOR)
+        ax.yaxis.label.set_color(TEXT_COLOR)
+        ax.title.set_color(TEXT_COLOR)
+        for spine in ax.spines.values():
+            spine.set_color(GRID_COLOR)
+
 
 def generate_comparison_chart() -> None:
     """Generate a horizontal bar chart comparing models across datasets."""
@@ -62,7 +82,6 @@ def generate_comparison_chart() -> None:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        import numpy as np
     except ImportError:
         print("  [SKIP] matplotlib not installed – skipping comparison chart")
         return
@@ -83,24 +102,24 @@ def generate_comparison_chart() -> None:
     }
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-    colors = ["#4A90D9", "#50C878", "#FF6B6B", "#FFD700", "#DA70D6", "#20B2AA"]
+    _apply_dark_style(fig, axes)
 
     for ax, (title, data) in zip(axes, benchmarks.items()):
         models = list(data.keys())
         scores = list(data.values())
-        bars = ax.barh(models, scores, color=colors[:len(models)], edgecolor="white")
+        bars = ax.barh(models, scores, color=ACCENT_COLORS[:len(models)], edgecolor=BG_COLOR)
         ax.set_xlabel("Score")
         ax.set_title(title, fontsize=11, fontweight="bold")
         ax.invert_yaxis()
         for bar, score in zip(bars, scores):
             ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height() / 2,
-                    f"{score:.1f}", va="center", fontsize=9)
+                    f"{score:.1f}", va="center", fontsize=9, color=TEXT_COLOR)
 
     fig.suptitle("Model Performance Comparison (representative benchmarks)",
-                 fontsize=13, fontweight="bold", y=1.02)
+                 fontsize=13, fontweight="bold", y=1.02, color=TEXT_COLOR)
     fig.tight_layout()
     out = FIGURES_DIR / "model_comparison_chart.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight")
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG_COLOR)
     plt.close(fig)
     print(f"  [OK] {out.name}")
 
@@ -144,7 +163,8 @@ def generate_timeline_chart() -> None:
     }
 
     fig, ax = plt.subplots(figsize=(16, 6))
-    ax.axhline(0, color="gray", linewidth=0.8, zorder=0)
+    _apply_dark_style(fig, ax)
+    ax.axhline(0, color=GRID_COLOR, linewidth=0.8, zorder=0)
 
     for year, name, cat, yoff in events:
         color = cat_colors.get(cat, "#888")
@@ -160,7 +180,10 @@ def generate_timeline_chart() -> None:
     # Legend
     for cat, color in cat_colors.items():
         ax.scatter([], [], color=color, label=cat.title(), s=60)
-    ax.legend(loc="upper left", fontsize=8, framealpha=0.9)
+    legend = ax.legend(loc="upper left", fontsize=8, framealpha=0.7,
+                       facecolor=BG_COLOR, edgecolor=GRID_COLOR)
+    for text in legend.get_texts():
+        text.set_color(TEXT_COLOR)
 
     ax.set_xlim(2013, 2025)
     ax.set_yticks([])
@@ -172,7 +195,7 @@ def generate_timeline_chart() -> None:
     fig.tight_layout()
 
     out = FIGURES_DIR / "timeline_evolution_chart.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight")
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG_COLOR)
     plt.close(fig)
     print(f"  [OK] {out.name}")
 
