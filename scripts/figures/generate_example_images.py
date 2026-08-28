@@ -346,8 +346,12 @@ def generate_images() -> None:
         manifest[name] = fn()
         print(f"  generated {name}")
 
-    with open(OUT_DIR / "examples.json", "w") as f:
-        json.dump(manifest, f, indent=2)
+    # Merge with any existing entries (e.g. real photos from
+    # prepare_real_examples.py) instead of overwriting them.
+    manifest_path = OUT_DIR / "examples.json"
+    merged = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    merged.update(manifest)
+    manifest_path.write_text(json.dumps(merged, indent=2) + "\n")
 
     print(f"Generated {len(manifest)} examples (image + mask) in {OUT_DIR}")
 

@@ -41,6 +41,8 @@ class Example:
     teaches: str
     image_path: Path
     mask_path: Path
+    source: str = ""
+    gt_note: str = ""
 
 
 def load_manifest() -> dict[str, Example]:
@@ -63,6 +65,8 @@ def load_manifest() -> dict[str, Example]:
                 teaches=meta["teaches"],
                 image_path=img,
                 mask_path=mask,
+                source=meta.get("source", ""),
+                gt_note=meta.get("gt_note", ""),
             )
     return examples
 

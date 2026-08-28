@@ -253,7 +253,8 @@ def main() -> None:
                 "`python scripts/figures/generate_example_images.py` first."
             )
         else:
-            keys = list(examples)
+            # Real photographs first, then synthetic teaching images
+            keys = sorted(examples, key=lambda k: not k.startswith("photo_"))
             cols = st.columns(5)
             for i, key in enumerate(keys):
                 ex = examples[key]
@@ -277,6 +278,10 @@ def main() -> None:
                 f"**{ex.title}** · {DIFFICULTY_BADGE[ex.difficulty]} · "
                 f"{len(class_names)} classes\n\n💡 **What this example teaches:** {teaches}"
             )
+            if ex.source:
+                st.caption(f"📷 **Source:** {ex.source}")
+            if ex.gt_note:
+                st.caption(f"🏷️ **Ground truth:** {ex.gt_note}")
 
     with upload_tab:
         uploaded = st.file_uploader(

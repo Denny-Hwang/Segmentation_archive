@@ -50,7 +50,10 @@ Hands-on learning pages:
   Felzenszwalb, watershed, Chan–Vese, quickshift) side-by-side on example
   images with ground-truth masks, tune parameters live, and compare a full
   evaluation-metric suite (pixel accuracy, mIoU, Dice, boundary F1, HD95,
-  ARI) per example.
+  ARI) per example. Examples include real photographs (ancient coins,
+  espresso cup, IHC tissue, Hubble deep field — all public domain/CC0,
+  bundled with scikit-image) with human-verified reference masks, plus
+  synthetic images designed to expose specific failure modes.
 - **Metrics Guide** — an interactive study guide: distort a prediction with
   sliders and watch every metric react, plus formulas, strengths,
   weaknesses, and limitations of each metric.
