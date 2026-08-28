@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from seg_lab.algorithms import ALGORITHMS, run_algorithm  # noqa: E402
 from seg_lab.examples import (  # noqa: E402
-    PALETTE,
+    class_legend_html,
     load_image,
     load_manifest,
     load_mask,
@@ -49,19 +49,6 @@ def cached_metrics(
     labels: np.ndarray, gt: np.ndarray, n_classes: int, mapping: str, tol: int
 ) -> dict:
     return compute_all(labels, gt, n_classes, mapping=mapping, boundary_tol=tol)
-
-
-def class_legend(class_names: list[str]) -> str:
-    """HTML color chips mapping palette colors to class names."""
-    chips = []
-    for i, name in enumerate(class_names):
-        r, g, b = PALETTE[i % len(PALETTE)]
-        chips.append(
-            f'<span style="background:rgb({r},{g},{b});color:#fff;'
-            f"padding:2px 10px;border-radius:10px;font-size:0.85em;"
-            f'margin-right:4px;white-space:nowrap;">{i}: {name}</span>'
-        )
-    return " ".join(chips)
 
 
 def render_param_widgets(alg_key: str) -> dict:
@@ -321,7 +308,7 @@ def main() -> None:
             )
         with gt_cols[2]:
             st.markdown("**Classes**")
-            st.markdown(class_legend(class_names), unsafe_allow_html=True)
+            st.markdown(class_legend_html(class_names), unsafe_allow_html=True)
             st.caption(
                 "Predicted segments are recolored to these class colors after "
                 "mapping; unmatched segments (Hungarian mode) appear dark gray."
