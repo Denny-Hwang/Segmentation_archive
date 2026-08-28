@@ -15,7 +15,7 @@ This section covers the evolution of transformer architectures applied to image 
 ## Table of Contents
 
 | Model | Authors | Year | Venue | Key Contribution |
-|-------|---------|------|-------|------------------|
+| ------- | --------- | ------ | ------- | ------------------ |
 | [TransUNet](transunet/review.md) | Chen et al. | 2021 | arXiv | CNN-Transformer hybrid encoder for medical image segmentation |
 | [Swin-Unet](swin_unet/review.md) | Cao et al. | 2021 | arXiv | Pure Swin Transformer U-shaped architecture |
 | [UNETR](unetr/review.md) | Hatamizadeh et al. | 2022 | WACV | ViT encoder for 3D medical segmentation |

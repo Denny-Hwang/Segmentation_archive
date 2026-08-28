@@ -88,10 +88,11 @@ class EncoderMixin:
     @property
     def output_stride(self):
         """Total downsampling factor (e.g., 32 for standard ResNet)."""
-        return min(self._output_stride, 2 ** self._depth)
+        return min(self._output_stride, 2**self._depth)
 ```
 
 The critical contract is `out_channels` -- a tuple like `(3, 64, 64, 128, 256, 512)` where:
+
 - Index 0: input image channels (identity skip)
 - Index 1: stem/initial conv output
 - Indices 2-5: feature maps at 1/4, 1/8, 1/16, 1/32 spatial resolution
@@ -105,20 +106,20 @@ Encoders override `forward()` to collect intermediate feature maps:
 ```python
 def forward(self, x):
     features = []
-    features.append(x)              # Stage 0: original input
+    features.append(x)  # Stage 0: original input
     x = self.conv1(x)
     x = self.bn1(x)
     x = self.relu(x)
-    features.append(x)              # Stage 1: after stem
+    features.append(x)  # Stage 1: after stem
     x = self.maxpool(x)
     x = self.layer1(x)
-    features.append(x)              # Stage 2: 1/4 resolution
+    features.append(x)  # Stage 2: 1/4 resolution
     x = self.layer2(x)
-    features.append(x)              # Stage 3: 1/8 resolution
+    features.append(x)  # Stage 3: 1/8 resolution
     x = self.layer3(x)
-    features.append(x)              # Stage 4: 1/16 resolution
+    features.append(x)  # Stage 4: 1/16 resolution
     x = self.layer4(x)
-    features.append(x)              # Stage 5: 1/32 resolution
+    features.append(x)  # Stage 5: 1/32 resolution
     return features
 ```
 
@@ -127,7 +128,7 @@ The `depth` parameter controls how many stages are computed -- setting `depth=3`
 ## Supported Encoder Families
 
 | Family | Example Models | Source |
-|--------|---------------|--------|
+| -------- | --------------- | -------- |
 | ResNet | resnet18, resnet34, resnet50, resnet101, resnet152 | `torchvision.models.resnet` adapted |
 | ResNeXt | resnext50_32x4d, resnext101_32x8d | `torchvision` adapted |
 | DPN | dpn68, dpn92, dpn98, dpn107, dpn131 | Custom implementation |
@@ -152,7 +153,7 @@ pretrained_settings = {
         "std": [0.229, 0.224, 0.225],
         "input_range": [0, 1],
     },
-    "advprop": { ... },  # Some encoders have multiple pretrained sources
+    "advprop": {...},  # Some encoders have multiple pretrained sources
 }
 ```
 
@@ -165,6 +166,7 @@ The preprocessing metadata (`mean`, `std`, `input_range`) is stored on the encod
 ```python
 # segmentation_models_pytorch/encoders/my_encoder.py
 from ._base import EncoderMixin
+
 
 class MyEncoder(torch.nn.Module, EncoderMixin):
     def __init__(self, out_channels, depth=5, **kwargs):
@@ -184,7 +186,7 @@ class MyEncoder(torch.nn.Module, EncoderMixin):
         super().load_state_dict(state_dict, **kwargs)
 ```
 
-2. **Define the registry entry**:
+1. **Define the registry entry**:
 
 ```python
 my_encoders = {
@@ -196,20 +198,21 @@ my_encoders = {
 }
 ```
 
-3. **Register in `encoders/__init__.py`**:
+1. **Register in `encoders/__init__.py`**:
 
 ```python
 from .my_encoder import my_encoders
+
 encoders.update(my_encoders)
 ```
 
-4. **Use**: `model = smp.Unet(encoder_name="my_encoder_small")`
+1. **Use**: `model = smp.Unet(encoder_name="my_encoder_small")`
 
 ## Key Code Paths
 
 Tracing `smp.Unet(encoder_name="resnet34", encoder_weights="imagenet")`:
 
-```
+```text
 smp.Unet.__init__()
   │
   ├── get_encoder("resnet34", in_channels=3, depth=5, weights="imagenet")
@@ -230,9 +233,10 @@ smp.Unet.__init__()
 ```
 
 The forward pass:
+
 ```python
 def forward(self, x):
-    features = self.encoder(x)          # Returns list of 6 feature maps
+    features = self.encoder(x)  # Returns list of 6 feature maps
     decoder_output = self.decoder(*features)  # Progressively upsamples
     masks = self.segmentation_head(decoder_output)  # Final conv
     return masks

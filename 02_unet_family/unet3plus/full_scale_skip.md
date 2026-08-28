@@ -33,7 +33,7 @@ A key design choice: all features are projected to 64 channels before concatenat
 ## Comparison
 
 | Skip Pattern | # Connections per node | Multi-scale? | Parameters |
-|-------------|----------------------|-------------|-----------|
+| ------------- | ---------------------- | ------------- | ----------- |
 | U-Net | 1 (same-scale) | No | Baseline |
 | UNet++ | 1 to j (dense) | Partial | ~1.2× |
 | UNet 3+ | 5+ (all scales) | Full | ~0.87× |

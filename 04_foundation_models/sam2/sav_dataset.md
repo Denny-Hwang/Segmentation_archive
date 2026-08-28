@@ -15,7 +15,7 @@ SA-V (Segment Anything in Video) is the largest video segmentation dataset at th
 ## Dataset Statistics
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Total videos | 50,900 |
 | Total masklets | 642,600 |
 | Avg. masklets per video | ~12.6 |
@@ -64,7 +64,7 @@ This phase produced the bulk of the dataset volume.
 ## Comparison to Existing Video Segmentation Datasets
 
 | Dataset | Videos | Objects | Annotation Density | Year |
-|---------|--------|---------|-------------------|------|
+| --------- | -------- | --------- | ------------------- | ------ |
 | DAVIS 2017 | 90 | 376 | Every frame | 2017 |
 | YouTube-VOS | 4,453 | 7,755 | Every 5th frame | 2018 |
 | MOSE | 2,149 | 5,200 | Every frame | 2023 |
@@ -78,6 +78,7 @@ SA-V is approximately 10x larger than previous video segmentation datasets in vi
 ### Diversity
 
 SA-V videos cover a wide range of scenarios:
+
 - Indoor and outdoor environments
 - Animals, vehicles, people, tools, furniture, and more
 - Various motion types: static, slow, fast, deformable, rigid
@@ -86,6 +87,7 @@ SA-V videos cover a wide range of scenarios:
 ### Challenging Scenarios
 
 The dataset intentionally includes challenging cases:
+
 - **Occlusion:** Objects passing behind other objects and reappearing
 - **Fast motion:** Objects with significant displacement between frames
 - **Similar objects:** Multiple instances of the same object class in close proximity
@@ -98,6 +100,7 @@ The dataset intentionally includes challenging cases:
 ### Annotation Consistency
 
 Quality metrics from human evaluation on sampled masklets:
+
 - Temporal consistency (smooth boundaries across frames): 92% rated good or better
 - Boundary accuracy (alignment with actual object edges): 89% rated good or better
 - Identity consistency (same object tracked throughout): 95% rated good or better
@@ -105,7 +108,7 @@ Quality metrics from human evaluation on sampled masklets:
 ### Automatic vs. Manual Masklets
 
 | Source | Fraction of Dataset | Avg. Quality Score |
-|--------|--------------------|--------------------|
+| -------- | -------------------- | -------------------- |
 | Manual (Phase 1) | ~5% | 4.5/5.0 |
 | Model-assisted (Phase 2) | ~15% | 4.3/5.0 |
 | Automatic (Phase 3) | ~80% | 4.0/5.0 |
@@ -115,7 +118,7 @@ The automatic masklets are slightly lower quality on average but provide essenti
 ## Dataset Splits
 
 | Split | Videos | Masklets |
-|-------|--------|----------|
+| ------- | -------- | ---------- |
 | Train | 45,000 | ~570K |
 | Val | 2,950 | ~36K |
 | Test | 2,950 | ~36K |
@@ -125,6 +128,7 @@ The test set annotations are held out for benchmarking purposes.
 ## Role in SAM 2 Training
 
 SA-V is combined with SA-1B during SAM 2 training:
+
 - Images from SA-1B are treated as single-frame videos
 - Video clips from SA-V provide the temporal supervision signal
 - The combined training ensures the model works well on both images and videos

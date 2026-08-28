@@ -37,7 +37,7 @@ Transformers excel when large datasets or strong pretraining is available. With 
 ## Computational Cost
 
 | Model | Type | Params (M) | FLOPs (G) | Inference (ms) | ADE20K mIoU |
-|-------|------|-----------|-----------|----------------|-------------|
+| ------- | ------ | ----------- | ----------- | ---------------- | ------------- |
 | DeepLab v3+ (R101) | CNN | 62.7 | 255 | 48 | 45.5 |
 | UPerNet (R101) | CNN | 85.0 | 312 | 55 | 44.9 |
 | SegFormer-B5 | Transformer | 84.7 | 183 | 35 | 51.8 |
@@ -49,7 +49,7 @@ Modern transformers (SegFormer) can be more efficient than CNNs at comparable ac
 ## Performance on Standard Benchmarks
 
 | Model | Type | ADE20K mIoU | Cityscapes mIoU | COCO PQ | Synapse DSC |
-|-------|------|-------------|-----------------|---------|-------------|
+| ------- | ------ | ------------- | ----------------- | --------- | ------------- |
 | DeepLab v3+ | CNN | 45.5 | 80.9 | — | — |
 | nnU-Net | CNN | — | — | — | 82.5 |
 | SegFormer-B5 | Transformer | 51.8 | 84.0 | — | — |
@@ -73,7 +73,7 @@ Hybrid designs leverage CNN's efficiency for local feature extraction and transf
 ## When to Use Which
 
 | Scenario | Recommendation | Rationale |
-|----------|---------------|-----------|
+| ---------- | --------------- | ----------- |
 | Small medical dataset (<100 images) | CNN (nnU-Net) | Strong inductive biases, data efficient |
 | Large natural image dataset | Transformer (Mask2Former) | Scalable, global context |
 | Real-time inference needed | CNN or efficient transformer (SegFormer) | Lower latency |

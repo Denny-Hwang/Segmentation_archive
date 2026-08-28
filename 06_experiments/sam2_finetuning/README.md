@@ -38,7 +38,7 @@ visual characteristics differ substantially from the web-scale training data.
 ## Fine-Tuning Strategies
 
 | Strategy | Frozen Components | Trainable Components | Expected GPU Memory | Training Speed |
-|----------|------------------|---------------------|-------------------|----------------|
+| ---------- | ------------------ | --------------------- | ------------------- | ---------------- |
 | Zero-shot | All | None | ~4 GB (inference only) | N/A |
 | Decoder-only | Image encoder, prompt encoder | Mask decoder (~4M params) | ~8 GB | Fast (~1 hr) |
 | LoRA (rank=4) | Most of image encoder | LoRA adapters + mask decoder (~6M params) | ~12 GB | Moderate (~3 hrs) |
@@ -75,11 +75,11 @@ adding domain-specific capability.
 from peft import LoraConfig, get_peft_model
 
 lora_config = LoraConfig(
-    r=4,                          # Rank of the adaptation matrices
-    lora_alpha=8,                 # Scaling factor
-    target_modules=[              # Apply LoRA to attention projections
-        "qkv",                    # Query-Key-Value projection in Hiera
-        "proj",                   # Output projection
+    r=4,  # Rank of the adaptation matrices
+    lora_alpha=8,  # Scaling factor
+    target_modules=[  # Apply LoRA to attention projections
+        "qkv",  # Query-Key-Value projection in Hiera
+        "proj",  # Output projection
     ],
     lora_dropout=0.1,
     bias="none",
@@ -93,6 +93,7 @@ for param in model.mask_decoder.parameters():
 ```
 
 **Rank selection guidance:**
+
 - Rank 4: Minimal adaptation, best for small domain shifts. ~2M additional parameters.
 - Rank 8: Moderate adaptation, good default choice. ~4M additional parameters.
 - Rank 16: Aggressive adaptation, for large domain shifts. ~8M additional parameters.
@@ -105,11 +106,14 @@ a higher rate for the decoder (1e-4) to avoid catastrophic forgetting of pretrai
 
 ```python
 # Differential learning rates
-optimizer = torch.optim.AdamW([
-    {"params": model.image_encoder.parameters(), "lr": 1e-6},
-    {"params": model.prompt_encoder.parameters(), "lr": 1e-5},
-    {"params": model.mask_decoder.parameters(), "lr": 1e-4},
-], weight_decay=0.01)
+optimizer = torch.optim.AdamW(
+    [
+        {"params": model.image_encoder.parameters(), "lr": 1e-6},
+        {"params": model.prompt_encoder.parameters(), "lr": 1e-5},
+        {"params": model.mask_decoder.parameters(), "lr": 1e-4},
+    ],
+    weight_decay=0.01,
+)
 ```
 
 ---
@@ -121,7 +125,7 @@ optimizer = torch.optim.AdamW([
 Choose a domain where SAM 2 zero-shot performance is known to be limited:
 
 | Domain | Dataset | Images | Classes | Why SAM Struggles |
-|--------|---------|--------|---------|-------------------|
+| -------- | --------- | -------- | --------- | ------------------- |
 | Medical (polyps) | Kvasir-SEG | 1,000 | 1 (binary) | Low contrast, ambiguous boundaries |
 | Medical (organs) | Synapse Multi-Organ | ~3,700 slices | 8 | Grayscale, subtle tissue boundaries |
 | Satellite | iSAID | 2,806 | 15 | Overhead perspective, tiny objects |
@@ -187,18 +191,22 @@ class SAM2Dataset(Dataset):
 ### Augmentation Pipeline
 
 ```python
-train_transform = A.Compose([
-    A.Resize(1024, 1024),
-    A.HorizontalFlip(p=0.5),
-    A.VerticalFlip(p=0.5),
-    A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.3),
-    A.GaussianBlur(blur_limit=(3, 7), p=0.2),
-    # Note: Do NOT apply normalization here -- SAM 2 has its own preprocessor
-])
+train_transform = A.Compose(
+    [
+        A.Resize(1024, 1024),
+        A.HorizontalFlip(p=0.5),
+        A.VerticalFlip(p=0.5),
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.3),
+        A.GaussianBlur(blur_limit=(3, 7), p=0.2),
+        # Note: Do NOT apply normalization here -- SAM 2 has its own preprocessor
+    ]
+)
 
-val_transform = A.Compose([
-    A.Resize(1024, 1024),
-])
+val_transform = A.Compose(
+    [
+        A.Resize(1024, 1024),
+    ]
+)
 ```
 
 ---
@@ -253,7 +261,7 @@ evaluation:
 ### Metrics
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | Dice coefficient | Primary metric, standard for medical segmentation |
 | IoU (Jaccard) | Complementary overlap metric |
 | Hausdorff Distance (95th) | Boundary quality metric |
@@ -278,7 +286,7 @@ sensitive to exact prompt placement).
 ### Baselines
 
 | Baseline | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | SAM 2 zero-shot (point) | Unmodified SAM 2 with 1 foreground point prompt |
 | SAM 2 zero-shot (box) | Unmodified SAM 2 with bounding box prompt |
 | U-Net (trained from scratch) | Standard U-Net trained on same data, no prompts |
@@ -291,7 +299,7 @@ sensitive to exact prompt placement).
 ### Kvasir-SEG Polyp Segmentation (Dice Score)
 
 | Method | Point (1) | Point (3) | Box | Box + Point |
-|--------|-----------|-----------|-----|-------------|
+| -------- | ----------- | ----------- | ----- | ------------- |
 | SAM 2 zero-shot | ~0.72 | ~0.78 | ~0.82 | ~0.84 |
 | SAM 2 decoder-only FT | ~0.82 | ~0.86 | ~0.88 | ~0.89 |
 | SAM 2 LoRA (r=4) | ~0.85 | ~0.88 | ~0.90 | ~0.91 |
@@ -372,7 +380,7 @@ sam2_model = build_sam2("sam2_hiera_l.yaml", "checkpoints/sam2_hiera_large.pt")
 predictor = SAM2ImagePredictor(sam2_model)
 
 # For fine-tuning, access components directly:
-image_encoder = sam2_model.image_encoder    # Hiera backbone
+image_encoder = sam2_model.image_encoder  # Hiera backbone
 prompt_encoder = sam2_model.sam_prompt_encoder
 mask_decoder = sam2_model.sam_mask_decoder
 ```

@@ -14,7 +14,7 @@ license: Custom (challenge terms)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | BraTS (Brain Tumor Segmentation Challenge) |
 | **Source** | [CBICA / UPenn](https://www.med.upenn.edu/cbica/brats/) |
 | **Size** | 2000+ multi-modal MRI scans (varies by year) |

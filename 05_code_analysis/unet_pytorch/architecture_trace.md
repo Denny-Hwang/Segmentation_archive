@@ -10,7 +10,7 @@ tags: [unet, architecture, forward-pass, pytorch]
 
 ## Forward Pass Flow
 
-```
+```text
 Input (B, C_in, H, W)
   │
   ├── inc: DoubleConv ──────────────────────────── skip1
@@ -60,11 +60,12 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
 ```
 
 Key details:
+
 - `kernel_size=3` with `padding=1` produces **same-padding** convolutions (output H/W = input H/W)
 - `bias=False` because BatchNorm already has a learnable bias (beta parameter)
 - `mid_channels` defaults to `out_channels` but can be overridden (used in the bilinear upsampling path)
@@ -79,8 +80,8 @@ class Down(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.maxpool_conv = nn.Sequential(
-            nn.MaxPool2d(2),       # kernel_size=2, stride=2 (default)
-            DoubleConv(in_channels, out_channels)
+            nn.MaxPool2d(2),  # kernel_size=2, stride=2 (default)
+            DoubleConv(in_channels, out_channels),
         )
 ```
 
@@ -97,11 +98,12 @@ class Up(nn.Module):
     def __init__(self, in_channels, out_channels, bilinear=True):
         super().__init__()
         if bilinear:
-            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.up = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
             self.conv = DoubleConv(in_channels, out_channels, in_channels // 2)
         else:
-            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2,
-                                          kernel_size=2, stride=2)
+            self.up = nn.ConvTranspose2d(
+                in_channels, in_channels // 2, kernel_size=2, stride=2
+            )
             self.conv = DoubleConv(in_channels, out_channels)
 
     def forward(self, x1, x2):
@@ -109,8 +111,7 @@ class Up(nn.Module):
         # Pad x1 to match x2 spatial dimensions
         diffY = x2.size()[2] - x1.size()[2]
         diffX = x2.size()[3] - x1.size()[3]
-        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                         diffY // 2, diffY - diffY // 2])
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
         x = torch.cat([x2, x1], dim=1)  # Concatenate along channel dim
         return self.conv(x)
 ```
@@ -126,8 +127,7 @@ Unlike the original U-Net paper which used valid (unpadded) convolutions, this i
 ```python
 diffY = x2.size()[2] - x1.size()[2]
 diffX = x2.size()[3] - x1.size()[3]
-x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                 diffY // 2, diffY - diffY // 2])
+x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
 ```
 
 This asymmetric padding ensures that upsampled features (`x1`) match the encoder skip connection (`x2`) exactly, even when dimensions differ by 1 pixel. The padding is applied with zero values by default.
@@ -141,28 +141,32 @@ from unet import UNet
 model = UNet(n_channels=3, n_classes=2, bilinear=True)
 x = torch.randn(1, 3, 572, 572)
 
+
 # Hook to print shapes at each stage
 def trace_shapes(model, x):
     x1 = model.inc(x)
-    print(f"inc:   {x.shape} -> {x1.shape}")        # [1,3,572,572] -> [1,64,572,572]
+    print(f"inc:   {x.shape} -> {x1.shape}")  # [1,3,572,572] -> [1,64,572,572]
     x2 = model.down1(x1)
-    print(f"down1: {x1.shape} -> {x2.shape}")       # [1,64,572,572] -> [1,128,286,286]
+    print(f"down1: {x1.shape} -> {x2.shape}")  # [1,64,572,572] -> [1,128,286,286]
     x3 = model.down2(x2)
-    print(f"down2: {x2.shape} -> {x3.shape}")       # [1,128,286,286] -> [1,256,143,143]
+    print(f"down2: {x2.shape} -> {x3.shape}")  # [1,128,286,286] -> [1,256,143,143]
     x4 = model.down3(x3)
-    print(f"down3: {x3.shape} -> {x4.shape}")       # [1,256,143,143] -> [1,512,71,71]
+    print(f"down3: {x3.shape} -> {x4.shape}")  # [1,256,143,143] -> [1,512,71,71]
     x5 = model.down4(x4)
-    print(f"down4: {x4.shape} -> {x5.shape}")       # [1,512,71,71] -> [1,1024,35,35]
+    print(f"down4: {x4.shape} -> {x5.shape}")  # [1,512,71,71] -> [1,1024,35,35]
     x = model.up1(x5, x4)
-    print(f"up1:   {x5.shape} + skip -> {x.shape}") # [1,1024,35,35] + skip -> [1,512,71,71]
+    print(
+        f"up1:   {x5.shape} + skip -> {x.shape}"
+    )  # [1,1024,35,35] + skip -> [1,512,71,71]
     x = model.up2(x, x3)
-    print(f"up2:   -> {x.shape}")                    # -> [1,256,143,143]
+    print(f"up2:   -> {x.shape}")  # -> [1,256,143,143]
     x = model.up3(x, x2)
-    print(f"up3:   -> {x.shape}")                    # -> [1,128,286,286]
+    print(f"up3:   -> {x.shape}")  # -> [1,128,286,286]
     x = model.up4(x, x1)
-    print(f"up4:   -> {x.shape}")                    # -> [1,64,572,572]
+    print(f"up4:   -> {x.shape}")  # -> [1,64,572,572]
     logits = model.outc(x)
-    print(f"outc:  -> {logits.shape}")               # -> [1,2,572,572]
+    print(f"outc:  -> {logits.shape}")  # -> [1,2,572,572]
+
 
 trace_shapes(model, x)
 ```

@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation |
 | **Authors** | Milletari, F., Navab, N., Ahmadi, S. |
 | **Year** | 2016 |

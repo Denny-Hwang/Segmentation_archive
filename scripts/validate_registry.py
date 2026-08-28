@@ -45,9 +45,7 @@ def validate_yaml_syntax(path: Path) -> tuple[bool, Any]:
         return False, str(e)
 
 
-def validate_registry_content(
-    data: dict, registry_path: Path
-) -> list[str]:
+def validate_registry_content(data: dict, registry_path: Path) -> list[str]:
     """Validate the content of a registry file.
 
     Checks for required fields and referenced file existence.
@@ -63,7 +61,9 @@ def validate_registry_content(
     registry_dir = registry_path.parent
 
     if not isinstance(data, dict):
-        issues.append(f"ERROR: Registry root must be a mapping, got {type(data).__name__}")
+        issues.append(
+            f"ERROR: Registry root must be a mapping, got {type(data).__name__}"
+        )
         return issues
 
     # Find the main list (could be 'papers', 'repositories', 'datasets', etc.)
@@ -102,9 +102,7 @@ def validate_registry_content(
             # Check URL fields are non-empty if present
             url = entry.get("url")
             if url is not None and not url:
-                issues.append(
-                    f"WARNING: Empty URL in entry '{entry_id or i}'"
-                )
+                issues.append(f"WARNING: Empty URL in entry '{entry_id or i}'")
 
     return issues
 
@@ -184,7 +182,7 @@ def main():
         for issue in issues:
             print(f"  {issue}")
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"Registries checked: {len(results)}")
     print(f"Errors: {total_errors}")
     print(f"Warnings: {total_warnings}")

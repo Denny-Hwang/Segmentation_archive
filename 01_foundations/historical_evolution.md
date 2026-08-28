@@ -80,7 +80,7 @@ $$\text{FCN-8s output} = \text{Upsample}_{2\times}(\text{Upsample}_{2\times}(\te
 
 **Architecture:** A symmetric encoder-decoder with dense skip connections at every resolution level. The encoder contracts the spatial dimensions while increasing feature channels; the decoder expands back. Skip connections concatenate (not add) encoder features to decoder features at corresponding resolutions.
 
-```
+```text
 Encoder:           Decoder:
 [572x572, 64]  --> copy & crop --> [388x388, 128]
 [280x280, 128] --> copy & crop --> [196x196, 256]
@@ -194,7 +194,7 @@ $$\text{Output} = \{(m_i, p_i)\}_{i=1}^{N}, \quad m_i \in [0,1]^{H \times W}, \q
 ### Other Key Transformer Works
 
 | Model | Year | Contribution |
-|-------|------|-------------|
+| ------- | ------ | ------------- |
 | Swin Transformer | 2021 | Hierarchical vision transformer with shifted windows; became dominant backbone |
 | MaskFormer | 2021 | Precursor to Mask2Former; showed mask classification unifies semantic and panoptic |
 | OneFormer | 2023 | Multi-task universal segmentation with task-conditioned queries |
@@ -244,7 +244,7 @@ Generalist models that handle segmentation alongside other vision tasks (detecti
 
 ## Timeline Summary
 
-```
+```text
 1979  Otsu's Thresholding
 1986  Canny Edge Detector
 1988  Active Contours (Snakes)

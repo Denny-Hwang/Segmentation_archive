@@ -51,6 +51,7 @@ graph TD
 ```
 
 **Legend:**
+
 - Blue: Foundational architecture
 - Green: Early 3D extensions (2016)
 - Orange: Architectural innovations (2018)
@@ -62,7 +63,7 @@ graph TD
 ## Papers in This Module
 
 | # | Paper | Year | Key Contribution | Difficulty |
-|---|-------|------|------------------|------------|
+| --- | ------- | ------ | ------------------ | ------------ |
 | 1 | U-Net (Original) | 2015 | Encoder-decoder with skip connections | Beginner |
 | 2 | V-Net | 2016 | Volumetric 3D segmentation, Dice loss | Beginner |
 | 3 | 3D U-Net | 2016 | 3D convolutions, sparse annotation | Beginner |
@@ -104,7 +105,7 @@ graph TD
 
 ## Directory Structure
 
-```
+```text
 02_unet_family/
 ├── README.md
 ├── _registry.yaml

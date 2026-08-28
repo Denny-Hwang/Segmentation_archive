@@ -11,7 +11,7 @@ difficulty: advanced
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | OneFormer: One Transformer to Rule Universal Image Segmentation |
 | **Authors** | Jain, J., Li, J., Chiu, M., Hassani, A., Orber, N., Shi, H. |
 | **Year** | 2023 |
@@ -67,7 +67,7 @@ ADE20K, Cityscapes, COCO — evaluated on all three segmentation tasks per datas
 ### Key Results
 
 | Task | Dataset | OneFormer (Swin-L) | Mask2Former (Swin-L) |
-|------|---------|-------------------|---------------------|
+| ------ | --------- | ------------------- | --------------------- |
 | Semantic | ADE20K | 58.0 mIoU | 57.8 mIoU |
 | Panoptic | ADE20K | 49.8 PQ | 48.1 PQ |
 | Semantic | Cityscapes | 84.4 mIoU | 83.3 mIoU |

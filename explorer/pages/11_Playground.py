@@ -1,7 +1,8 @@
-"""Playground - Try segmentation models on your own images.
+"""Playground - Try deep segmentation models on your own images.
 
 Upload an image or select an example, pick one or more models,
-and compare segmentation results side-by-side.
+and compare segmentation results side-by-side. For classical
+algorithms with ground-truth metrics, see the Segmentation Lab page.
 """
 
 from __future__ import annotations
@@ -74,47 +75,55 @@ def load_pipeline(model_key: str):
         return None
 
 
-def run_inference(pipe, image):
-    """Run the segmentation pipeline and return results + elapsed time."""
+@st.cache_data(show_spinner=False, max_entries=32)
+def cached_inference(model_key: str, image_bytes: bytes) -> tuple:
+    """Run inference once per (model, image); overlay tweaks reuse the cache."""
+    import io
+
+    from PIL import Image
+
+    pipe = load_pipeline(model_key)
+    if pipe is None:
+        raise RuntimeError("model unavailable")
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     t0 = time.perf_counter()
     results = pipe(image)
     elapsed = time.perf_counter() - t0
     return results, elapsed
 
 
+def segment_colors(n: int):
+    """Deterministic distinct colors, shared by overlay and legend."""
+    import numpy as np
+
+    rng = np.random.default_rng(42)
+    return rng.integers(60, 230, size=(max(n, 1), 3), dtype=np.uint8)
+
+
 def blend_masks(image, results, alpha: float = 0.5):
     """Create a color overlay of segmentation masks on the original image."""
-    from PIL import Image
     import numpy as np
+    from PIL import Image
 
     img_array = np.array(image.convert("RGB"))
     overlay = img_array.copy()
-
-    # Generate distinct colours for each segment
-    np.random.seed(42)
-    n = len(results)
-    colors = np.random.randint(60, 230, size=(max(n, 1), 3), dtype=np.uint8)
+    colors = segment_colors(len(results))
 
     for i, seg in enumerate(results):
         mask = np.array(seg["mask"].convert("L")) > 127
         overlay[mask] = (
-            overlay[mask] * (1 - alpha) + colors[i % n] * alpha
+            overlay[mask] * (1 - alpha) + colors[i % len(colors)] * alpha
         ).astype(np.uint8)
 
     return Image.fromarray(overlay)
 
 
 def build_class_legend(results) -> str:
-    """Return a Markdown legend mapping colours to class labels."""
-    import numpy as np
-
-    np.random.seed(42)
-    n = len(results)
-    colors = np.random.randint(60, 230, size=(max(n, 1), 3), dtype=np.uint8)
-
+    """Return an HTML legend mapping colours to class labels."""
+    colors = segment_colors(len(results))
     lines = []
     for i, seg in enumerate(results):
-        c = colors[i % n]
+        c = colors[i % len(colors)]
         hex_color = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
         label = seg.get("label", f"segment_{i}")
         raw_score = seg.get("score")
@@ -134,20 +143,23 @@ def build_class_legend(results) -> str:
 # Page
 # ---------------------------------------------------------------------------
 
+
 def main():
     st.title("Segmentation Playground")
     st.markdown(
-        "Upload your own image or pick an example, select one or more models, "
-        "and compare segmentation results side-by-side."
+        "Upload your own image or pick an example, select one or more deep "
+        "models, and compare segmentation results side-by-side. To experiment "
+        "with **classical algorithms and ground-truth metrics**, head to the "
+        "**Segmentation Lab** page."
     )
 
     # Check dependencies
     _deps_ok = True
     try:
-        import transformers  # noqa: F401
-        import torch  # noqa: F401
-        from PIL import Image  # noqa: F401
         import numpy  # noqa: F401
+        import torch  # noqa: F401
+        import transformers  # noqa: F401
+        from PIL import Image  # noqa: F401
     except ImportError as exc:
         st.warning(
             f"**Missing dependency:** `{exc.name}`. "
@@ -178,11 +190,12 @@ def main():
         value=512,
     )
 
-    # ----- Image input -----
+    # ----- Image input (an upload always wins over a previously picked example)
     st.markdown("---")
     input_tab, example_tab = st.tabs(["Upload Image", "Example Images"])
 
-    pil_image = None
+    uploaded_image = None
+    example_image = None
 
     with input_tab:
         uploaded = st.file_uploader(
@@ -191,29 +204,43 @@ def main():
         )
         if uploaded is not None:
             from PIL import Image
-            pil_image = Image.open(uploaded).convert("RGB")
+
+            uploaded_image = Image.open(uploaded).convert("RGB")
 
     with example_tab:
-        example_files = sorted(EXAMPLES_DIR.glob("*.png")) if EXAMPLES_DIR.exists() else []
+        example_files = (
+            sorted(EXAMPLES_DIR.glob("*.png")) if EXAMPLES_DIR.exists() else []
+        )
         if example_files:
             cols = st.columns(min(len(example_files), 4))
             for i, ef in enumerate(example_files):
                 with cols[i % 4]:
-                    st.image(str(ef), caption=ef.stem.replace("_", " ").title(), use_container_width=True)
+                    st.image(
+                        str(ef),
+                        caption=ef.stem.replace("_", " ").title(),
+                        use_container_width=True,
+                    )
                     if st.button("Use", key=f"ex_{ef.stem}"):
                         st.session_state["_playground_example"] = str(ef)
 
             chosen = st.session_state.get("_playground_example")
-            if chosen:
+            if chosen and Path(chosen).exists():
                 from PIL import Image
-                pil_image = Image.open(chosen).convert("RGB")
-                st.success(f"Using example: {Path(chosen).stem}")
+
+                example_image = Image.open(chosen).convert("RGB")
+                col_a, col_b = st.columns([3, 1])
+                col_a.success(f"Using example: {Path(chosen).stem}")
+                if col_b.button("Clear example"):
+                    del st.session_state["_playground_example"]
+                    st.rerun()
         else:
             st.info(
                 "No example images found. Run "
                 "`python scripts/figures/generate_example_images.py` "
                 "to create synthetic examples."
             )
+
+    pil_image = uploaded_image if uploaded_image is not None else example_image
 
     # ----- Run inference -----
     if pil_image is None:
@@ -230,50 +257,49 @@ def main():
 
     # Resize
     from PIL import Image as PILImage
+
     w, h = pil_image.size
     if max(w, h) > max_size:
         ratio = max_size / max(w, h)
-        pil_image = pil_image.resize(
-            (int(w * ratio), int(h * ratio)), PILImage.LANCZOS
-        )
+        pil_image = pil_image.resize((int(w * ratio), int(h * ratio)), PILImage.LANCZOS)
+
+    import io
+
+    buf = io.BytesIO()
+    pil_image.save(buf, format="PNG")
+    image_bytes = buf.getvalue()
 
     st.markdown("---")
     st.subheader("Results")
+    st.image(pil_image, caption="Input image", width=min(pil_image.size[0], 420))
 
     result_cols = st.columns(max(len(selected_models), 1))
 
     for idx, model_key in enumerate(selected_models):
         with result_cols[idx % len(result_cols)]:
             st.markdown(f"#### {model_key}")
-            pipe = load_pipeline(model_key)
-            if pipe is None:
-                st.error("Model not available.")
-                continue
-
             with st.spinner(f"Running {model_key}…"):
                 try:
-                    results, elapsed = run_inference(pipe, pil_image)
+                    results, elapsed = cached_inference(model_key, image_bytes)
                 except Exception as exc:
                     st.error(f"Inference failed: {exc}")
                     continue
 
-            st.caption(f"Inference time: **{elapsed:.2f}s** | Segments: **{len(results)}**")
+            st.caption(
+                f"Inference time: **{elapsed:.2f}s** | Segments: **{len(results)}**"
+            )
 
-            # Original
-            st.image(pil_image, caption="Original", use_container_width=True)
-
-            # Overlay
             overlay = blend_masks(pil_image, results, alpha=overlay_alpha)
             st.image(overlay, caption="Segmentation overlay", use_container_width=True)
 
-            # Legend
             legend_html = build_class_legend(results)
             st.markdown(legend_html, unsafe_allow_html=True)
 
     st.markdown("---")
     st.caption(
-        "Models are loaded from Hugging Face Hub on first use and cached locally. "
-        "All inference runs on CPU by default."
+        "Models are loaded from Hugging Face Hub on first use and cached "
+        "locally; inference results are cached per (model, image), so overlay "
+        "tweaks are instant. All inference runs on CPU by default."
     )
 
 

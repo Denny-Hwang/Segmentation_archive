@@ -106,7 +106,7 @@ tar xf VOCtrainval_11-May-2012.tar
 
 ## Recommended Directory Layout
 
-```
+```text
 data/
 ├── synapse/
 │   ├── raw/

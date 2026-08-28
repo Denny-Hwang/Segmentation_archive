@@ -12,8 +12,8 @@ tags: [nnunet, medical-segmentation, self-configuring, pytorch]
 ## Repository Summary
 
 | Field | Details |
-|-------|---------|
-| URL | https://github.com/MIC-DKFZ/nnUNet |
+| ------- | --------- |
+| URL | <https://github.com/MIC-DKFZ/nnUNet> |
 | License | Apache-2.0 |
 | Framework | PyTorch |
 | Primary Use Case | Medical image segmentation (2D, 3D) |
@@ -25,7 +25,7 @@ nnU-Net is the dominant framework for medical image segmentation, consistently w
 
 ## Repository Structure (v2)
 
-```
+```text
 nnunetv2/
 ├── experiment_planning/
 │   ├── plan_and_preprocess_api.py
@@ -57,7 +57,7 @@ nnunetv2/
 ## Analysis Files
 
 | File | Description | Status |
-|------|-------------|--------|
+| ------ | ------------- | -------- |
 | `experiment_planner.md` | How nnU-Net automatically configures experiments | Planned |
 | `network_architecture.md` | Architecture details (PlainConvUNet, ResidualEncoderUNet) | Planned |
 | `preprocessing_pipeline.md` | Automated preprocessing pipeline | Planned |

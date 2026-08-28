@@ -1,7 +1,6 @@
 """Architecture diagram viewer component for the explorer."""
 
 import streamlit as st
-
 from components.mermaid_render import render_mermaid
 
 

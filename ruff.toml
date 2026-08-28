@@ -1,0 +1,12 @@
+# Explicit, pinned lint configuration so CI results do not drift when ruff
+# changes its default rule set between releases (which broke CI at 0.16).
+target-version = "py311"
+
+[lint]
+select = [
+    "E4", # pycodestyle: imports
+    "E7", # pycodestyle: statements
+    "E9", # pycodestyle: runtime errors
+    "F",  # pyflakes
+    "I",  # isort import sorting
+]

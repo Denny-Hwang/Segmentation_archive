@@ -37,6 +37,7 @@ modifying the model code. This is the standard technique for feature map extract
 import torch
 import torch.nn as nn
 
+
 class FeatureExtractor:
     """Extract intermediate feature maps from a model using forward hooks."""
 
@@ -70,6 +71,7 @@ class FeatureExtractor:
             if isinstance(output, tuple):
                 output = output[0]
             self.activations[name] = output.detach().cpu()
+
         return hook_fn
 
     def extract(self, input_tensor):
@@ -94,14 +96,17 @@ import segmentation_models_pytorch as smp
 model = smp.Unet("resnet34", encoder_weights="imagenet", classes=1)
 model.eval()
 
-extractor = FeatureExtractor(model, [
-    "encoder.layer1",    # 64 channels, 1/2 resolution
-    "encoder.layer2",    # 128 channels, 1/4 resolution
-    "encoder.layer3",    # 256 channels, 1/8 resolution
-    "encoder.layer4",    # 512 channels, 1/16 resolution
-    "decoder.blocks.0",  # First decoder block (after deepest skip)
-    "decoder.blocks.3",  # Last decoder block (highest resolution)
-])
+extractor = FeatureExtractor(
+    model,
+    [
+        "encoder.layer1",  # 64 channels, 1/2 resolution
+        "encoder.layer2",  # 128 channels, 1/4 resolution
+        "encoder.layer3",  # 256 channels, 1/8 resolution
+        "encoder.layer4",  # 512 channels, 1/16 resolution
+        "decoder.blocks.0",  # First decoder block (after deepest skip)
+        "decoder.blocks.3",  # Last decoder block (highest resolution)
+    ],
+)
 
 # Run extraction
 image_tensor = preprocess(image).unsqueeze(0)  # [1, 3, H, W]
@@ -126,6 +131,7 @@ see what individual convolutional filters respond to.
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def plot_feature_channels(feature_map, layer_name, num_channels=16, ncols=8):
     """
     Plot individual channels of a feature map.
@@ -143,8 +149,11 @@ def plot_feature_channels(feature_map, layer_name, num_channels=16, ncols=8):
     nrows = (num_channels + ncols - 1) // ncols
 
     fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 2, nrows * 2))
-    fig.suptitle(f"{layer_name} ({feature_map.shape[0]} channels, "
-                 f"{feature_map.shape[1]}x{feature_map.shape[2]})", fontsize=14)
+    fig.suptitle(
+        f"{layer_name} ({feature_map.shape[0]} channels, "
+        f"{feature_map.shape[1]}x{feature_map.shape[2]})",
+        fontsize=14,
+    )
 
     for idx in range(nrows * ncols):
         ax = axes.flat[idx] if nrows > 1 else axes[idx]
@@ -178,8 +187,7 @@ def plot_mean_activation(feature_map, layer_name, original_image=None):
 
     mean_activation = feature_map.mean(dim=0).numpy()  # [H, W]
 
-    fig, axes = plt.subplots(1, 2 if original_image is not None else 1,
-                              figsize=(10, 5))
+    fig, axes = plt.subplots(1, 2 if original_image is not None else 1, figsize=(10, 5))
 
     if original_image is not None:
         axes[0].imshow(original_image)
@@ -187,7 +195,7 @@ def plot_mean_activation(feature_map, layer_name, original_image=None):
         axes[0].axis("off")
         ax = axes[1]
     else:
-        ax = axes if not hasattr(axes, '__len__') else axes[0]
+        ax = axes if not hasattr(axes, "__len__") else axes[0]
 
     im = ax.imshow(mean_activation, cmap="jet")
     ax.set_title(f"{layer_name} - Mean Activation")
@@ -219,8 +227,9 @@ def plot_topk_channels(feature_map, layer_name, k=8):
     for i, ch_idx in enumerate(topk_indices):
         channel = feature_map[ch_idx].numpy()
         axes[i].imshow(channel, cmap="inferno")
-        axes[i].set_title(f"Ch {ch_idx.item()}\n(mean={channel_means[ch_idx]:.2f})",
-                          fontsize=8)
+        axes[i].set_title(
+            f"Ch {ch_idx.item()}\n(mean={channel_means[ch_idx]:.2f})", fontsize=8
+        )
         axes[i].axis("off")
 
     plt.tight_layout()
@@ -234,6 +243,7 @@ PCA, then map to RGB. This gives a compact, colorful summary of the feature spac
 
 ```python
 from sklearn.decomposition import PCA
+
 
 def pca_feature_to_rgb(feature_map):
     """
@@ -254,7 +264,7 @@ def pca_feature_to_rgb(feature_map):
 
     # Normalize each component to [0, 1]
     projected -= projected.min(axis=0)
-    projected /= (projected.max(axis=0) + 1e-8)
+    projected /= projected.max(axis=0) + 1e-8
 
     rgb = projected.reshape(H, W, 3)
     return rgb
@@ -301,13 +311,13 @@ def compute_gradcam(model, input_tensor, target_layer, target_class=1):
     target_score.backward()
 
     # Compute Grad-CAM
-    grads = gradients["value"][0]       # [C, h, w]
-    acts = activations["value"][0]      # [C, h, w]
-    weights = grads.mean(dim=(1, 2))    # [C] -- global average pooling of gradients
+    grads = gradients["value"][0]  # [C, h, w]
+    acts = activations["value"][0]  # [C, h, w]
+    weights = grads.mean(dim=(1, 2))  # [C] -- global average pooling of gradients
 
     cam = (weights[:, None, None] * acts).sum(dim=0)  # [h, w]
-    cam = torch.relu(cam)               # Only positive contributions
-    cam = cam / (cam.max() + 1e-8)      # Normalize to [0, 1]
+    cam = torch.relu(cam)  # Only positive contributions
+    cam = cam / (cam.max() + 1e-8)  # Normalize to [0, 1]
 
     fh.remove()
     bh.remove()
@@ -322,7 +332,7 @@ def compute_gradcam(model, input_tensor, target_layer, target_class=1):
 For a U-Net-style architecture, the most informative layers to visualize are:
 
 | Layer | Resolution | What to Look For |
-|-------|-----------|-----------------|
+| ------- | ----------- | ----------------- |
 | Encoder stage 1 output | 1/2 of input | Edge detectors, texture filters, color blobs |
 | Encoder stage 2 output | 1/4 of input | Texture combinations, corners, simple patterns |
 | Encoder stage 3 output | 1/8 of input | Object parts, regional patterns |
@@ -367,14 +377,16 @@ def plot_unet_feature_grid(features, original_image, figsize=(18, 8)):
         if key in features:
             mean_act = features[key][0].mean(dim=0).numpy()
             axes[0, i].imshow(mean_act, cmap="viridis")
-            axes[0, i].set_title(f"Enc {i+1}\n{features[key].shape[1]}ch", fontsize=9)
+            axes[0, i].set_title(f"Enc {i + 1}\n{features[key].shape[1]}ch", fontsize=9)
         axes[0, i].axis("off")
 
     # Bottleneck (bottom center)
     if "bottleneck" in features:
         mean_act = features["bottleneck"][0].mean(dim=0).numpy()
         axes[1, 2].imshow(mean_act, cmap="viridis")
-        axes[1, 2].set_title(f"Bottleneck\n{features['bottleneck'].shape[1]}ch", fontsize=9)
+        axes[1, 2].set_title(
+            f"Bottleneck\n{features['bottleneck'].shape[1]}ch", fontsize=9
+        )
     for j in [0, 1, 3, 4]:
         axes[1, j].axis("off")
     axes[1, 2].axis("off")
@@ -396,29 +408,34 @@ def plot_unet_feature_grid(features, original_image, figsize=(18, 8)):
 When examining feature maps, here are key patterns to look for:
 
 **Encoder features (early layers):**
+
 - Individual channels should respond to specific visual patterns: horizontal edges, vertical
   edges, color gradients, textures.
 - If all channels look similar or blank, the model may not be learning diverse features
   (possible issue with initialization or training).
 
 **Encoder features (deep layers):**
+
 - Activations should roughly correspond to semantic regions in the image. For a cell
   segmentation model, you might see channels that activate specifically on cell interiors,
   cell boundaries, or background.
 - The spatial resolution is low, so features look "blobby"---this is expected.
 
 **Bottleneck features:**
+
 - The most compressed representation. Should encode the highest-level semantics.
 - Strong, localized activations often correspond to the target objects.
 - If the bottleneck shows no structure, the model may have insufficient capacity.
 
 **Decoder features:**
+
 - Should progressively sharpen as resolution increases.
 - After skip connection fusion, features should be noticeably sharper than before---this
   confirms the skip connections are working.
 - The final decoder stage should closely resemble the predicted segmentation mask.
 
 **Comparing models:**
+
 - CNN models typically show more spatially localized, edge-like features in early layers.
 - Transformer models tend to show more globally coherent features even in early stages.
 - If two models have similar accuracy but different feature maps, they may complement each
@@ -436,6 +453,7 @@ Feature map visualizations should be saved as:
 - **Animated GIFs** cycling through channels: `{model}_{layer}_{image_id}.gif`
 
 Recommended settings:
+
 - DPI: 150 for review, 300 for publication.
 - Colormap: `viridis` (perceptually uniform) for general use, `jet` for heatmap overlays,
   `inferno` for high-contrast single-channel views.

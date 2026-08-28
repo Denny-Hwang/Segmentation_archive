@@ -15,7 +15,7 @@ SA-1B (Segment Anything 1 Billion) is the largest segmentation dataset ever crea
 ## Dataset Statistics
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Total images | 11,000,000 |
 | Total masks | 1,100,000,000 |
 | Avg. masks per image | ~100 |
@@ -68,6 +68,7 @@ In the fully automatic phase, SAM generated all masks without human intervention
 4. NMS (non-maximum suppression) removed overlapping predictions
 
 Quality was ensured through:
+
 - IoU prediction thresholding (selecting only high-confidence masks)
 - Stability filtering (checking that masks remain consistent under small perturbations)
 - Manual quality studies comparing automatic masks to professional annotations
@@ -96,6 +97,7 @@ The gap between automatic and professional quality is remarkably small, validati
 ### Geographic Diversity
 
 Images were sourced to ensure representation across geographic regions:
+
 - Coverage spans countries across all inhabited continents
 - The top-3 represented countries account for less than 25% of images
 - This mitigates geographic bias common in datasets like COCO and ImageNet
@@ -103,6 +105,7 @@ Images were sourced to ensure representation across geographic regions:
 ### Content Diversity
 
 SA-1B covers an extremely broad range of visual content:
+
 - Indoor and outdoor scenes
 - Natural and man-made objects
 - Close-up and wide-angle perspectives
@@ -120,7 +123,7 @@ SA-1B covers an extremely broad range of visual content:
 ## Comparison to Other Datasets
 
 | Dataset | Images | Annotations | Type |
-|---------|--------|-------------|------|
+| --------- | -------- | ------------- | ------ |
 | COCO | 330K | 2.5M instances | Instance masks |
 | ADE20K | 25K | 450K instances | Semantic + instance |
 | OpenImages V7 | 9M | 16M boxes | Boxes (some masks) |

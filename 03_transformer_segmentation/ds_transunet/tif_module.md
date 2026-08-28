@@ -25,7 +25,7 @@ The cross-attention follows standard multi-head attention: `CrossAttn(Q, K, V) =
 
 After bidirectional cross-attention, the enhanced features from both directions are combined using a learnable gating mechanism:
 
-```
+```text
 F_fused = α · F'_fine + (1 - α) · F'_coarse
 ```
 
@@ -40,7 +40,7 @@ TIF modules are placed at each of the four hierarchical stages of the encoder, f
 Ablation studies in the paper demonstrate the importance of TIF:
 
 | Fusion Method | Synapse mDSC (%) | Δ from TIF |
-|--------------|-------------------|------------|
+| -------------- | ------------------- | ------------ |
 | TIF (proposed) | 82.58 | — |
 | Concatenation + Conv | 81.21 | -1.37 |
 | Element-wise Addition | 80.89 | -1.69 |
@@ -51,7 +51,7 @@ The cross-attention-based fusion consistently outperforms naive fusion strategie
 ## Comparison with Other Fusion Methods
 
 | Method | Learnable | Bidirectional | Selective | Parameters |
-|--------|-----------|--------------|-----------|------------|
+| -------- | ----------- | -------------- | ----------- | ------------ |
 | Concatenation | No | N/A | No | None |
 | Addition | No | N/A | No | None |
 | Concat + 1×1 Conv | Partial | No | Partial | O(C²) |

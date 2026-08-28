@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
 - Initial repository scaffolding with full directory structure
 - README files for all sections
 - Paper review and code analysis templates

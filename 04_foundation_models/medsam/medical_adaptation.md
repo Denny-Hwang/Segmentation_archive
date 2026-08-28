@@ -17,7 +17,7 @@ Adapting foundation segmentation models like SAM to medical imaging involves bri
 ### Visual Differences
 
 | Property | Natural Images | Medical Images |
-|----------|---------------|----------------|
+| ---------- | --------------- | ---------------- |
 | Color channels | RGB (3 channels) | Often grayscale (1 channel) or multi-modal |
 | Dynamic range | 8-bit (0-255) | 12-16 bit (CT: -1000 to +3000 HU) |
 | Contrast | High, varied | Often low, tissue-specific |
@@ -43,11 +43,13 @@ Empirically, this results in SAM's zero-shot performance dropping by 15-35 DSC p
 MedSAM fine-tunes all parameters of the SAM architecture (encoder + prompt encoder + decoder) on medical data.
 
 **Advantages:**
+
 - Maximum capacity for learning domain-specific features
 - All layers can adapt to the new distribution
 - Straightforward implementation
 
 **Disadvantages:**
+
 - Requires large amounts of medical training data to avoid overfitting
 - Computationally expensive (full backpropagation through ViT)
 - Risk of catastrophic forgetting of natural image capabilities
@@ -58,11 +60,13 @@ MedSAM fine-tunes all parameters of the SAM architecture (encoder + prompt encod
 Only the mask decoder is fine-tuned while the image encoder remains frozen.
 
 **Advantages:**
+
 - Fast training (fewer parameters to update)
 - Lower risk of overfitting on small datasets
 - Preserves the encoder's general visual features
 
 **Disadvantages:**
+
 - Limited adaptation capacity since the encoder features remain fixed
 - If the encoder features are poorly suited to medical data, the decoder cannot compensate
 - Typically 5-10 DSC points below full fine-tuning
@@ -72,11 +76,13 @@ Only the mask decoder is fine-tuned while the image encoder remains frozen.
 Methods like LoRA and adapters modify only a small subset of parameters.
 
 **Approaches:**
+
 - **LoRA:** Low-rank updates to attention weight matrices, typically rank 4-16
 - **Adapters:** Bottleneck layers inserted after each transformer block
 - **Prompt tuning:** Learnable tokens prepended to the input sequence
 
 These approaches train only 1-5% of the total parameters while achieving 80-95% of full fine-tuning performance. They are particularly valuable when:
+
 - Medical data is limited (< 10K samples)
 - Multiple domain-specific adaptations are needed simultaneously
 - Deployment requires a single base model with swappable adapters
@@ -99,6 +105,7 @@ MedSAM trains on all modalities simultaneously without modality-specific compone
 ### Alternative: Modality-Specific Heads
 
 Some approaches use a shared encoder with modality-specific decoder heads:
+
 - A routing mechanism selects the appropriate head based on modality
 - Each head specializes in the characteristics of its modality
 - The shared encoder still learns general features
@@ -120,6 +127,7 @@ Most SAM adaptations (including MedSAM) process 3D medical volumes (CT, MRI) as 
 ### Volumetric Extensions
 
 Subsequent works (including MedSAM-2) address this by:
+
 - Treating volume slices as video frames and using temporal propagation
 - Adding 3D convolutional layers to the encoder
 - Post-processing with 3D connected component analysis
@@ -129,7 +137,7 @@ Subsequent works (including MedSAM-2) address this by:
 ### Data Requirements
 
 | Strategy | Minimum Samples | Recommended |
-|----------|----------------|-------------|
+| ---------- | ---------------- | ------------- |
 | Zero-shot | 0 | N/A |
 | Head-only fine-tuning | ~500 | ~2,000 |
 | LoRA/Adapter | ~1,000 | ~5,000 |
@@ -138,6 +146,7 @@ Subsequent works (including MedSAM-2) address this by:
 ### Preprocessing Pipeline
 
 Medical images require careful preprocessing before being fed to SAM-based models:
+
 1. **Window/level adjustment** (CT): Map relevant HU range to [0, 255]
 2. **Intensity normalization** (MRI): Z-score or percentile-based normalization
 3. **Resize:** Scale to 1024x1024 (SAM's expected input size)
@@ -146,6 +155,7 @@ Medical images require careful preprocessing before being fed to SAM-based model
 ### Evaluation Metrics
 
 Medical segmentation uses specific metrics:
+
 - **Dice Similarity Coefficient (DSC):** Overlap between prediction and ground truth
 - **Normalized Surface Distance (NSD):** Boundary accuracy within a tolerance
 - **Hausdorff Distance (HD95):** Worst-case boundary error at 95th percentile

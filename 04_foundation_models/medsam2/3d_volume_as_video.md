@@ -17,7 +17,7 @@ The central insight of MedSAM-2 is that a 3D medical image volume can be reframe
 ### Mapping Between Domains
 
 | Video Concept | Medical Volume Equivalent |
-|---------------|--------------------------|
+| --------------- | -------------------------- |
 | Frame at time t | Slice at position z |
 | Temporal progression | Spatial progression along z-axis |
 | Object motion | Anatomical shape change across slices |
@@ -71,7 +71,7 @@ Combining forward and backward passes yields a complete volumetric segmentation 
 ### Bidirectional Benefits
 
 | Strategy | Avg. DSC (abdominal CT) | Slices with > 5 DSC drop |
-|----------|------------------------|--------------------------|
+| ---------- | ------------------------ | -------------------------- |
 | Forward only | 0.82 | 18% |
 | Backward only | 0.81 | 20% |
 | Bidirectional | 0.88 | 7% |
@@ -91,6 +91,7 @@ Medical structures have finite extent along the z-axis. For example, the liver s
 ### Branching and Splitting
 
 When a structure branches (e.g., a blood vessel forking), the model must track multiple branches simultaneously. This is handled through:
+
 - The memory attention mechanism attending to the pre-branch region
 - The mask decoder producing a mask that covers multiple branches if they all derive from the prompted structure
 - In practice, fine vessels and small branches are often lost during propagation
@@ -98,6 +99,7 @@ When a structure branches (e.g., a blood vessel forking), the model must track m
 ### Size and Shape Changes
 
 Organs change cross-sectional shape dramatically across slices. For example, the kidney appears as a small circle at its superior pole, grows to a large bean shape in the middle, and shrinks again at the inferior pole. The memory mechanism handles this because:
+
 - Recent FIFO memories capture the current size/shape
 - The attention mechanism learns to interpolate between stored sizes
 - The prompted memory provides an anchor for the expected appearance
@@ -109,7 +111,7 @@ Organs change cross-sectional shape dramatically across slices. For example, the
 While axial slicing is most common, medical volumes can also be sliced along sagittal and coronal planes. MedSAM-2 can propagate along any axis:
 
 | Axis | Slice Plane | Typical Use |
-|------|------------|-------------|
+| ------ | ------------ | ------------- |
 | Axial | Horizontal (z) | Most common; default for CT |
 | Sagittal | Left-right (x) | Spine, brain midline |
 | Coronal | Front-back (y) | Abdominal organs, lungs |
@@ -117,6 +119,7 @@ While axial slicing is most common, medical volumes can also be sliced along sag
 ### Multi-Axis Fusion
 
 For improved accuracy, predictions from multiple propagation axes can be fused:
+
 1. Run propagation along all three axes independently
 2. Average or vote across the three predictions per voxel
 3. This reduces axis-specific errors and improves 3D consistency
@@ -130,7 +133,7 @@ In practice, multi-axis fusion improves DSC by 1-3 points over single-axis propa
 Native 3D architectures (3D U-Net, V-Net, nnU-Net with 3D configuration) process the entire volume at once using 3D convolutions:
 
 | Aspect | MedSAM-2 (slice-as-video) | Native 3D (e.g., nnU-Net) |
-|--------|--------------------------|--------------------------|
+| -------- | -------------------------- | -------------------------- |
 | Memory usage | O(1) per slice | O(V) for volume V |
 | GPU memory | ~4 GB | ~12-24 GB |
 | Annotation needed | 1-3 slices | Full volume |

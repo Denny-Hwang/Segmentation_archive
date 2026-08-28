@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation |
 | **Authors** | Chen, J., Lu, Y., Yu, Q., Luo, X., Adeli, E., Wang, Y., Lu, L., Yuille, A.L., Zhou, Y. |
 | **Year** | 2021 |

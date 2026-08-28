@@ -6,7 +6,7 @@ from typing import Any
 import streamlit as st
 
 try:
-    from whoosh.index import open_dir, exists_in
+    from whoosh.index import exists_in, open_dir
     from whoosh.qparser import MultifieldParser
 
     HAS_WHOOSH = True
@@ -63,19 +63,19 @@ def _search_whoosh(index_path: Path, query: str) -> list[dict[str, Any]]:
     with ix.searcher() as searcher:
         hits = searcher.search(parsed_query, limit=20)
         for hit in hits:
-            results.append({
-                "title": hit.get("title", "Untitled"),
-                "path": hit.get("path", ""),
-                "snippet": hit.highlights("content", top=3) or "",
-                "score": hit.score,
-            })
+            results.append(
+                {
+                    "title": hit.get("title", "Untitled"),
+                    "path": hit.get("path", ""),
+                    "snippet": hit.highlights("content", top=3) or "",
+                    "score": hit.score,
+                }
+            )
 
     return results
 
 
-def _search_fallback(
-    archive_root: Path, query: str
-) -> list[dict[str, Any]]:
+def _search_fallback(archive_root: Path, query: str) -> list[dict[str, Any]]:
     """Basic fallback search using string matching on Markdown files.
 
     Args:
@@ -106,12 +106,14 @@ def _search_fallback(
             end = min(len(content), idx + len(query) + 100)
             snippet = content[start:end].replace("\n", " ").strip()
 
-            results.append({
-                "title": md_file.stem.replace("_", " ").title(),
-                "path": rel,
-                "snippet": f"...{snippet}...",
-                "score": 1.0,
-            })
+            results.append(
+                {
+                    "title": md_file.stem.replace("_", " ").title(),
+                    "path": rel,
+                    "snippet": f"...{snippet}...",
+                    "score": 1.0,
+                }
+            )
 
     return results[:20]
 

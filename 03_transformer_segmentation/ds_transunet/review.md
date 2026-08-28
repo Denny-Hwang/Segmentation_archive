@@ -11,7 +11,7 @@ difficulty: advanced
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | DS-TransUNet: Dual Swin Transformer U-Net for Medical Image Segmentation |
 | **Authors** | Lin, A., Chen, B., Xu, J., Zhang, Z., Lu, G., Zhang, D. |
 | **Year** | 2022 |
@@ -63,7 +63,7 @@ Evaluated on Synapse Multi-Organ CT (30 scans, 8 organs) and ACDC cardiac MRI (1
 ### Key Results
 
 | Dataset | Metric | DS-TransUNet | TransUNet | Swin-Unet | nnU-Net |
-|---------|--------|-------------|-----------|-----------|---------|
+| --------- | -------- | ------------- | ----------- | ----------- | --------- |
 | Synapse | mDSC (%) | 82.58 | 77.48 | 79.13 | 82.50 |
 | Synapse | mHD95 (mm) | 17.09 | 31.69 | 21.55 | 15.20 |
 | ACDC | mDSC (%) | 91.51 | 89.71 | 90.00 | 91.61 |

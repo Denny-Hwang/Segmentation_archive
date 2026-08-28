@@ -82,12 +82,14 @@ def render_radar_chart(
         values.append(values[0])
         categories.append(categories[0])
 
-        fig.add_trace(go.Scatterpolar(
-            r=values,
-            theta=categories,
-            fill="toself",
-            name=model_name,
-        ))
+        fig.add_trace(
+            go.Scatterpolar(
+                r=values,
+                theta=categories,
+                fill="toself",
+                name=model_name,
+            )
+        )
 
     fig.update_layout(
         polar=dict(radialaxis=dict(visible=True)),

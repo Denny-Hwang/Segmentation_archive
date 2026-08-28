@@ -40,15 +40,18 @@ Apply class weights $w_c$ to address class imbalance:
 $$\mathcal{L}_{\text{WCE}} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{K} w_c \, g_{i,c} \log(p_{i,c})$$
 
 Common weight strategies:
+
 - **Inverse frequency:** $w_c = \frac{N}{K \cdot N_c}$ where $N_c$ is the number of pixels of class $c$.
 - **Median frequency balancing:** $w_c = \frac{\text{median}(\{N_1, \dots, N_K\})}{N_c}$.
 
 ### Pros
+
 - Well-understood, convex (in logit space), stable gradients.
 - Works well as a general-purpose baseline loss.
 - Directly optimizes per-pixel classification accuracy.
 
 ### Cons
+
 - Treats each pixel independently -- ignores spatial structure.
 - Sensitive to class imbalance: the loss is dominated by the majority class unless weights are applied.
 - Does not directly optimize overlap metrics (IoU, Dice).
@@ -68,6 +71,7 @@ class CrossEntropySegmentationLoss(nn.Module):
         weight: Optional class weights tensor of shape (K,).
         ignore_index: Label index to ignore (e.g., 255 for void pixels).
     """
+
     def __init__(self, weight=None, ignore_index=255):
         super().__init__()
         self.ce = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index)
@@ -102,11 +106,13 @@ Compute per-class Dice and average:
 $$\mathcal{L}_{\text{Dice}} = 1 - \frac{1}{K} \sum_{c=1}^{K} \frac{2 \sum_{i} p_{i,c} \, g_{i,c} + \epsilon}{\sum_{i} p_{i,c} + \sum_{i} g_{i,c} + \epsilon}$$
 
 ### Pros
+
 - Naturally handles class imbalance: small objects contribute proportionally to the loss.
 - Directly related to the Dice evaluation metric.
 - Smooth and differentiable (the soft Dice formulation using probabilities).
 
 ### Cons
+
 - **Gradient instability** when the foreground region is very small: the denominator approaches $\epsilon$, leading to large, noisy gradients.
 - Non-convex -- more difficult optimization landscape than cross-entropy.
 - Can produce poorly calibrated probabilities (since it optimizes overlap, not per-pixel likelihood).
@@ -123,6 +129,7 @@ class DiceLoss(nn.Module):
         per_image: If True, compute Dice per image then average.
                    If False, compute over the entire batch (recommended).
     """
+
     def __init__(self, smooth=1e-5, per_image=False):
         super().__init__()
         self.smooth = smooth
@@ -163,6 +170,7 @@ Introduced by Lin et al. (2017) for object detection (RetinaNet). Addresses the 
 $$\mathcal{L}_{\text{Focal}} = -\frac{1}{N} \sum_{i=1}^{N} \Big[ \alpha \, g_i (1 - p_i)^\gamma \log(p_i) + (1 - \alpha)(1 - g_i) \, p_i^\gamma \log(1 - p_i) \Big]$$
 
 where:
+
 - $\gamma \geq 0$ is the **focusing parameter**. When $\gamma = 0$, focal loss reduces to standard weighted cross-entropy. Typical values: $\gamma \in \{1, 2, 3\}$; $\gamma = 2$ is the most common default.
 - $\alpha \in [0, 1]$ balances the importance of positive vs. negative classes.
 
@@ -175,11 +183,13 @@ Consider a well-classified foreground pixel with $p_i = 0.95$. The modulating fa
 $$\mathcal{L}_{\text{Focal}} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{K} \alpha_c \, g_{i,c} (1 - p_{i,c})^\gamma \log(p_{i,c})$$
 
 ### Pros
+
 - Elegantly handles class imbalance through the modulating factor, without discarding data or complex sampling.
 - Easy to implement -- a minor modification of cross-entropy.
 - Particularly effective when there is a large imbalance between easy background pixels and hard foreground pixels.
 
 ### Cons
+
 - Introduces two hyperparameters ($\alpha$, $\gamma$) that require tuning.
 - May underweight the learning signal from majority-class pixels too aggressively, hurting performance on well-represented classes.
 - Does not optimize overlap metrics directly.
@@ -195,6 +205,7 @@ class FocalLoss(nn.Module):
         gamma: Focusing parameter. Higher values focus more on hard examples.
         ignore_index: Label index to ignore.
     """
+
     def __init__(self, alpha=0.25, gamma=2.0, ignore_index=255):
         super().__init__()
         self.alpha = alpha
@@ -210,7 +221,7 @@ class FocalLoss(nn.Module):
         num_classes = logits.shape[1]
 
         # Create mask for valid pixels
-        valid_mask = (targets != self.ignore_index)
+        valid_mask = targets != self.ignore_index
         targets_safe = targets.clone()
         targets_safe[~valid_mask] = 0
 
@@ -227,7 +238,7 @@ class FocalLoss(nn.Module):
         focal_weight = (1.0 - pt) ** self.gamma
 
         # Compute CE
-        ce_loss = F.cross_entropy(logits, targets_safe, reduction='none')  # (B, H, W)
+        ce_loss = F.cross_entropy(logits, targets_safe, reduction="none")  # (B, H, W)
 
         # Apply focal weight and alpha
         loss = self.alpha * focal_weight * ce_loss
@@ -251,6 +262,7 @@ Generalizes Dice loss by allowing asymmetric weighting of false positives and fa
 $$\mathcal{L}_{\text{Tversky}} = 1 - \frac{\sum_{i} p_i \, g_i + \epsilon}{\sum_{i} p_i \, g_i + \alpha \sum_{i} p_i (1 - g_i) + \beta \sum_{i} (1 - p_i) g_i + \epsilon}$$
 
 where:
+
 - $\alpha$ controls the penalty for false positives ($p_i = 1, g_i = 0$).
 - $\beta$ controls the penalty for false negatives ($p_i = 0, g_i = 1$).
 - When $\alpha = \beta = 0.5$, Tversky loss reduces to Dice loss.
@@ -265,11 +277,13 @@ $$\mathcal{L}_{\text{FTL}} = (1 - TI)^{1/\gamma}$$
 where $TI$ is the Tversky Index (the expression inside the subtraction above) and $\gamma$ controls focusing. Proposed by Abraham & Khan (2019).
 
 ### Pros
+
 - Flexibility to tune the precision-recall trade-off via $\alpha$ and $\beta$.
 - Setting $\beta > \alpha$ emphasizes recall, which is often desired in medical segmentation (better to over-segment than miss a lesion).
 - Subsumes Dice and IoU losses as special cases.
 
 ### Cons
+
 - Two additional hyperparameters to tune.
 - Shares the gradient instability issues of Dice loss for very small regions.
 - Less commonly used than Dice or CE, so there is less empirical guidance on hyperparameter settings.
@@ -285,6 +299,7 @@ class TverskyLoss(nn.Module):
         beta: Weight for false negatives.
         smooth: Smoothing constant.
     """
+
     def __init__(self, alpha=0.3, beta=0.7, smooth=1e-5):
         super().__init__()
         self.alpha = alpha
@@ -307,7 +322,9 @@ class TverskyLoss(nn.Module):
         fp = (probs * (1 - targets_one_hot)).sum(dim=(0, 2, 3))
         fn = ((1 - probs) * targets_one_hot).sum(dim=(0, 2, 3))
 
-        tversky_index = (tp + self.smooth) / (tp + self.alpha * fp + self.beta * fn + self.smooth)
+        tversky_index = (tp + self.smooth) / (
+            tp + self.alpha * fp + self.beta * fn + self.smooth
+        )
 
         return 1.0 - tversky_index.mean()
 ```
@@ -333,11 +350,13 @@ $$\bar{\Delta}_{J_c}(\mathbf{m}(c)) = \sum_{i=1}^{N} m_{\pi_i}(c) \cdot g_{\pi_i
 where $\pi$ is the sorted permutation and $g_{\pi_i}$ are the incremental changes in the Jaccard loss.
 
 ### Pros
+
 - **Theoretically grounded:** Directly optimizes a convex surrogate of the IoU, unlike Dice loss which optimizes a related but different quantity.
 - Consistently outperforms or matches Dice loss on semantic segmentation benchmarks.
 - No per-class weighting needed -- the loss naturally focuses on classes with poor IoU.
 
 ### Cons
+
 - More complex to implement than Dice or CE.
 - Requires sorting per class per batch, adding computational overhead.
 - Less intuitive than other losses.
@@ -353,6 +372,7 @@ class LovaszSoftmaxLoss(nn.Module):
     A tractable surrogate for the optimization of the intersection-over-union
     measure in neural networks." CVPR.
     """
+
     def __init__(self, per_image=False, ignore_index=255):
         super().__init__()
         self.per_image = per_image
@@ -368,8 +388,9 @@ class LovaszSoftmaxLoss(nn.Module):
         if self.per_image:
             losses = []
             for prob, target in zip(probas, targets):
-                losses.append(self._lovasz_softmax_flat(
-                    prob.unsqueeze(0), target.unsqueeze(0)))
+                losses.append(
+                    self._lovasz_softmax_flat(prob.unsqueeze(0), target.unsqueeze(0))
+                )
             return torch.stack(losses).mean()
         else:
             return self._lovasz_softmax_flat(probas, targets)
@@ -398,7 +419,11 @@ class LovaszSoftmaxLoss(nn.Module):
             grad = self._lovasz_grad(fg_sorted)
             losses.append(torch.dot(F.relu(errors_sorted), grad))
 
-        return torch.stack(losses).mean() if losses else torch.tensor(0.0, device=probas.device)
+        return (
+            torch.stack(losses).mean()
+            if losses
+            else torch.tensor(0.0, device=probas.device)
+        )
 
     @staticmethod
     def _lovasz_grad(gt_sorted):
@@ -448,11 +473,13 @@ $$\mathcal{L} = (1 - \lambda) \, \mathcal{L}_{\text{Dice}} + \lambda \, \mathcal
 where $\lambda$ increases linearly from 0 to 1 during training (e.g., over the first 50% of epochs).
 
 ### Pros
+
 - Directly penalizes distance from the true boundary, improving Hausdorff distance.
 - Effective for thin, elongated structures where overlap losses struggle (e.g., blood vessels, nerve fibers).
 - Differentiable and easy to combine with other losses.
 
 ### Cons
+
 - Requires precomputing distance transform maps for each ground-truth mask (adds preprocessing overhead).
 - Not meaningful on its own -- must be combined with a region-based loss.
 - The distance map must be recomputed whenever the ground truth changes (e.g., with data augmentation that modifies geometry).
@@ -471,6 +498,7 @@ class BoundaryLoss(nn.Module):
     on-the-fly for simplicity, but precomputation is recommended for
     efficiency.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -494,6 +522,7 @@ class BoundaryLoss(nn.Module):
             Signed distance map: negative inside, positive outside.
         """
         import numpy as np
+
         mask = mask.astype(bool)
         if mask.any():
             pos_dist = distance_transform_edt(mask)
@@ -537,11 +566,13 @@ $$\mathcal{L}_{\text{Combo}} = \alpha \Big(-\frac{1}{N}\sum_i \big[\beta \, g_i 
 where $\alpha$ balances the two terms and $\beta$ controls the CE weighting.
 
 ### Pros
+
 - Combines stable gradient flow (from CE) with overlap optimization (from Dice).
 - Empirically, CE + Dice consistently outperforms either loss alone across many segmentation tasks.
 - Flexible: can incorporate any combination of losses.
 
 ### Cons
+
 - Introduces weighting hyperparameters between loss terms.
 - Loss terms may have different scales -- ensure they are normalized or the weighting may be misleading.
 - More complex to tune and debug.
@@ -557,6 +588,7 @@ class ComboLoss(nn.Module):
         ce_weight: Optional per-class weights for CE.
         ignore_index: Label to ignore.
     """
+
     def __init__(self, alpha=0.5, ce_weight=None, ignore_index=255):
         super().__init__()
         self.alpha = alpha
@@ -579,7 +611,7 @@ class ComboLoss(nn.Module):
 ## 8. Comparison Summary
 
 | Loss | Handles Imbalance | Optimizes Overlap | Boundary Aware | Gradient Stability | Hyperparameters |
-|------|:-:|:-:|:-:|:-:|:--|
+| ------ | :-: | :-: | :-: | :-: | :-- |
 | Cross-Entropy | With weights | No | No | High | weight, ignore_index |
 | Dice | Yes (inherent) | Yes (Dice/F1) | No | Medium | smooth |
 | Focal | Yes (modulating factor) | No | No | High | $\alpha$, $\gamma$ |

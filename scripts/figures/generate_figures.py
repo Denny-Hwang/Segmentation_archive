@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -62,13 +61,14 @@ def render_mermaid(src: Path, out: Path) -> bool:
 # Matplotlib figures — dark-mode friendly
 # ---------------------------------------------------------------------------
 
+
 def _apply_dark_style(fig, ax_or_axes):
     """Apply dark theme to matplotlib figure and axes."""
     fig.patch.set_facecolor(BG_COLOR)
-    axes = ax_or_axes if hasattr(ax_or_axes, '__iter__') else [ax_or_axes]
+    axes = ax_or_axes if hasattr(ax_or_axes, "__iter__") else [ax_or_axes]
     for ax in axes:
         ax.set_facecolor(BG_COLOR)
-        ax.tick_params(colors=TEXT_COLOR, which='both')
+        ax.tick_params(colors=TEXT_COLOR, which="both")
         ax.xaxis.label.set_color(TEXT_COLOR)
         ax.yaxis.label.set_color(TEXT_COLOR)
         ax.title.set_color(TEXT_COLOR)
@@ -80,6 +80,7 @@ def generate_comparison_chart() -> None:
     """Generate a horizontal bar chart comparing models across datasets."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
@@ -88,16 +89,24 @@ def generate_comparison_chart() -> None:
 
     benchmarks = {
         "Synapse Multi-Organ\n(mDSC %)": {
-            "U-Net": 76.85, "Att. U-Net": 77.77, "UNet++": 78.30,
-            "TransUNet": 77.48, "Swin-Unet": 79.13, "nnU-Net": 82.50,
+            "U-Net": 76.85,
+            "Att. U-Net": 77.77,
+            "UNet++": 78.30,
+            "TransUNet": 77.48,
+            "Swin-Unet": 79.13,
+            "nnU-Net": 82.50,
         },
         "ADE20K\n(mIoU %)": {
-            "DeepLab v3+": 45.47, "SegFormer-B5": 51.80,
-            "Mask2Former": 56.01, "OneFormer": 57.40,
+            "DeepLab v3+": 45.47,
+            "SegFormer-B5": 51.80,
+            "Mask2Former": 56.01,
+            "OneFormer": 57.40,
         },
         "Cityscapes val\n(mIoU %)": {
-            "DeepLab v3+": 80.90, "SegFormer-B5": 84.00,
-            "Mask2Former": 83.30, "OneFormer": 84.40,
+            "DeepLab v3+": 80.90,
+            "SegFormer-B5": 84.00,
+            "Mask2Former": 83.30,
+            "OneFormer": 84.40,
         },
     }
 
@@ -107,16 +116,29 @@ def generate_comparison_chart() -> None:
     for ax, (title, data) in zip(axes, benchmarks.items()):
         models = list(data.keys())
         scores = list(data.values())
-        bars = ax.barh(models, scores, color=ACCENT_COLORS[:len(models)], edgecolor=BG_COLOR)
+        bars = ax.barh(
+            models, scores, color=ACCENT_COLORS[: len(models)], edgecolor=BG_COLOR
+        )
         ax.set_xlabel("Score")
         ax.set_title(title, fontsize=11, fontweight="bold")
         ax.invert_yaxis()
         for bar, score in zip(bars, scores):
-            ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height() / 2,
-                    f"{score:.1f}", va="center", fontsize=9, color=TEXT_COLOR)
+            ax.text(
+                bar.get_width() + 0.3,
+                bar.get_y() + bar.get_height() / 2,
+                f"{score:.1f}",
+                va="center",
+                fontsize=9,
+                color=TEXT_COLOR,
+            )
 
-    fig.suptitle("Model Performance Comparison (representative benchmarks)",
-                 fontsize=13, fontweight="bold", y=1.02, color=TEXT_COLOR)
+    fig.suptitle(
+        "Model Performance Comparison (representative benchmarks)",
+        fontsize=13,
+        fontweight="bold",
+        y=1.02,
+        color=TEXT_COLOR,
+    )
     fig.tight_layout()
     out = FIGURES_DIR / "model_comparison_chart.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG_COLOR)
@@ -128,6 +150,7 @@ def generate_timeline_chart() -> None:
     """Generate a visual timeline figure using matplotlib."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
@@ -170,8 +193,12 @@ def generate_timeline_chart() -> None:
         color = cat_colors.get(cat, "#888")
         ax.scatter(year, 0, s=80, color=color, zorder=5)
         ax.annotate(
-            name, (year, 0), xytext=(0, yoff * 25),
-            textcoords="offset points", ha="center", fontsize=8,
+            name,
+            (year, 0),
+            xytext=(0, yoff * 25),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8,
             fontweight="bold",
             arrowprops=dict(arrowstyle="-", color=color, lw=0.8),
             color=color,
@@ -180,8 +207,13 @@ def generate_timeline_chart() -> None:
     # Legend
     for cat, color in cat_colors.items():
         ax.scatter([], [], color=color, label=cat.title(), s=60)
-    legend = ax.legend(loc="upper left", fontsize=8, framealpha=0.7,
-                       facecolor=BG_COLOR, edgecolor=GRID_COLOR)
+    legend = ax.legend(
+        loc="upper left",
+        fontsize=8,
+        framealpha=0.7,
+        facecolor=BG_COLOR,
+        edgecolor=GRID_COLOR,
+    )
     for text in legend.get_texts():
         text.set_color(TEXT_COLOR)
 
@@ -203,6 +235,7 @@ def generate_timeline_chart() -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)

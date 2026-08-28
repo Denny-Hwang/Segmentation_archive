@@ -32,7 +32,7 @@ Without deep supervision, only the final output X^{0,L} is supervised, and inter
 ## Ablation Results
 
 | Configuration | Liver Dice (%) | Cell IoU (%) |
-|--------------|----------------|--------------|
+| -------------- | ---------------- | -------------- |
 | UNet++ without deep supervision | 94.97 | 91.62 |
 | UNet++ with deep supervision | 95.74 | 92.07 |
 | Δ | +0.77 | +0.45 |

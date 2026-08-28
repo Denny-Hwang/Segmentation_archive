@@ -10,11 +10,9 @@ Usage:
 
 import argparse
 import json
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
 
 TRACKER_DIR = Path(__file__).resolve().parent.parent
 REPO_STATS_FILE = TRACKER_DIR / "repo_stats.json"
@@ -130,13 +128,15 @@ def generate_report(month: str, repo_stats: list, citation_stats: list) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Generate monthly tracking report")
     parser.add_argument(
-        "--month", "-m",
+        "--month",
+        "-m",
         type=str,
         required=True,
         help="Report month in YYYY-MM format (e.g. 2026-03)",
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=None,
         help="Output Markdown file (default: report_YYYY-MM.md)",

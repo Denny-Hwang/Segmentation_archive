@@ -13,6 +13,7 @@ tags: [nnunet, experiment-planning, auto-configuration]
 The `ExperimentPlanner` (in `nnunetv2/experiment_planning/experiment_planners/default_experiment_planner.py`) is the core of nnU-Net's self-configuring philosophy. Given only a dataset, it automatically determines: patch size, batch size, network topology (depth, channels, kernel sizes), normalization scheme, resampling strategy, and training schedule. The planner analyzes a **dataset fingerprint** and applies heuristic rules to produce a `plans.json` file that fully specifies the experiment.
 
 The entry point is `nnUNetv2_plan_and_preprocess`, which runs:
+
 1. `DatasetFingerprintExtractor` -- analyzes the raw dataset
 2. `ExperimentPlanner.plan_experiment()` -- generates plans from the fingerprint
 3. Preprocessing -- applies the plan to produce training-ready data
@@ -106,7 +107,7 @@ The topology is derived from the patch size:
 nnU-Net plans up to four configurations:
 
 | Configuration | Description | When Used |
-|--------------|-------------|-----------|
+| -------------- | ------------- | ----------- |
 | **2D** | 2D U-Net on individual slices | Always planned for 3D data |
 | **3D_fullres** | 3D U-Net at original spacing | Always planned |
 | **3D_lowres** | 3D U-Net at reduced resolution | Planned if median image shape > 4x the patch size |
@@ -132,8 +133,8 @@ The output `nnUNetPlans.json` contains:
             "UNet_class_name": "PlainConvUNet",
             "n_conv_per_stage_encoder": [2, 2, 2, 2, 2, 2],
             "n_conv_per_stage_decoder": [2, 2, 2, 2, 2],
-            "conv_kernel_sizes": [[3,3], [3,3], [3,3], [3,3], [3,3], [3,3]],
-            "pool_op_kernel_sizes": [[1,1], [2,2], [2,2], [2,2], [2,2], [2,2]],
+            "conv_kernel_sizes": [[3, 3], [3, 3], [3, 3], [3, 3], [3, 3], [3, 3]],
+            "pool_op_kernel_sizes": [[1, 1], [2, 2], [2, 2], [2, 2], [2, 2], [2, 2]],
             "UNet_base_num_features": 32,
             "unet_max_num_features": 512,
             "resampling_fn_data": "resample_data_or_seg_to_shape",
@@ -147,7 +148,7 @@ The output `nnUNetPlans.json` contains:
             # ... similar structure
         },
         # "3d_lowres" and "3d_cascade_fullres" if applicable
-    }
+    },
 }
 ```
 
@@ -156,7 +157,10 @@ The output `nnUNetPlans.json` contains:
 Override the planner by subclassing `ExperimentPlanner`:
 
 ```python
-from nnunetv2.experiment_planning.experiment_planners.default_experiment_planner import ExperimentPlanner
+from nnunetv2.experiment_planning.experiment_planners.default_experiment_planner import (
+    ExperimentPlanner,
+)
+
 
 class MyCustomPlanner(ExperimentPlanner):
     def __init__(self, dataset_name_or_id, gpu_memory_target_in_gb=24):
@@ -167,13 +171,14 @@ class MyCustomPlanner(ExperimentPlanner):
 
     def get_plans_for_configuration(self, *args):
         plans = super().get_plans_for_configuration(*args)
-        plans['batch_size'] = 4  # Override batch size
+        plans["batch_size"] = 4  # Override batch size
         return plans
 ```
 
 Run with: `nnUNetv2_plan_and_preprocess -d DATASET_ID -pl MyCustomPlanner`
 
 Key overridable methods:
+
 - `determine_fullres_target_spacing()` -- target resampling spacing
 - `determine_normalization_scheme()` -- per-channel normalization
 - `get_plans_for_configuration()` -- full plan for one configuration

@@ -14,7 +14,7 @@ license: CC BY-NC 4.0
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | ISIC Skin Lesion Analysis Dataset |
 | **Source** | [ISIC Archive](https://www.isic-archive.com/) |
 | **Size** | 25,000+ dermoscopic images (cumulative across challenge years) |

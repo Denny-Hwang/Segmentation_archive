@@ -12,11 +12,13 @@ A curated collection of useful resources for image segmentation research and pra
 ## GitHub Repositories
 
 ### Frameworks
+
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation) - OpenMMLab semantic segmentation toolbox
 - [Segmentation Models PyTorch (SMP)](https://github.com/qubvel-org/segmentation_models.pytorch) - PyTorch library with pretrained encoders
 - [segmentation_models (Keras)](https://github.com/qubvel/segmentation_models) - Keras/TF segmentation library
 
 ### Architectures
+
 - [Pytorch-UNet](https://github.com/milesial/Pytorch-UNet) - Lightweight U-Net implementation
 - [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) - Self-configuring medical segmentation
 - [SAM 2](https://github.com/facebookresearch/sam2) - Segment Anything Model 2
@@ -24,6 +26,7 @@ A curated collection of useful resources for image segmentation research and pra
 - [OneFormer](https://github.com/SHI-Labs/OneFormer) - One Transformer for all segmentation
 
 ### Curated Lists
+
 - [awesome-semantic-segmentation](https://github.com/mrgloom/awesome-semantic-segmentation) - Comprehensive list of segmentation resources
 - [awesome-panoptic-segmentation](https://github.com/Angzz/awesome-panoptic-segmentation) - Panoptic segmentation resources
 

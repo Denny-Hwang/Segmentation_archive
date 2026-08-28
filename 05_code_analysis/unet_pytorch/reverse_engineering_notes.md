@@ -19,6 +19,7 @@ This document captures implementation details that are **not obvious** from the 
 The original U-Net paper (Ronneberger et al., 2015) uses **valid (unpadded) convolutions**, meaning spatial dimensions shrink after each 3x3 convolution. This required cropping skip connections to match decoder feature map sizes. The output was smaller than the input (388x388 output from 572x572 input).
 
 This implementation uses **same-padding** (`padding=1` on all 3x3 Conv2d layers), so spatial dimensions are preserved through convolutions. This is a major departure:
+
 - Output size equals input size (no need for tiling/overlap inference)
 - Skip connections have matching spatial dimensions (with minor +-1 pixel corrections via `F.pad`)
 - Simpler to use with arbitrary input sizes
@@ -28,6 +29,7 @@ The tradeoff: padding introduces zero-valued border pixels that can subtly affec
 ### Weight Initialization
 
 This implementation does **not** define any custom weight initialization. It relies entirely on PyTorch's default initialization:
+
 - `nn.Conv2d`: Kaiming uniform initialization (He et al., 2015) -- `fan_in` mode with `a=sqrt(5)`
 - `nn.BatchNorm2d`: weight=1, bias=0 (identity transform initially)
 - `nn.ConvTranspose2d`: Same Kaiming uniform as Conv2d
@@ -49,6 +51,7 @@ self.up4 = Up(128, 64, bilinear)
 ```
 
 When `bilinear=True`:
+
 - Bottleneck outputs 512 channels (not 1024)
 - Each decoder stage outputs half the channels compared to transposed conv mode
 - `DoubleConv` in `Up` uses `mid_channels = in_channels // 2` to further reduce parameters
@@ -67,6 +70,7 @@ This is because bilinear upsampling has no learnable parameters, so the model co
 - **No explicit `torch.cuda.empty_cache()`**: The implementation relies on PyTorch's memory allocator
 
 Not implemented (but could help):
+
 - Gradient checkpointing (`torch.utils.checkpoint`) for trading compute for memory
 - Activation offloading to CPU
 
@@ -80,7 +84,7 @@ Not implemented (but could help):
 ## Paper vs Code Discrepancies
 
 | Aspect | Paper (Ronneberger 2015) | This Implementation |
-|--------|-------------------------|---------------------|
+| -------- | ------------------------- | --------------------- |
 | Padding | Valid convolutions (output < input) | Same-padding (`padding=1`), output == input |
 | Normalization | None mentioned | BatchNorm2d after every Conv2d |
 | Upsampling | "Up-convolution" (learned 2x2) | Bilinear (default) or ConvTranspose2d (optional) |

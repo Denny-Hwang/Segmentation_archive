@@ -1,7 +1,8 @@
 """Experiments Dashboard - View training results and experiment logs."""
 
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 try:
     import yaml
@@ -47,9 +48,7 @@ def load_experiment_configs() -> list[dict]:
 
 def main():
     st.title("Experiments Dashboard")
-    st.markdown(
-        "View and compare training experiments, results, and configurations."
-    )
+    st.markdown("View and compare training experiments, results, and configurations.")
 
     configs = load_experiment_configs()
 

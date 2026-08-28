@@ -14,7 +14,7 @@ This document tracks shared dependencies across all analyzed repositories, highl
 ## Core Dependencies
 
 | Dependency | Pytorch-UNet | SMP | nnU-Net | SAM 2 | MMSeg | keras-unet |
-|-----------|-------------|-----|---------|-------|-------|------------|
+| ----------- | ------------- | ----- | --------- | ------- | ------- | ------------ |
 | Python | >=3.6 | >=3.8 | >=3.9 | >=3.10 | >=3.8 | >=3.6 |
 | PyTorch | >=1.13 | >=1.9 | >=2.0 | >=2.3.1 | >=1.8 | N/A |
 | TensorFlow | N/A | N/A | N/A | N/A | N/A | >=2.3 |
@@ -56,7 +56,7 @@ The **timm** library is used by SMP, nnU-Net (v2), and SAM 2. Version mismatches
 ## GPU Requirements
 
 | Repository | Min VRAM (Training) | Min VRAM (Inference) | Notes |
-|-----------|-------------------|---------------------|-------|
+| ----------- | ------------------- | --------------------- | ------- |
 | Pytorch-UNet | 4 GB (scale=0.5, batch=1) | 2 GB | Full resolution (scale=1.0) needs 8-12 GB |
 | SMP | 4-8 GB | 2-4 GB | Depends on encoder (ResNet34: 4GB, EfficientNet-B7: 12GB) |
 | nnU-Net | 8 GB (default target) | 4 GB | Planner adapts to GPU; 3D_fullres most demanding |

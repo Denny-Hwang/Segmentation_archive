@@ -1,8 +1,9 @@
 """Reading Roadmap Navigator - Structured learning path for segmentation."""
 
-import streamlit as st
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import streamlit as st
 
 # Add explorer to path for component imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -191,7 +192,8 @@ def main():
 
     for level_name, level_data in ROADMAP.items():
         level_completed = sum(
-            1 for p in level_data["papers"]
+            1
+            for p in level_data["papers"]
             if p["title"] in st.session_state.completed_papers
         )
         total_in_level = len(level_data["papers"])
@@ -224,8 +226,7 @@ def main():
                     )
                 else:
                     st.markdown(
-                        f"**{paper['title']}** "
-                        f"({paper['authors']}, {paper['year']})"
+                        f"**{paper['title']}** ({paper['authors']}, {paper['year']})"
                     )
                 st.caption(
                     f"Why read this: {paper['reason']} | "
@@ -243,9 +244,13 @@ def main():
                         placeholder="Write your notes about this paper...",
                     )
                 st.button(
-                    "📝 Notes" if not st.session_state.get(f"show_notes_{paper['arxiv']}", False) else "Hide notes",
+                    "📝 Notes"
+                    if not st.session_state.get(f"show_notes_{paper['arxiv']}", False)
+                    else "Hide notes",
                     key=f"toggle_notes_{paper['arxiv']}",
-                    on_click=lambda k=f"show_notes_{paper['arxiv']}": st.session_state.update({k: not st.session_state.get(k, False)}),
+                    on_click=lambda k=f"show_notes_{paper['arxiv']}": (
+                        st.session_state.update({k: not st.session_state.get(k, False)})
+                    ),
                 )
                 # Show key architecture figure if available
                 render_paper_figures_inline(paper["arxiv"])

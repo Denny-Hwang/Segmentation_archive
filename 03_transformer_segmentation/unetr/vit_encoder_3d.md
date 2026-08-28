@@ -69,7 +69,7 @@ The global self-attention mechanism in UNETR's ViT encoder has computational cos
 ## Comparison with 3D CNN Encoders
 
 | Property | ViT Encoder (UNETR) | 3D CNN Encoder (e.g., 3D U-Net) |
-|----------|---------------------|----------------------------------|
+| ---------- | --------------------- | ---------------------------------- |
 | Receptive field | Global (full volume) from layer 1 | Local, grows with depth |
 | Inductive biases | Minimal (only patch structure) | Strong (locality, translation equivariance) |
 | Multi-scale features | Implicit (from different layers) | Explicit (from different stages) |

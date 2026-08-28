@@ -11,7 +11,7 @@ tags: [smp, decoder, unet, fpn, deeplabv3, comparison]
 ## Available Decoders
 
 | Decoder | Paper | Skip Connections | Multi-Scale | Notes |
-|---------|-------|-----------------|-------------|-------|
+| --------- | ------- | ----------------- | ------------- | ------- |
 | U-Net | Ronneberger 2015 | Yes (concat) | Progressive upsampling | Standard baseline, most widely used |
 | U-Net++ | Zhou 2018 | Yes (nested) | Dense nested connections | Re-designed skip paths with dense blocks at each level |
 | FPN | Lin 2017 | Yes (add) | Top-down + lateral | Lightweight; originally for detection, adapted for segmentation |
@@ -30,10 +30,10 @@ All decoders inherit from `SegmentationModel` (defined in `base/model.py`), whic
 class SegmentationModel(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = ...           # Backbone feature extractor
-        self.decoder = ...           # Specific decoder implementation
-        self.segmentation_head = ... # Final conv to n_classes
-        self.classification_head = ... # Optional auxiliary head
+        self.encoder = ...  # Backbone feature extractor
+        self.decoder = ...  # Specific decoder implementation
+        self.segmentation_head = ...  # Final conv to n_classes
+        self.classification_head = ...  # Optional auxiliary head
 
     def forward(self, x):
         features = self.encoder(x)
@@ -46,6 +46,7 @@ class SegmentationModel(torch.nn.Module):
 ```
 
 Every decoder must implement:
+
 - `__init__(self, encoder_channels, decoder_channels, n_blocks, ...)` -- accepts encoder output channels to build compatible layers
 - `forward(self, *features)` -- takes the list of encoder feature maps and returns a single feature map
 
@@ -86,9 +87,9 @@ class FPNBlock(nn.Module):
         self.skip_conv = nn.Conv2d(skip_channels, pyramid_channels, kernel_size=1)
 
     def forward(self, x, skip):
-        x = F.interpolate(x, scale_factor=2, mode='nearest')
+        x = F.interpolate(x, scale_factor=2, mode="nearest")
         skip = self.skip_conv(skip)  # Project to same channels via 1x1 conv
-        x = x + skip                # Element-wise addition
+        x = x + skip  # Element-wise addition
         return x
 ```
 
@@ -143,9 +144,14 @@ This allows the decoder to selectively weight which spatial locations and channe
 ```python
 class SegmentationHead(nn.Sequential):
     def __init__(self, in_channels, out_channels, kernel_size=3, upsampling=1):
-        conv2d = nn.Conv2d(in_channels, out_channels, kernel_size, padding=kernel_size // 2)
-        upsampling = nn.UpsamplingBilinear2d(scale_factor=upsampling) if upsampling > 1 \
-                     else nn.Identity()
+        conv2d = nn.Conv2d(
+            in_channels, out_channels, kernel_size, padding=kernel_size // 2
+        )
+        upsampling = (
+            nn.UpsamplingBilinear2d(scale_factor=upsampling)
+            if upsampling > 1
+            else nn.Identity()
+        )
         activation = nn.Identity()  # Raw logits by default
         super().__init__(conv2d, upsampling, activation)
 ```
@@ -173,7 +179,7 @@ Optional auxiliary head that classifies the entire image, useful for multi-task 
 Approximate decoder parameter counts with a ResNet-34 encoder (encoder ~21.3M params):
 
 | Decoder | Decoder Params | Total Params | Relative Speed | Best Use Case |
-|---------|---------------|-------------|----------------|---------------|
+| --------- | --------------- | ------------- | ---------------- | --------------- |
 | U-Net | ~8.6M | ~30M | 1.0x (baseline) | General purpose, medical imaging |
 | U-Net++ | ~15.5M | ~37M | 0.6x | When nested features help (small objects) |
 | FPN | ~0.6M | ~22M | 1.8x | Real-time, detection-style tasks |
@@ -185,6 +191,7 @@ Approximate decoder parameter counts with a ResNet-34 encoder (encoder ~21.3M pa
 | MAnet | ~12.4M | ~34M | 0.5x | High accuracy with attention |
 
 Key tradeoffs:
+
 - **FPN and LinkNet** are fastest with minimal decoder overhead, ideal for real-time applications
 - **U-Net++ and MAnet** have the most decoder parameters, trading speed for accuracy
 - **DeepLabV3** is expensive but captures global context via dilated convolutions

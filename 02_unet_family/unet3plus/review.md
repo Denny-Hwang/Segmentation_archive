@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | UNet 3+: A Full-Scale Connected UNet for Medical Image Segmentation |
 | **Authors** | Huang, H., Lin, L., Tong, R., et al. |
 | **Year** | 2020 |
@@ -28,6 +28,7 @@ U-Net uses same-scale skip connections (encoder level i → decoder level i). UN
 ## Architecture
 
 Each decoder node X_de^i receives inputs from:
+
 1. **All encoder levels** (X_en^1 through X_en^5): via downsampling (for higher-resolution) or upsampling (for lower-resolution) to match the target decoder resolution
 2. **Same-level encoder**: direct skip connection
 3. **All prior decoder levels**: features from deeper decoder levels, upsampled to match

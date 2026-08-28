@@ -33,7 +33,7 @@ Hungarian matching assigns predictions to ground truth using combined classifica
 ## Performance Across Tasks
 
 | Task | Dataset | Mask2Former | Best Specialized |
-|------|---------|------------|-----------------|
+| ------ | --------- | ------------ | ----------------- |
 | Semantic | ADE20K | 57.8 mIoU | 56.0 (SegFormer) |
 | Instance | COCO | 50.1 AP | 49.3 (Cascade M-RCNN) |
 | Panoptic | COCO | 57.8 PQ | 55.1 (Panoptic SegFormer) |
@@ -43,7 +43,7 @@ One architecture outperforms task-specific models on all tasks. Gains are larges
 ## Comparison with Other Universal Approaches
 
 | Method | Training | Single Model? | Performance |
-|--------|----------|--------------|-------------|
+| -------- | ---------- | -------------- | ------------- |
 | Panoptic FPN | Task-specific | No | Moderate |
 | MaskFormer | Task-specific | No | Good |
 | Mask2Former | Task-specific | No (3 models) | SOTA |
@@ -54,6 +54,7 @@ Mask2Former trains separate models per task despite using the same architecture.
 ## Implementation Notes
 
 Post-processing per task:
+
 - **Semantic**: argmax over query predictions weighted by mask logits per pixel
 - **Instance**: confidence threshold → mask NMS → top-K instances
 - **Panoptic**: assign each pixel to highest-confidence query, merge stuff, filter small instances

@@ -11,7 +11,7 @@ difficulty: intermediate  # beginner | intermediate | advanced
 ## Meta Information
 
 | Field | Details |
-|-------|---------|
+| ------- | --------- |
 | Authors | |
 | Year / Venue | |
 | arXiv / DOI | |
@@ -49,8 +49,11 @@ difficulty: intermediate  # beginner | intermediate | advanced
 ## 4. Experiments
 
 ### 4.1 Datasets
+
 ### 4.2 Quantitative Results (Tables)
+
 ### 4.3 Qualitative Results (See visualizations)
+
 ### 4.4 Ablation Study Summary
 
 ## 5. Strengths & Limitations

@@ -20,7 +20,7 @@ precision, and data efficiency regimes.
 ## Models Compared
 
 | Model | Type | Encoder | Decoder | Params (approx.) |
-|-------|------|---------|---------|------------------|
+| ------- | ------ | --------- | --------- | ------------------ |
 | DeepLabV3+ | CNN | ResNet-50 | ASPP + lightweight decoder | ~26M |
 | HRNet-W48 + OCR | CNN | HRNet-W48 | OCR (Object-Contextual Repr.) | ~71M |
 | SegFormer-B2 | Transformer | Mix Transformer (MiT-B2) | Lightweight MLP decoder | ~25M |
@@ -80,23 +80,27 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 # ADE20K augmentations
-ade20k_train_transform = A.Compose([
-    A.RandomResizedCrop(512, 512, scale=(0.5, 2.0)),
-    A.HorizontalFlip(p=0.5),
-    A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.5),
-    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ToTensorV2(),
-])
+ade20k_train_transform = A.Compose(
+    [
+        A.RandomResizedCrop(512, 512, scale=(0.5, 2.0)),
+        A.HorizontalFlip(p=0.5),
+        A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1, p=0.5),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ]
+)
 
 # Synapse augmentations (more conservative for medical data)
-synapse_train_transform = A.Compose([
-    A.Resize(224, 224),
-    A.HorizontalFlip(p=0.5),
-    A.RandomRotate90(p=0.5),
-    A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=10, p=0.3),
-    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ToTensorV2(),
-])
+synapse_train_transform = A.Compose(
+    [
+        A.Resize(224, 224),
+        A.HorizontalFlip(p=0.5),
+        A.RandomRotate90(p=0.5),
+        A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=10, p=0.3),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ]
+)
 ```
 
 ---
@@ -121,7 +125,7 @@ synapse_train_transform = A.Compose([
 ### Common Settings
 
 | Parameter | Value |
-|-----------|-------|
+| ----------- | ------- |
 | Input resolution | 512x512 (ADE20K) / 224x224 (Synapse) |
 | Batch size | 8 (ADE20K) / 16 (Synapse) |
 | Optimizer | AdamW (weight decay = 0.01) |
@@ -135,7 +139,7 @@ synapse_train_transform = A.Compose([
 ### Per-Model Specifics
 
 | Model | Pretrained Weights | Special Settings |
-|-------|-------------------|------------------|
+| ------- | ------------------- | ------------------ |
 | DeepLabV3+ | ResNet-50 (ImageNet-1K) | Output stride = 16, ASPP rates = [6, 12, 18] |
 | HRNet-W48 + OCR | HRNet-W48 (ImageNet-1K) | OCR mid-channels = 512 |
 | SegFormer-B2 | MiT-B2 (ImageNet-1K) | Stochastic depth rate = 0.1 |
@@ -150,7 +154,7 @@ synapse_train_transform = A.Compose([
 ### Accuracy Metrics
 
 | Metric | Description |
-|--------|-------------|
+| -------- | ------------- |
 | mIoU | Mean Intersection-over-Union across all classes. Primary metric. |
 | Per-class IoU | IoU for each class, to identify class-specific strengths. |
 | Dice coefficient | Reported for Synapse dataset (following convention). |
@@ -162,7 +166,7 @@ synapse_train_transform = A.Compose([
 Partition test images (or objects) by scale and compute mIoU per scale bucket:
 
 | Scale Bucket | Object Area (% of image) | Purpose |
-|-------------|-------------------------|---------|
+| ------------- | ------------------------- | --------- |
 | Small | < 1% | Tests fine-grained detection |
 | Medium | 1% - 10% | Tests general segmentation |
 | Large | > 10% | Tests global understanding |
@@ -172,7 +176,7 @@ This analysis directly tests Hypotheses 1 and 2.
 ### Efficiency Metrics
 
 | Metric | Measurement Method |
-|--------|-------------------|
+| -------- | ------------------- |
 | Parameters | `sum(p.numel() for p in model.parameters())` |
 | FLOPs | `fvcore.nn.FlopCountAnalysis` at target resolution |
 | GPU memory (peak) | `torch.cuda.max_memory_allocated()` during training |
@@ -196,7 +200,7 @@ This analysis directly tests Hypotheses 1 and 2.
 ### ADE20K mIoU (approximate, based on published results)
 
 | Model | mIoU | Params (M) | FLOPs (G) | FPS |
-|-------|------|-----------|-----------|-----|
+| ------- | ------ | ----------- | ----------- | ----- |
 | DeepLabV3+ (R50) | ~44.0 | 26 | 177 | ~28 |
 | HRNet-W48 + OCR | ~45.5 | 71 | 165 | ~14 |
 | SegFormer-B2 | ~46.5 | 25 | 62 | ~30 |
@@ -207,7 +211,7 @@ This analysis directly tests Hypotheses 1 and 2.
 ### Synapse Multi-Organ Dice (approximate)
 
 | Model | Average Dice | Aorta | Gallbladder | Kidney L | Kidney R |
-|-------|-------------|-------|-------------|----------|----------|
+| ------- | ------------- | ------- | ------------- | ---------- | ---------- |
 | DeepLabV3+ | ~74.0 | ~85 | ~60 | ~80 | ~78 |
 | SegFormer-B2 | ~76.0 | ~86 | ~63 | ~82 | ~80 |
 | TransUNet | ~77.5 | ~87 | ~64 | ~82 | ~81 |
@@ -249,7 +253,7 @@ python visualize_comparison.py --results-dir results/ade20k/ --num-samples 20
 ## Expected Timeline
 
 | Phase | Duration | Notes |
-|-------|----------|-------|
+| ------- | ---------- | ------- |
 | Data preparation | 0.5 day | Download ADE20K, Synapse; preprocess |
 | Training (ADE20K, 6 models) | 3-4 days | ~12-16 hrs per model on a single V100 |
 | Training (Synapse, 6 models) | 1 day | Much smaller dataset |
@@ -262,7 +266,7 @@ python visualize_comparison.py --results-dir results/ade20k/ --num-samples 20
 ## Files
 
 | File | Description |
-|------|-------------|
+| ------ | ------------- |
 | `configs/` | Per-model YAML configuration files |
 | `train.py` | Unified training script for all models |
 | `evaluate.py` | Compute metrics on test set |

@@ -31,6 +31,7 @@ where `Ω_a` is the set of annotated voxels and `l` is the per-voxel loss (cross
 ## Annotation Selection
 
 The choice of which slices to annotate matters:
+
 - **Evenly spaced**: Best general strategy — annotate every Nth slice
 - **Diverse slices**: Select slices showing different anatomical regions/structures
 - **Boundary slices**: Include slices at the start and end of structures
@@ -39,7 +40,7 @@ The choice of which slices to annotate matters:
 ## Performance vs Annotation Density
 
 | Annotated Slices | Fraction | IoU (%) |
-|-----------------|----------|---------|
+| ----------------- | ---------- | --------- |
 | All (fully supervised) | 100% | 92.3 |
 | Every 10th slice | 10% | 90.1 |
 | Every 30th slice | 3.3% | 87.5 |

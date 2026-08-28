@@ -10,7 +10,7 @@
 ### Tracked Repositories (initial)
 
 | Repository | Stars (approx.) | Status |
-|---|---|---|
+| --- | --- | --- |
 | milesial/Pytorch-UNet | -- | Added |
 | MIC-DKFZ/nnUNet | -- | Added |
 | facebookresearch/sam2 | -- | Added |

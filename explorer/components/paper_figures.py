@@ -5,10 +5,9 @@ so reviewers can quickly see the high-level structure.
 """
 
 import streamlit as st
-from pathlib import Path
 
 try:
-    from streamlit_mermaid import st_mermaid
+    from streamlit_mermaid import st_mermaid  # noqa: F401
 
     HAS_MERMAID = True
 except ImportError:

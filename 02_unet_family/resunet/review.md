@@ -28,8 +28,10 @@ class ResBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_ch)
         self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1)
         self.bn2 = nn.BatchNorm2d(out_ch)
-        self.shortcut = nn.Conv2d(in_ch, out_ch, 1) if in_ch != out_ch else nn.Identity()
-    
+        self.shortcut = (
+            nn.Conv2d(in_ch, out_ch, 1) if in_ch != out_ch else nn.Identity()
+        )
+
     def forward(self, x):
         residual = self.shortcut(x)
         out = F.relu(self.bn1(self.conv1(x)))

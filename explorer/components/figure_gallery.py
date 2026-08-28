@@ -5,8 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import streamlit as st
-
-from components.mermaid_render import render_mermaid, mermaid_png_download_button
+from components.mermaid_render import mermaid_png_download_button, render_mermaid
 
 
 def render_figure_gallery(figures_dir: Path) -> None:
@@ -56,7 +55,7 @@ def render_figure_gallery(figures_dir: Path) -> None:
                 dl_col1, dl_col2 = st.columns(2)
                 with dl_col1:
                     st.download_button(
-                        f"Download .mermaid source",
+                        "Download .mermaid source",
                         code,
                         file_name=mmd_path.name,
                         mime="text/plain",

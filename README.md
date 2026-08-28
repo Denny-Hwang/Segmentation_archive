@@ -16,7 +16,7 @@ paper reviews, code reverse engineering, reproduction experiments, and visualiza
 ## Repository Structure
 
 | Directory | Content | Status |
-|-----------|---------|--------|
+| ----------- | --------- | -------- |
 | `01_foundations/` | Segmentation fundamentals, metrics, loss functions | In Progress |
 | `02_unet_family/` | U-Net series paper reviews & architecture analysis | In Progress |
 | `03_transformer_segmentation/` | TransUNet, Swin-UNet, Mask2Former, etc. | Planned |
@@ -43,6 +43,25 @@ paper reviews, code reverse engineering, reproduction experiments, and visualiza
 The Streamlit explorer provides an interactive interface to browse all content
 in this archive — paper reviews, architecture diagrams, code analysis,
 experiment results, and benchmark comparisons.
+
+Hands-on learning pages:
+
+- **Segmentation Lab** — run classical algorithms (Otsu, K-Means, SLIC,
+  Felzenszwalb, watershed, Chan–Vese, quickshift) side-by-side on example
+  images with ground-truth masks, tune parameters live, and compare a full
+  evaluation-metric suite (pixel accuracy, mIoU, Dice, boundary F1, HD95,
+  ARI) per example.
+- **Metrics Guide** — an interactive study guide: distort a prediction with
+  sliders and watch every metric react, plus formulas, strengths,
+  weaknesses, and limitations of each metric.
+- **Playground** — run deep segmentation models (SegFormer) on your own
+  images via Hugging Face pipelines.
+
+```bash
+cd explorer
+pip install -r requirements.txt
+streamlit run app.py
+```
 
 ## Related Resources
 

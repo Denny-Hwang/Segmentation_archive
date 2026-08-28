@@ -14,7 +14,7 @@ license: Custom (Meta license)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | SA-1B (Segment Anything 1 Billion) |
 | **Source** | [Meta AI](https://segment-anything.com/dataset/index.html) |
 | **Size** | 11 million images, 1.1 billion masks |

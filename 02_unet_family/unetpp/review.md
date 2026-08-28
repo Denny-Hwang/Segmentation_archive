@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | UNet++: A Nested U-Net Architecture for Medical Image Segmentation |
 | **Authors** | Zhou, Z., Siddiquee, M.M.R., Tajbakhsh, N., Liang, J. |
 | **Year** | 2018 |
@@ -31,6 +31,7 @@ In standard U-Net, skip connections directly concatenate encoder features with d
 UNet++ can be viewed as an ensemble of U-Nets of varying depths. The architecture is defined by a grid of nodes X^{i,j} where i denotes the downsampling level and j the dense block index. Each node receives: (1) features from the previous node at the same level, and (2) upsampled features from the level below. Nodes along the skip pathways (j > 0) also receive features from all preceding nodes at the same level via dense connections.
 
 The feature map at node X^{i,j} is computed as:
+
 - If j = 0: `X^{i,0} = H(X^{i-1,0})` (standard encoder)
 - If j > 0: `X^{i,j} = H([X^{i,0}, ..., X^{i,j-1}, U(X^{i+1,j-1})])`
 
@@ -45,7 +46,7 @@ where H is a convolution block, U is upsampling, and [...] denotes concatenation
 ## Results
 
 | Dataset | Metric | U-Net | UNet++ | Improvement |
-|---------|--------|-------|--------|-------------|
+| --------- | -------- | ------- | -------- | ------------- |
 | Cell nuclei | IoU | 90.52 | 92.07 | +1.55 |
 | Colon polyp | Dice | 71.10 | 74.32 | +3.22 |
 | Liver | Dice | 94.31 | 95.74 | +1.43 |

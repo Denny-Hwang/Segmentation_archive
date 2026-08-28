@@ -49,9 +49,7 @@ def render_paper_card(
             if category:
                 st.markdown(f"**Category**: {category}")
             if arxiv:
-                st.markdown(
-                    f"**arXiv**: [{arxiv}](https://arxiv.org/abs/{arxiv})"
-                )
+                st.markdown(f"**arXiv**: [{arxiv}](https://arxiv.org/abs/{arxiv})")
             if tags:
                 st.markdown(f"**Tags**: {', '.join(tags)}")
 

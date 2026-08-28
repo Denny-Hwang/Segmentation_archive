@@ -24,7 +24,7 @@ The `MODELS` registry is the central registry for all model-related classes. Com
 # mmseg/registry.py
 from mmengine.registry import Registry, MODELS as MMENGINE_MODELS
 
-MODELS = Registry('models', parent=MMENGINE_MODELS, locations=['mmseg.models'])
+MODELS = Registry("models", parent=MMENGINE_MODELS, locations=["mmseg.models"])
 ```
 
 The `parent=MMENGINE_MODELS` parameter establishes a parent-child relationship: if a class is not found in MMSeg's MODELS registry, it falls back to MMEngine's MODELS registry. This allows MMSegmentation to use common components (like optimizers, losses) registered in MMEngine without re-registering them.
@@ -57,9 +57,9 @@ The `MODELS.build(cfg)` method is the entry point for config-driven instantiatio
 # How MODELS.build() works internally (simplified)
 def build(cfg):
     cfg = cfg.copy()
-    obj_type = cfg.pop('type')          # e.g., 'EncoderDecoder'
+    obj_type = cfg.pop("type")  # e.g., 'EncoderDecoder'
     obj_cls = self._module_dict[obj_type]  # Look up class in registry
-    return obj_cls(**cfg)                # Instantiate with remaining kwargs
+    return obj_cls(**cfg)  # Instantiate with remaining kwargs
 ```
 
 For nested configs, the build process is recursive. The `EncoderDecoder` class receives `backbone=dict(type='ResNetV1c', ...)` as a keyword argument and internally calls `MODELS.build(backbone_cfg)` to construct the backbone. This recursive build pattern means the entire model tree is constructed from a single top-level `MODELS.build(cfg.model)` call.
@@ -144,15 +144,15 @@ To register a custom backbone, create a new file in `mmseg/models/backbones/` (o
 from mmseg.registry import MODELS
 from mmengine.model import BaseModule
 
+
 @MODELS.register_module()
 class CustomBackbone(BaseModule):
-    def __init__(self, in_channels=3, base_channels=64, num_stages=4,
-                 init_cfg=None):
+    def __init__(self, in_channels=3, base_channels=64, num_stages=4, init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         self.stages = nn.ModuleList()
         ch = in_channels
         for i in range(num_stages):
-            out_ch = base_channels * (2 ** i)
+            out_ch = base_channels * (2**i)
             self.stages.append(self._make_stage(ch, out_ch))
             ch = out_ch
 
@@ -174,6 +174,7 @@ Custom decode heads inherit from `BaseDecodeHead` which provides boilerplate for
 # my_project/decode_heads/custom_head.py
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 from mmseg.registry import MODELS
+
 
 @MODELS.register_module()
 class CustomDecodeHead(BaseDecodeHead):
@@ -199,7 +200,7 @@ class CustomDecodeHead(BaseDecodeHead):
 MMSegmentation provides a comprehensive inventory of registered components:
 
 | Category | Components | Examples |
-|----------|-----------|----------|
+| ---------- | ----------- | ---------- |
 | **Backbones** | 20+ | ResNet, ResNeXt, HRNet, SwinTransformer, MiT (SegFormer), BEiT, MAE, ConvNeXt, MobileNetV2/V3 |
 | **Decode Heads** | 25+ | FCNHead, PSPHead, ASPPHead, UPerHead, SegformerHead, SETRHead, Mask2FormerHead, DAHead, OCRHead, DNLHead |
 | **Losses** | 10+ | CrossEntropyLoss, DiceLoss, FocalLoss, LovaszLoss, TverskyLoss, OhemCrossEntropy |

@@ -28,6 +28,7 @@ SAM 2 extends the Segment Anything paradigm from static images to video, creatin
 ### Image Encoder (Hiera)
 
 SAM 2 replaces SAM's ViT-H with Hiera, a hierarchical vision transformer:
+
 - Hiera is pretrained with MAE and produces multi-scale features
 - The hierarchical structure is more efficient than plain ViT for video processing
 - Feature maps at multiple resolutions enable better handling of objects at different scales
@@ -48,6 +49,7 @@ The central innovation of SAM 2 is the streaming memory system consisting of:
 ### Mask Decoder
 
 An upgraded version of SAM's decoder that:
+
 - Attends to both the current frame embedding and memory-conditioned features
 - Produces mask predictions and occlusion scores
 - The occlusion head predicts whether the object is visible in the current frame, enabling graceful handling of objects leaving and re-entering the scene
@@ -71,7 +73,7 @@ An upgraded version of SAM's decoder that:
 ### Video Object Segmentation
 
 | Benchmark | Metric | SAM 2 | Previous SOTA |
-|-----------|--------|-------|--------------|
+| ----------- | -------- | ------- | -------------- |
 | DAVIS 2017 (val) | J&F | 82.5 | 79.5 (XMem) |
 | SA-V (test) | J&F | 76.0 | -- |
 | MOSE | J&F | 73.8 | 68.9 |
@@ -88,7 +90,7 @@ With 3 interactive clicks across frames, SAM 2 matches or exceeds the performanc
 ## Comparison to SAM
 
 | Aspect | SAM | SAM 2 |
-|--------|-----|-------|
+| -------- | ----- | ------- |
 | Scope | Images only | Images + Videos |
 | Backbone | ViT-H (MAE) | Hiera (MAE) |
 | Memory | None | Streaming memory bank |
@@ -118,6 +120,6 @@ SAM 2 established a new paradigm for interactive video segmentation and enabled 
 
 ## Citation
 
-```
+```text
 Ravi, N., et al. "SAM 2: Segment Anything in Images and Videos." arXiv 2024.
 ```

@@ -5,7 +5,7 @@ from typing import Any
 import streamlit as st
 
 try:
-    from streamlit_agraph import agraph, Node, Edge, Config
+    from streamlit_agraph import Config, Edge, Node, agraph
 
     HAS_AGRAPH = True
 except ImportError:
@@ -61,14 +61,28 @@ def render_knowledge_graph(
     # Graph controls toolbar
     ctrl_cols = st.columns([1, 1, 1, 1, 4])
     with ctrl_cols[0]:
-        if st.button("🔄 Reset View", key=f"reset_graph_{title}", help="Reset zoom and position to default"):
+        if st.button(
+            "🔄 Reset View",
+            key=f"reset_graph_{title}",
+            help="Reset zoom and position to default",
+        ):
             # Increment a counter to force re-render of the graph
             reset_key = f"_graph_reset_{title}"
             st.session_state[reset_key] = st.session_state.get(reset_key, 0) + 1
     with ctrl_cols[1]:
-        physics = st.checkbox("Physics", value=physics, key=f"physics_{title}", help="Toggle physics simulation")
+        physics = st.checkbox(
+            "Physics",
+            value=physics,
+            key=f"physics_{title}",
+            help="Toggle physics simulation",
+        )
     with ctrl_cols[2]:
-        hierarchical = st.checkbox("Hierarchical", value=False, key=f"hier_{title}", help="Toggle hierarchical layout")
+        hierarchical = st.checkbox(
+            "Hierarchical",
+            value=False,
+            key=f"hier_{title}",
+            help="Toggle hierarchical layout",
+        )
     with ctrl_cols[3]:
         height = st.select_slider(
             "Height",
@@ -89,30 +103,30 @@ def render_knowledge_graph(
             unsafe_allow_html=True,
         )
 
-    # Build graph version key to force re-render on reset
-    reset_key = f"_graph_reset_{title}"
-    version = st.session_state.get(reset_key, 0)
-
     nodes = []
     for node in nodes_data:
         category = node.get("category", "default")
         color = CATEGORY_COLORS.get(category, CATEGORY_COLORS["default"])
-        nodes.append(Node(
-            id=node["id"],
-            label=node.get("label", node["id"]),
-            size=node.get("size", 20),
-            color=color,
-            title=node.get("title", node.get("label", "")),
-        ))
+        nodes.append(
+            Node(
+                id=node["id"],
+                label=node.get("label", node["id"]),
+                size=node.get("size", 20),
+                color=color,
+                title=node.get("title", node.get("label", "")),
+            )
+        )
 
     edges = []
     for edge in edges_data:
-        edges.append(Edge(
-            source=edge["source"],
-            target=edge["target"],
-            label=edge.get("label", ""),
-            color=edge.get("color", "#666666"),
-        ))
+        edges.append(
+            Edge(
+                source=edge["source"],
+                target=edge["target"],
+                label=edge.get("label", ""),
+                color=edge.get("color", "#666666"),
+            )
+        )
 
     config = Config(
         width="100%",
@@ -148,26 +162,32 @@ def build_citation_graph(papers: list[dict[str, Any]]) -> tuple[list, list]:
             continue
         paper_ids.add(paper_id)
 
-        nodes.append({
-            "id": paper_id,
-            "label": paper.get("title", paper_id),
-            "category": paper.get("category", "default"),
-            "title": f"{paper.get('title', '')} ({paper.get('year', '')})",
-        })
+        nodes.append(
+            {
+                "id": paper_id,
+                "label": paper.get("title", paper_id),
+                "category": paper.get("category", "default"),
+                "title": f"{paper.get('title', '')} ({paper.get('year', '')})",
+            }
+        )
 
         for cited_id in paper.get("cites", []):
-            edges.append({
-                "source": paper_id,
-                "target": cited_id,
-                "label": "cites",
-            })
+            edges.append(
+                {
+                    "source": paper_id,
+                    "target": cited_id,
+                    "label": "cites",
+                }
+            )
 
         for parent_id in paper.get("builds_on", []):
-            edges.append({
-                "source": paper_id,
-                "target": parent_id,
-                "label": "builds on",
-                "color": "#FF6B6B",
-            })
+            edges.append(
+                {
+                    "source": paper_id,
+                    "target": parent_id,
+                    "label": "builds on",
+                    "color": "#FF6B6B",
+                }
+            )
 
     return nodes, edges

@@ -6,7 +6,7 @@
 ## Synapse Multi-Organ (CT, 8 organs)
 
 | Model | Year | Backbone | mDSC (%) | mHD95 (mm) | Params (M) | Notes |
-|-------|------|----------|----------|------------|------------|-------|
+| ------- | ------ | ---------- | ---------- | ------------ | ------------ | ------- |
 | U-Net | 2015 | Conv | 76.85 | 31.10 | ~31 | Baseline encoder-decoder |
 | Attention U-Net | 2018 | Conv | 77.77 | 29.20 | ~34 | + attention gates |
 | UNet++ | 2018 | Conv | 78.30 | 28.50 | ~36 | Nested dense skips |
@@ -18,7 +18,7 @@
 ## ADE20K (Scene Parsing, 150 classes)
 
 | Model | Year | Backbone | mIoU (%) | Params (M) | Notes |
-|-------|------|----------|----------|------------|-------|
+| ------- | ------ | ---------- | ---------- | ------------ | ------- |
 | PSPNet | 2017 | R-101 | 44.39 | ~65 | Pyramid pooling |
 | DeepLab v3+ | 2018 | R-101 | 45.47 | ~63 | ASPP + decoder |
 | SegFormer-B5 | 2021 | MiT-B5 | 51.80 | ~84 | Efficient transformer |
@@ -28,7 +28,7 @@
 ## Cityscapes val (Urban Scenes, 19 classes)
 
 | Model | Year | Backbone | mIoU (%) | Notes |
-|-------|------|----------|----------|-------|
+| ------- | ------ | ---------- | ---------- | ------- |
 | PSPNet | 2017 | R-101 | 79.70 | |
 | DeepLab v3+ | 2018 | R-101 | 80.90 | |
 | SegFormer-B5 | 2021 | MiT-B5 | 84.00 | |

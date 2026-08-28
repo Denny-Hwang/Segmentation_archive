@@ -25,7 +25,7 @@ The DatasetFingerprintExtractor analyzes:
 ## Configuration Decisions from Fingerprint
 
 | Fingerprint Property | Configuration Decision |
-|---------------------|----------------------|
+| --------------------- | ---------------------- |
 | Anisotropy ratio > 3 | Prefer 2D or 3D cascade over 3D full-res |
 | CT modality | Global normalization (clip to [0.5, 99.5] percentile → z-score) |
 | MRI modality | Per-image z-score normalization |
@@ -46,12 +46,14 @@ The choice is automatic based on the modality field in the dataset descriptor.
 ## Patch Size and Network Topology
 
 The fingerprint determines the training patch size by considering:
+
 1. Maximum GPU memory (default: 1 GPU with batch size 2)
 2. Median image size (patches should cover representative regions)
 3. Anisotropy (patches may be non-cubic for anisotropic data)
 4. Network depth = number of pooling operations that fit within the patch size (minimum 32 voxels per dimension)
 
 Example: for a dataset with median size 512×512×150 and spacing 0.8×0.8×2.5mm:
+
 - Target spacing (resampled): 0.8×0.8×2.5mm (preserve native spacing)
 - Patch size: 128×128×64 (fits in GPU memory)
 - Network depth: 5 levels (128→64→32→16→8)

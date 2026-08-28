@@ -235,6 +235,7 @@ COCO averages AP across 10 IoU thresholds from 0.50 to 0.95 in steps of 0.05:
 $$AP = \frac{1}{10} \sum_{\tau \in \{0.50, 0.55, \dots, 0.95\}} AP_\tau$$
 
 Additional breakdowns:
+
 - $AP_{50}$: AP at IoU = 0.50 (lenient, PASCAL-style)
 - $AP_{75}$: AP at IoU = 0.75 (strict)
 - $AP_S$, $AP_M$, $AP_L$: AP for small, medium, large objects
@@ -281,7 +282,7 @@ Compute precision and recall of boundary pixels (within a tolerance distance), t
 ## 8. Metric Comparison Summary
 
 | Metric | Task | Measures | Handles Class Imbalance | Boundary Sensitive | Computational Cost |
-|--------|------|----------|------------------------|--------------------|--------------------|
+| -------- | ------ | ---------- | ------------------------ | -------------------- | -------------------- |
 | Pixel Accuracy | Semantic | Overall correctness | No | No | Very low |
 | mIoU | Semantic | Per-class region overlap | Yes (mean over classes) | Indirectly | Low |
 | Dice / F1 | Semantic / Binary | Region overlap | Somewhat | No | Low |

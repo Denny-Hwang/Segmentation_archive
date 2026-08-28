@@ -60,7 +60,9 @@ def get_s2_headers() -> dict[str, str]:
     return headers
 
 
-def fetch_paper_by_arxiv(arxiv_id: str, headers: dict[str, str]) -> dict[str, Any] | None:
+def fetch_paper_by_arxiv(
+    arxiv_id: str, headers: dict[str, str]
+) -> dict[str, Any] | None:
     """Fetch paper metadata from Semantic Scholar using an arXiv ID.
 
     Args:
@@ -114,7 +116,7 @@ def fetch_all_citations(
         if arxiv_id:
             s2_data = fetch_paper_by_arxiv(arxiv_id, headers)
         else:
-            print(f"  No arXiv ID available, skipping.")
+            print("  No arXiv ID available, skipping.")
             s2_data = None
 
         result = {
@@ -123,7 +125,9 @@ def fetch_all_citations(
             "year": paper.get("year"),
             "category": paper.get("category"),
             "citation_count": s2_data.get("citationCount") if s2_data else None,
-            "influential_citations": s2_data.get("influentialCitationCount") if s2_data else None,
+            "influential_citations": s2_data.get("influentialCitationCount")
+            if s2_data
+            else None,
             "s2_venue": s2_data.get("venue") if s2_data else None,
             "fetched_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -146,7 +150,8 @@ def main():
         description="Fetch citation counts for tracked segmentation papers"
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=DEFAULT_OUTPUT,
         help="Output JSON file path",

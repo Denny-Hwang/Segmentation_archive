@@ -13,7 +13,7 @@ This section contains visual materials that complement the written analyses: arc
 
 ## Directory Structure
 
-```
+```text
 07_visualizations/
 ├── architecture_diagrams/     # Mermaid and image-based architecture diagrams
 │   └── unet_family_evolution.mermaid
@@ -50,8 +50,10 @@ Mermaid diagrams (`.mermaid` files) can be rendered using:
 1. **GitHub**: Renders natively in `.md` files with mermaid code blocks
 2. **VSCode**: Install the "Mermaid Preview" extension
 3. **CLI**: Use `mmdc` (Mermaid CLI) to export as PNG/SVG:
+
    ```bash
    npm install -g @mermaid-js/mermaid-cli
    mmdc -i diagram.mermaid -o diagram.png
    ```
-4. **Online**: Paste into https://mermaid.live
+
+4. **Online**: Paste into <https://mermaid.live>

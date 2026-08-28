@@ -19,12 +19,19 @@ Attention maps can be captured using forward hooks in PyTorch:
 ```python
 attention_maps = {}
 
+
 def hook_fn(name):
     def hook(module, input, output):
-        attention_maps[name] = module.sigmoid(module.psi(
-            module.relu(module.W_g(input[0]) + module.W_x(input[1]))
-        )).detach().cpu()
+        attention_maps[name] = (
+            module.sigmoid(
+                module.psi(module.relu(module.W_g(input[0]) + module.W_x(input[1])))
+            )
+            .detach()
+            .cpu()
+        )
+
     return hook
+
 
 # Register hooks on attention gates
 for name, module in model.named_modules():
@@ -37,23 +44,24 @@ for name, module in model.named_modules():
 ```python
 import matplotlib.pyplot as plt
 
+
 def show_attention_maps(image, attention_maps, prediction, ground_truth):
     fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-    axes[0, 0].imshow(image, cmap='gray')
-    axes[0, 0].set_title('Input Image')
-    
+    axes[0, 0].imshow(image, cmap="gray")
+    axes[0, 0].set_title("Input Image")
+
     for i, (name, attn) in enumerate(attention_maps.items()):
-        ax = axes[(i+1)//3, (i+1)%3]
+        ax = axes[(i + 1) // 3, (i + 1) % 3]
         # Upsample attention map to input resolution
-        attn_up = F.interpolate(attn, size=image.shape, mode='bilinear')
-        ax.imshow(image, cmap='gray', alpha=0.5)
-        ax.imshow(attn_up.squeeze(), cmap='jet', alpha=0.5)
-        ax.set_title(f'Attention Level {i+1}')
-    
-    axes[1, 1].imshow(prediction, cmap='viridis')
-    axes[1, 1].set_title('Prediction')
-    axes[1, 2].imshow(ground_truth, cmap='viridis')
-    axes[1, 2].set_title('Ground Truth')
+        attn_up = F.interpolate(attn, size=image.shape, mode="bilinear")
+        ax.imshow(image, cmap="gray", alpha=0.5)
+        ax.imshow(attn_up.squeeze(), cmap="jet", alpha=0.5)
+        ax.set_title(f"Attention Level {i + 1}")
+
+    axes[1, 1].imshow(prediction, cmap="viridis")
+    axes[1, 1].set_title("Prediction")
+    axes[1, 2].imshow(ground_truth, cmap="viridis")
+    axes[1, 2].set_title("Ground Truth")
     plt.tight_layout()
 ```
 

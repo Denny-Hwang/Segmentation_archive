@@ -23,11 +23,11 @@ Usage:
             break
 """
 
-import json
 import csv
-import torch
 from pathlib import Path
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
+
+import torch
 
 
 class EarlyStopping:
@@ -152,7 +152,9 @@ class ModelCheckpoint:
         saved = False
 
         # Check if this is the best so far
-        is_best = self.best_value is None or self._is_better(metric_value, self.best_value)
+        is_best = self.best_value is None or self._is_better(
+            metric_value, self.best_value
+        )
         if is_best:
             self.best_value = metric_value
 
@@ -164,7 +166,14 @@ class ModelCheckpoint:
         # Save periodic checkpoint
         if self.save_interval > 0 and (epoch + 1) % self.save_interval == 0:
             if not (self.save_best_only and not is_best):
-                self._save(epoch, metric_value, model, optimizer, extra, tag=f"epoch{epoch:04d}")
+                self._save(
+                    epoch,
+                    metric_value,
+                    model,
+                    optimizer,
+                    extra,
+                    tag=f"epoch{epoch:04d}",
+                )
                 saved = True
 
         return saved
@@ -218,6 +227,7 @@ class TrainingLogger:
         if use_tensorboard:
             try:
                 from torch.utils.tensorboard import SummaryWriter
+
                 self.writer = SummaryWriter(log_dir=str(self.log_dir))
             except ImportError:
                 print("Warning: TensorBoard not available. Logging to CSV only.")

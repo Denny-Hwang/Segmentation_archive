@@ -10,7 +10,7 @@ A system for tracking key open-source repositories and influential papers in the
 
 ## Structure
 
-```
+```text
 08_repo_tracker/
 ├── README.md                  # This file
 ├── tracked_repos.yaml         # Registry of tracked GitHub repositories
@@ -26,7 +26,7 @@ A system for tracking key open-source repositories and influential papers in the
 ## Tracked Repositories
 
 | Repository | Category | Description |
-|---|---|---|
+| --- | --- | --- |
 | milesial/Pytorch-UNet | Medical/General | Lightweight UNet implementation |
 | MIC-DKFZ/nnUNet | Medical | Self-configuring segmentation framework |
 | facebookresearch/sam2 | Foundation | Segment Anything Model 2 |

@@ -43,7 +43,7 @@ def strip_frontmatter(text: str) -> str:
     # Case 1: standard --- block
     m = _FM_DELIMITED.search(text)
     if m:
-        return text[m.end():].lstrip("\r\n")
+        return text[m.end() :].lstrip("\r\n")
 
     # Case 2: bare YAML lines (no --- delimiters)
     stripped = text.lstrip()

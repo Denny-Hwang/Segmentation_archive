@@ -33,7 +33,7 @@ Good segmentation visualizations serve three goals:
 For each test image, produce a horizontal row of panels showing the input, ground truth, and
 each model's prediction. This layout makes differences immediately apparent.
 
-```
+```text
 | Input Image | Ground Truth | Model A | Model B | Model C |
 ```
 
@@ -41,8 +41,10 @@ each model's prediction. This layout makes differences immediately apparent.
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_comparison_row(image, ground_truth, predictions, model_names,
-                        figsize=None, save_path=None):
+
+def plot_comparison_row(
+    image, ground_truth, predictions, model_names, figsize=None, save_path=None
+):
     """
     Create a side-by-side comparison of segmentation predictions.
 
@@ -108,27 +110,28 @@ We use a colorblind-friendly palette derived from the Tableau 20 color scheme:
 
 ```python
 SEGMENTATION_PALETTE = {
-    0:  (0, 0, 0),        # Background - Black
-    1:  (255, 0, 0),      # Class 1 - Red
-    2:  (0, 255, 0),      # Class 2 - Green
-    3:  (0, 0, 255),      # Class 3 - Blue
-    4:  (255, 255, 0),    # Class 4 - Yellow
-    5:  (255, 0, 255),    # Class 5 - Magenta
-    6:  (0, 255, 255),    # Class 6 - Cyan
-    7:  (255, 128, 0),    # Class 7 - Orange
-    8:  (128, 0, 255),    # Class 8 - Purple
-    9:  (0, 128, 255),    # Class 9 - Sky Blue
+    0: (0, 0, 0),  # Background - Black
+    1: (255, 0, 0),  # Class 1 - Red
+    2: (0, 255, 0),  # Class 2 - Green
+    3: (0, 0, 255),  # Class 3 - Blue
+    4: (255, 255, 0),  # Class 4 - Yellow
+    5: (255, 0, 255),  # Class 5 - Magenta
+    6: (0, 255, 255),  # Class 6 - Cyan
+    7: (255, 128, 0),  # Class 7 - Orange
+    8: (128, 0, 255),  # Class 8 - Purple
+    9: (0, 128, 255),  # Class 9 - Sky Blue
     10: (255, 128, 128),  # Class 10 - Salmon
     11: (128, 255, 128),  # Class 11 - Light Green
     12: (128, 128, 255),  # Class 12 - Light Blue
     13: (255, 255, 128),  # Class 13 - Light Yellow
     14: (255, 128, 255),  # Class 14 - Pink
     15: (128, 255, 255),  # Class 15 - Light Cyan
-    16: (192, 64, 0),     # Class 16 - Brown
-    17: (64, 192, 0),     # Class 17 - Lime
-    18: (0, 64, 192),     # Class 18 - Navy
-    19: (192, 0, 64),     # Class 19 - Crimson
+    16: (192, 64, 0),  # Class 16 - Brown
+    17: (64, 192, 0),  # Class 17 - Lime
+    18: (0, 64, 192),  # Class 18 - Navy
+    19: (192, 0, 64),  # Class 19 - Crimson
 }
+
 
 def colorize_mask(mask, palette=None):
     """
@@ -179,10 +182,9 @@ def overlay_mask(image, mask, alpha=0.5, palette=None):
     # Only blend where mask is non-background
     blended = image.copy().astype(np.float32)
     foreground = mask > 0
-    blended[foreground] = (
-        (1 - alpha) * image[foreground].astype(np.float32) +
-        alpha * colored_mask[foreground].astype(np.float32)
-    )
+    blended[foreground] = (1 - alpha) * image[foreground].astype(
+        np.float32
+    ) + alpha * colored_mask[foreground].astype(np.float32)
     return blended.astype(np.uint8)
 ```
 
@@ -193,6 +195,7 @@ assessing boundary quality without obscuring the image content.
 
 ```python
 import cv2
+
 
 def contour_overlay(image, mask, thickness=2, palette=None):
     """
@@ -217,7 +220,9 @@ def contour_overlay(image, mask, thickness=2, palette=None):
         if class_id == 0:  # Skip background
             continue
         binary = (mask == class_id).astype(np.uint8)
-        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         color = palette.get(class_id, (255, 255, 255))
         cv2.drawContours(output, contours, -1, color, thickness)
 
@@ -256,17 +261,16 @@ def error_map(ground_truth, prediction, image=None, alpha=0.6):
     fp = (ground_truth == 0) & (prediction == 1)
     fn = (ground_truth == 1) & (prediction == 0)
 
-    error_rgb[tp] = (0, 200, 0)     # Green - true positive
-    error_rgb[fp] = (220, 0, 0)     # Red - false positive
-    error_rgb[fn] = (0, 0, 220)     # Blue - false negative
+    error_rgb[tp] = (0, 200, 0)  # Green - true positive
+    error_rgb[fp] = (220, 0, 0)  # Red - false positive
+    error_rgb[fn] = (0, 0, 220)  # Blue - false negative
 
     if image is not None:
         has_error_or_tp = tp | fp | fn
         blended = image.copy().astype(np.float32)
-        blended[has_error_or_tp] = (
-            (1 - alpha) * image[has_error_or_tp].astype(np.float32) +
-            alpha * error_rgb[has_error_or_tp].astype(np.float32)
-        )
+        blended[has_error_or_tp] = (1 - alpha) * image[has_error_or_tp].astype(
+            np.float32
+        ) + alpha * error_rgb[has_error_or_tp].astype(np.float32)
         return blended.astype(np.uint8)
 
     return error_rgb
@@ -280,8 +284,9 @@ For publications and presentations, create a grid that shows the input, ground t
 predictions from multiple models, and error maps all in one figure.
 
 ```python
-def plot_full_comparison(image, ground_truth, predictions, model_names,
-                         figsize=(20, 10), save_path=None):
+def plot_full_comparison(
+    image, ground_truth, predictions, model_names, figsize=(20, 10), save_path=None
+):
     """
     Create a comprehensive comparison grid with overlays and error maps.
 
@@ -314,7 +319,9 @@ def plot_full_comparison(image, ground_truth, predictions, model_names,
         err = error_map(ground_truth, pred, image=image, alpha=0.5)
         axes[1, 2 + i].imshow(err)
         # Compute quick stats for the title
-        dice = 2 * ((pred & ground_truth).sum()) / (pred.sum() + ground_truth.sum() + 1e-8)
+        dice = (
+            2 * ((pred & ground_truth).sum()) / (pred.sum() + ground_truth.sum() + 1e-8)
+        )
         axes[1, 2 + i].set_title(f"Error Map (Dice={dice:.3f})", fontsize=10)
 
     for ax in axes.flat:
@@ -340,6 +347,7 @@ from plotly.subplots import make_subplots
 from PIL import Image as PILImage
 import io
 
+
 def interactive_comparison(image, ground_truth, prediction, class_names=None):
     """
     Create an interactive Plotly figure with toggleable segmentation overlays.
@@ -350,21 +358,35 @@ def interactive_comparison(image, ground_truth, prediction, class_names=None):
         prediction: Integer mask [H, W].
         class_names: Optional dict mapping class_id -> name string.
     """
-    fig = make_subplots(rows=1, cols=3,
-                        subplot_titles=["Input", "Ground Truth", "Prediction"])
+    fig = make_subplots(
+        rows=1, cols=3, subplot_titles=["Input", "Ground Truth", "Prediction"]
+    )
 
     # Convert images to PIL for Plotly
-    for col, (data, title) in enumerate([
-        (image, "Input"),
-        (overlay_mask(image, ground_truth, alpha=0.5), "Ground Truth"),
-        (overlay_mask(image, prediction, alpha=0.5), "Prediction"),
-    ], start=1):
+    for col, (data, title) in enumerate(
+        [
+            (image, "Input"),
+            (overlay_mask(image, ground_truth, alpha=0.5), "Ground Truth"),
+            (overlay_mask(image, prediction, alpha=0.5), "Prediction"),
+        ],
+        start=1,
+    ):
         img_pil = PILImage.fromarray(data)
         fig.add_layout_image(
-            dict(source=img_pil, x=0, y=1, xref=f"x{col}", yref=f"y{col}",
-                 sizex=data.shape[1], sizey=data.shape[0],
-                 xanchor="left", yanchor="top", layer="below"),
-            row=1, col=col
+            dict(
+                source=img_pil,
+                x=0,
+                y=1,
+                xref=f"x{col}",
+                yref=f"y{col}",
+                sizex=data.shape[1],
+                sizey=data.shape[0],
+                xanchor="left",
+                yanchor="top",
+                layer="below",
+            ),
+            row=1,
+            col=col,
         )
         fig.update_xaxes(range=[0, data.shape[1]], row=1, col=col)
         fig.update_yaxes(range=[data.shape[0], 0], row=1, col=col)
@@ -418,7 +440,7 @@ fig = plot_full_comparison(
     ground_truth=gt_mask,
     predictions=[unet_pred, unetpp_pred, attn_unet_pred],
     model_names=["U-Net", "U-Net++", "Attention U-Net"],
-    save_path="unet_variants_comparison_sample01.png"
+    save_path="unet_variants_comparison_sample01.png",
 )
 ```
 
@@ -429,7 +451,9 @@ fig = plot_full_comparison(
 For generating visualizations across an entire test set:
 
 ```python
-def generate_all_comparisons(test_loader, models, model_names, output_dir, num_samples=20):
+def generate_all_comparisons(
+    test_loader, models, model_names, output_dir, num_samples=20
+):
     """
     Generate comparison visualizations for a batch of test images.
 
@@ -441,6 +465,7 @@ def generate_all_comparisons(test_loader, models, model_names, output_dir, num_s
         num_samples: Number of samples to visualize.
     """
     import os
+
     os.makedirs(output_dir, exist_ok=True)
 
     for i, (images, masks) in enumerate(test_loader):
@@ -458,8 +483,11 @@ def generate_all_comparisons(test_loader, models, model_names, output_dir, num_s
             predictions.append(pred)
 
         fig = plot_full_comparison(
-            image_np, gt_np, predictions, model_names,
-            save_path=os.path.join(output_dir, f"comparison_{i:04d}.png")
+            image_np,
+            gt_np,
+            predictions,
+            model_names,
+            save_path=os.path.join(output_dir, f"comparison_{i:04d}.png"),
         )
         plt.close(fig)
 
@@ -470,7 +498,7 @@ def generate_all_comparisons(test_loader, models, model_names, output_dir, num_s
 
 ## File Naming Convention
 
-```
+```text
 <dataset>_<image_id>_<model_name>.png          # Single model prediction
 <dataset>_<image_id>_comparison.png             # Multi-model comparison grid
 <dataset>_<image_id>_error_<model_name>.png     # Error map for one model
@@ -479,7 +507,8 @@ def generate_all_comparisons(test_loader, models, model_names, output_dir, num_s
 ```
 
 Examples:
-```
+
+```text
 isic2018_0042_unet.png
 isic2018_0042_comparison.png
 isic2018_0042_error_segformer_b2.png

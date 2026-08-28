@@ -17,9 +17,9 @@ Usage:
     iou = iou_score(pred_mask, true_mask, num_classes=5)
 """
 
-import torch
-import torch.nn.functional as F
 from typing import Optional
+
+import torch
 
 
 def iou_score(
@@ -62,8 +62,8 @@ def iou_score(
         if ignore_index is not None and cls == ignore_index:
             continue
 
-        pred_mask = (pred_classes == cls)
-        target_mask = (target == cls)
+        pred_mask = pred_classes == cls
+        target_mask = target == cls
 
         intersection = (pred_mask & target_mask).float().sum()
         union = (pred_mask | target_mask).float().sum()
@@ -120,7 +120,9 @@ def dice_score(
         target_mask = (target == cls).float()
 
         intersection = (pred_mask * target_mask).sum()
-        dice = (2.0 * intersection + smooth) / (pred_mask.sum() + target_mask.sum() + smooth)
+        dice = (2.0 * intersection + smooth) / (
+            pred_mask.sum() + target_mask.sum() + smooth
+        )
         dices.append(dice)
 
     dices = torch.stack(dices)
@@ -196,6 +198,6 @@ def confusion_matrix(
 
     mask = (target >= 0) & (target < num_classes)
     idx = num_classes * target[mask] + pred_classes[mask]
-    cm = torch.bincount(idx, minlength=num_classes ** 2).reshape(num_classes, num_classes)
+    cm = torch.bincount(idx, minlength=num_classes**2).reshape(num_classes, num_classes)
 
     return cm

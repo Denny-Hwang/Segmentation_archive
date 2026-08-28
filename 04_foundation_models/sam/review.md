@@ -64,7 +64,7 @@ Training leveraged the SA-1B data engine with three stages. The model was iterat
 ## Key Results
 
 | Benchmark | Metric | SAM (ViT-H) |
-|-----------|--------|-------------|
+| ----------- | -------- | ------------- |
 | COCO (zero-shot) | AR@1000 | 69.7 |
 | LVIS (zero-shot) | AR@1000 | 75.4 |
 | 23 diverse datasets | mIoU (1-point) | 60.6 |
@@ -79,7 +79,7 @@ Training leveraged the SA-1B data engine with three stages. The model was iterat
 ## Model Variants
 
 | Variant | Backbone | Parameters | Speed (img/s) |
-|---------|----------|-----------|---------------|
+| --------- | ---------- | ----------- | --------------- |
 | ViT-B | ViT-Base | ~91M | ~40 |
 | ViT-L | ViT-Large | ~308M | ~20 |
 | ViT-H | ViT-Huge | ~632M | ~8 |
@@ -105,6 +105,6 @@ SAM catalyzed a wave of research into foundation models for segmentation. It est
 
 ## Citation
 
-```
+```text
 Kirillov, A., et al. "Segment Anything." ICCV 2023.
 ```

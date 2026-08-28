@@ -12,8 +12,8 @@ tags: [mmsegmentation, openmmlab, config-system, segmentation-toolbox]
 ## Repository Summary
 
 | Field | Details |
-|-------|---------|
-| URL | https://github.com/open-mmlab/mmsegmentation |
+| ------- | --------- |
+| URL | <https://github.com/open-mmlab/mmsegmentation> |
 | License | Apache-2.0 |
 | Framework | PyTorch via MMEngine/MMCV |
 | Primary Use Case | Comprehensive semantic segmentation toolbox |
@@ -25,7 +25,7 @@ MMSegmentation is the most comprehensive segmentation toolbox, supporting virtua
 
 ## Repository Structure
 
-```
+```text
 mmseg/
 ├── configs/                    # Config files for all models
 │   ├── _base_/                 # Base configs (datasets, schedules, models)

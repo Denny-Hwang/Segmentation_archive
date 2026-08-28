@@ -9,7 +9,6 @@ Usage:
 """
 
 import argparse
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -76,9 +75,7 @@ def build_tree(root: Path, prefix: str = "", is_last: bool = True) -> list[str]:
 
         if child.is_dir():
             lines.append(f"{prefix}{connector}{child.name}/")
-            lines.extend(
-                build_tree(child, prefix + extension, is_child_last)
-            )
+            lines.extend(build_tree(child, prefix + extension, is_child_last))
         else:
             lines.append(f"{prefix}{connector}{child.name}")
 
@@ -100,7 +97,9 @@ def generate_section_summary(root: Path) -> list[dict]:
         if not child.is_dir() or should_skip(child):
             continue
 
-        file_count = sum(1 for _ in child.rglob("*") if _.is_file() and not should_skip(_))
+        file_count = sum(
+            1 for _ in child.rglob("*") if _.is_file() and not should_skip(_)
+        )
 
         # Try to read description from README.md
         readme = child / "README.md"
@@ -116,11 +115,13 @@ def generate_section_summary(root: Path) -> list[dict]:
             except Exception:
                 pass
 
-        sections.append({
-            "name": child.name,
-            "file_count": file_count,
-            "description": description,
-        })
+        sections.append(
+            {
+                "name": child.name,
+                "file_count": file_count,
+                "description": description,
+            }
+        )
 
     return sections
 
@@ -142,7 +143,9 @@ def generate_toc(root: Path) -> str:
     # Build section summary table
     section_table = "| Section | Files | Description |\n|---|---|---|\n"
     for sec in sections:
-        section_table += f"| `{sec['name']}` | {sec['file_count']} | {sec['description']} |\n"
+        section_table += (
+            f"| `{sec['name']}` | {sec['file_count']} | {sec['description']} |\n"
+        )
 
     toc = f"""# Segmentation Archive - Table of Contents
 
@@ -170,7 +173,8 @@ def main():
         description="Generate table of contents for the Segmentation Archive"
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=ARCHIVE_ROOT / "TABLE_OF_CONTENTS.md",
         help="Output file path",

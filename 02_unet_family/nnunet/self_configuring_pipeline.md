@@ -15,18 +15,21 @@ nnU-Net's self-configuring pipeline automatically selects the optimal segmentati
 ## Three Configurations
 
 ### 2D U-Net
+
 - Processes individual 2D slices independently
 - Best for: highly anisotropic data (thick slices), datasets with large in-plane resolution, limited GPU memory
 - Advantages: fast training, large batch sizes, handles any image size
 - Limitation: no inter-slice context
 
 ### 3D Full-Resolution U-Net
+
 - Processes 3D patches from the full-resolution volume
 - Best for: isotropic or near-isotropic data, small-to-medium image sizes
 - Advantages: full 3D context, best for isotropic data
 - Limitation: limited patch size due to GPU memory, may miss very large structures
 
 ### 3D Cascade U-Net
+
 - Two-stage: (1) 3D U-Net on downsampled volume → coarse segmentation; (2) 3D U-Net on full-resolution patches, conditioned on coarse prediction
 - Best for: large images that don't fit in GPU memory at full resolution
 - Advantages: combines global context (stage 1) with fine details (stage 2)
@@ -42,6 +45,7 @@ nnU-Net's self-configuring pipeline automatically selects the optimal segmentati
 ## Ensembling
 
 After 5-fold CV for each configuration, nnU-Net evaluates:
+
 1. Each single configuration's mean Dice
 2. All pairwise ensembles (average softmax predictions)
 3. Selects the best single model OR ensemble based on validation Dice
@@ -51,6 +55,7 @@ Common outcomes: 3D full-res wins on isotropic data; 2D+3D ensemble wins on anis
 ## Training Protocol
 
 All configurations share:
+
 - **Optimizer**: SGD with momentum 0.99, weight decay 3e-5
 - **Learning rate**: Polynomial decay from initial lr=0.01
 - **Loss**: Cross-entropy + Dice loss (equal weight)

@@ -12,8 +12,8 @@ tags: [sam2, segment-anything, foundation-model, pytorch, promptable]
 ## Repository Summary
 
 | Field | Details |
-|-------|---------|
-| URL | https://github.com/facebookresearch/sam2 |
+| ------- | --------- |
+| URL | <https://github.com/facebookresearch/sam2> |
 | License | Apache-2.0 |
 | Framework | PyTorch |
 | Primary Use Case | Promptable image and video segmentation |
@@ -25,7 +25,7 @@ SAM 2 extends the Segment Anything Model to video, introducing a streaming memor
 
 ## Repository Structure
 
-```
+```text
 sam2/
 ├── sam2/
 │   ├── modeling/
@@ -55,7 +55,7 @@ sam2/
 ## Analysis Files
 
 | File | Description | Status |
-|------|-------------|--------|
+| ------ | ------------- | -------- |
 | `image_encoder.md` | Hiera image encoder analysis | Planned |
 | `memory_attention.md` | Memory attention mechanism for video | Planned |
 | `mask_decoder.md` | Mask decoder architecture | Planned |

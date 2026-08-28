@@ -39,7 +39,7 @@ Each training iteration: (1) sample a task uniformly from {semantic, instance, p
 ## Ablation Results
 
 | Configuration | ADE20K PQ | ADE20K mIoU | COCO AP |
-|--------------|-----------|-------------|---------|
+| -------------- | ----------- | ------------- | --------- |
 | Task-conditioned (proposed) | 49.8 | 58.0 | 49.0 |
 | No task token | 48.6 | 57.2 | 48.2 |
 | All tasks every iteration | 48.1 | 56.8 | 47.5 |

@@ -14,7 +14,7 @@ license: Custom (Flickr terms)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | PASCAL Visual Object Classes 2012 |
 | **Source** | [Oxford VGG](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/) |
 | **Size** | 11,530 images (1,464 train, 1,449 val, 1,456 test for segmentation) |

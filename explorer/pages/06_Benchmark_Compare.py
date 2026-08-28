@@ -1,7 +1,8 @@
 """Benchmark Comparison Tool - Side-by-side model performance comparison."""
 
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 try:
     import pandas as pd

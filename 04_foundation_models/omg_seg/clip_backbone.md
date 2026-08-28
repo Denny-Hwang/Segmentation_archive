@@ -42,7 +42,7 @@ Standard CLIP extracts a single global image embedding (the CLS token after the 
 OMG-Seg extracts features from multiple intermediate layers of the CLIP ViT:
 
 | Feature Level | ViT Layer | Resolution | Semantic Level |
-|--------------|-----------|------------|----------------|
+| -------------- | ----------- | ------------ | ---------------- |
 | F1 | Layer 6 | 1/14 | Low-level (edges, textures) |
 | F2 | Layer 12 | 1/14 | Mid-level (parts, patterns) |
 | F3 | Layer 18 | 1/14 | High-level (objects) |
@@ -78,7 +78,7 @@ This process requires no training on the target categories. New categories are a
 
 The text fed to CLIP's text encoder significantly affects classification accuracy. OMG-Seg uses ensemble prompt templates:
 
-```
+```text
 "a photo of a {category}"
 "a photo of a {category} in the scene"
 "there is a {category} in the scene"
@@ -101,7 +101,7 @@ A critical challenge is that fine-tuning the CLIP backbone on segmentation data 
 ### Comparison to ImageNet-Pretrained Backbones
 
 | Property | ImageNet ViT | CLIP ViT |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | Training data | 1.3M images, 1K classes | 400M image-text pairs |
 | Supervision | Class labels | Natural language |
 | Vocabulary | Fixed 1,000 classes | Open (any text) |
@@ -112,6 +112,7 @@ A critical challenge is that fine-tuning the CLIP backbone on segmentation data 
 ### What CLIP Features Capture
 
 Analysis of CLIP ViT features in the context of segmentation reveals:
+
 - **Early layers (1-8):** Texture and edge information, similar to ImageNet-pretrained models
 - **Middle layers (9-16):** Part-level grouping that corresponds to semantically meaningful regions
 - **Late layers (17-24):** Category-level representations aligned with language descriptions
@@ -124,7 +125,7 @@ Analysis of CLIP ViT features in the context of segmentation reveals:
 CLIP ViT-L/14 is a large backbone:
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Parameters | ~430M |
 | FLOPs (224x224 input) | ~61 GFLOPs |
 | FLOPs (1024x1024 input) | ~1.2 TFLOPs |
@@ -135,6 +136,7 @@ For high-resolution segmentation, the CLIP backbone is the computational bottlen
 ### Resolution Handling
 
 CLIP ViT-L/14 was trained at 224x224 resolution. Segmentation requires higher resolution (512-1024). This is handled by:
+
 - Interpolating CLIP's positional embeddings to the target resolution
 - Fine-tuning with the higher resolution to adapt the position encoding
 - Using a windowed attention variant for very high resolutions
@@ -142,7 +144,7 @@ CLIP ViT-L/14 was trained at 224x224 resolution. Segmentation requires higher re
 ### Alternatives to CLIP ViT-L
 
 | Backbone | Open-Vocab | Speed | Segmentation Quality |
-|----------|-----------|-------|---------------------|
+| ---------- | ----------- | ------- | --------------------- |
 | CLIP ViT-B/16 | Yes | 3x faster | 2-3 mIoU lower |
 | CLIP ViT-L/14 | Yes | Baseline | Baseline |
 | EVA-CLIP ViT-G | Yes | 2x slower | 1-2 mIoU higher |

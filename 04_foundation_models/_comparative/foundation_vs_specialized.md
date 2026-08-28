@@ -21,6 +21,7 @@ Models trained on massive, diverse datasets (typically millions of images) to le
 **Examples:** SAM, SAM 2, OMG-Seg, SEEM, SegGPT
 
 **Characteristics:**
+
 - Very large (100M-1B+ parameters)
 - Trained on broad, diverse data
 - Promptable interface
@@ -34,6 +35,7 @@ Models trained specifically on a target domain or task, typically with domain-sp
 **Examples:** nnU-Net (medical), DeepLab (semantic seg), Mask R-CNN (instance seg), U-Net (various)
 
 **Characteristics:**
+
 - Moderate size (10M-100M parameters)
 - Trained on curated, domain-specific data
 - Fixed task definition
@@ -45,7 +47,7 @@ Models trained specifically on a target domain or task, typically with domain-sp
 ### When Foundation Models Win
 
 | Scenario | Foundation | Specialized | Why |
-|----------|-----------|-------------|-----|
+| ---------- | ----------- | ------------- | ----- |
 | Limited labeled data (<100 samples) | Better | Overfits | Foundation models have strong priors from pretraining |
 | Diverse object categories | Better | Constrained | Foundation models generalize across object types |
 | Novel/unseen objects | Better | Fails | Zero-shot capability handles new categories |
@@ -55,7 +57,7 @@ Models trained specifically on a target domain or task, typically with domain-sp
 ### When Specialized Models Win
 
 | Scenario | Foundation | Specialized | Why |
-|----------|-----------|-------------|-----|
+| ---------- | ----------- | ------------- | ----- |
 | Large labeled dataset (>10K samples) | Good | Better | Specialized training exploits domain-specific patterns |
 | Specific organ segmentation | Good | Better by 3-8 DSC | Domain-specific architectures (e.g., 3D U-Net) capture volumetric context |
 | Real-time inference | Slow | Faster | Specialized models can be smaller and optimized |
@@ -67,7 +69,7 @@ Models trained specifically on a target domain or task, typically with domain-sp
 **Medical Imaging (CT Liver Segmentation):**
 
 | Model | DSC | Parameters | Inference Time |
-|-------|-----|-----------|---------------|
+| ------- | ----- | ----------- | --------------- |
 | SAM (zero-shot, box) | 0.72 | 636M | 150ms |
 | MedSAM (fine-tuned) | 0.91 | 94M | 120ms |
 | nnU-Net (specialized) | 0.96 | 31M | 45ms |
@@ -75,14 +77,14 @@ Models trained specifically on a target domain or task, typically with domain-sp
 **COCO Instance Segmentation:**
 
 | Model | AP | Parameters | Inference Time |
-|-------|-----|-----------|---------------|
+| ------- | ----- | ----------- | --------------- |
 | SAM (auto) + detector | 46.5 | 636M + 44M | 350ms |
 | Mask2Former (Swin-L) | 50.1 | 216M | 90ms |
 
 **Remote Sensing (iSAID):**
 
 | Model | mIoU | Parameters |
-|-------|------|-----------|
+| ------- | ------ | ----------- |
 | SAM (zero-shot) | 42.3 | 636M |
 | SAM + LoRA | 61.5 | 636M + 6M |
 | Specialized UperNet | 67.2 | 85M |
@@ -93,7 +95,7 @@ Models trained specifically on a target domain or task, typically with domain-sp
 
 Foundation models excel in the low-data regime but are eventually surpassed by specialized models as data grows:
 
-```
+```text
 Performance
     |
     |         Specialized ──────────
@@ -107,6 +109,7 @@ Performance
 ```
 
 **Crossover points (approximate):**
+
 - Simple domains (natural images): ~1K samples
 - Medium domains (remote sensing): ~5K samples
 - Hard domains (medical imaging): ~10K-50K samples
@@ -116,6 +119,7 @@ Below the crossover, foundation models (zero-shot or lightly adapted) outperform
 ### Few-Shot Adaptation
 
 Foundation models can be effectively adapted with very few examples:
+
 - 1-shot: Provide a single annotated example as a prompt template
 - 5-shot: Fine-tune the decoder on 5 examples
 - 50-shot: LoRA or adapter tuning on 50 examples
@@ -127,7 +131,7 @@ Specialized models typically require hundreds to thousands of examples to train 
 ### Training Cost
 
 | Aspect | Foundation (pretrained) | Foundation (adaptation) | Specialized |
-|--------|------------------------|------------------------|-------------|
+| -------- | ------------------------ | ------------------------ | ------------- |
 | Pretraining compute | Very high (paid by provider) | N/A | N/A |
 | Adaptation compute | N/A | Low-Medium | Medium-High |
 | Data collection | None (zero-shot) | Minimal | Extensive |
@@ -137,7 +141,7 @@ Specialized models typically require hundreds to thousands of examples to train 
 ### Inference Cost
 
 | Aspect | Foundation | Specialized |
-|--------|-----------|-------------|
+| -------- | ----------- | ------------- |
 | GPU memory | 2-8 GB | 0.5-4 GB |
 | Latency per image | 100-500ms | 20-100ms |
 | Throughput | 2-10 img/s | 10-50 img/s |
@@ -148,7 +152,7 @@ Foundation models are 3-10x more expensive at inference time due to their larger
 ### Deployment Cost
 
 | Factor | Foundation | Specialized |
-|--------|-----------|-------------|
+| -------- | ----------- | ------------- |
 | Model storage | 2-4 GB per model | 0.1-0.5 GB per model |
 | Multi-task | Single model | One model per task |
 | Updates | Retrain adapters only | Retrain full model |
@@ -206,13 +210,14 @@ The gap between foundation and specialized models is narrowing:
 - Specialized models are leveraging foundation model pretraining
 
 The trend suggests that foundation models with lightweight adaptation will eventually dominate most use cases, with fully specialized models remaining relevant only for:
+
 - Extreme latency requirements
 - Edge/embedded deployment
 - Domains with very specific architectural requirements (e.g., 3D volumetric processing)
 
 ## Decision Framework
 
-```
+```text
 Do you have >10K labeled samples?
 ├── Yes
 │   ├── Need real-time (<50ms)? → Specialized

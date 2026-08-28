@@ -14,7 +14,7 @@ license: CC BY-NC-SA 4.0
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | ACDC (Automated Cardiac Diagnosis Challenge) |
 | **Source** | [CREATIS Lab](https://www.creatis.insa-lyon.fr/Challenge/acdc/) |
 | **Size** | 100 patients (training), 50 patients (testing) |

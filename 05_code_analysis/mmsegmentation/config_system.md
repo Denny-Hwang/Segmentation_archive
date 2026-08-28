@@ -20,7 +20,7 @@ The config system's most powerful feature is **inheritance**: a config file can 
 
 Base configs in MMSegmentation are organized into four categories, stored in the `configs/_base_/` directory:
 
-```
+```text
 configs/_base_/
     models/          # Architecture definitions (backbone + head)
     datasets/        # Dataset and dataloader configurations
@@ -32,11 +32,11 @@ Each base config defines one aspect of the training pipeline. For example, `conf
 
 ```python
 # configs/_base_/models/fcn_r50-d8.py
-norm_cfg = dict(type='SyncBN', requires_grad=True)
+norm_cfg = dict(type="SyncBN", requires_grad=True)
 model = dict(
-    type='EncoderDecoder',
+    type="EncoderDecoder",
     backbone=dict(
-        type='ResNetV1c',
+        type="ResNetV1c",
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
@@ -44,10 +44,11 @@ model = dict(
         strides=(1, 2, 1, 1),
         norm_cfg=norm_cfg,
         norm_eval=False,
-        style='pytorch',
-        contract_dilation=True),
+        style="pytorch",
+        contract_dilation=True,
+    ),
     decode_head=dict(
-        type='FCNHead',
+        type="FCNHead",
         in_channels=2048,
         in_index=3,
         channels=512,
@@ -55,7 +56,8 @@ model = dict(
         concat_input=True,
         num_classes=19,
         norm_cfg=norm_cfg,
-        loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
+    ),
 )
 ```
 
@@ -66,10 +68,10 @@ A child config inherits from base configs using the `_base_` list and overrides 
 ```python
 # configs/fcn/fcn_r101-d8_4xb4-80k_cityscapes-512x1024.py
 _base_ = [
-    '../_base_/models/fcn_r50-d8.py',
-    '../_base_/datasets/cityscapes.py',
-    '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_80k.py'
+    "../_base_/models/fcn_r50-d8.py",
+    "../_base_/datasets/cityscapes.py",
+    "../_base_/default_runtime.py",
+    "../_base_/schedules/schedule_80k.py",
 ]
 
 # Override: change backbone from ResNet-50 to ResNet-101
@@ -87,14 +89,10 @@ MMEngine supports cross-references within configs using the `{{_base_.variable}}
 
 ```python
 # Reference a variable from a base config
-_base_ = ['../_base_/models/segformer_mit-b0.py']
+_base_ = ["../_base_/models/segformer_mit-b0.py"]
 
 # Use a value defined in the base
-model = dict(
-    decode_head=dict(
-        num_classes={{_base_.model.decode_head.num_classes}}
-    )
-)
+model = dict(decode_head=dict(num_classes={{_base_.model.decode_head.num_classes}}))
 ```
 
 In practice, variable references are less commonly used than simple dict overrides. The more common pattern is to define shared variables (like `norm_cfg` or `num_classes`) as top-level variables in the config and reference them locally within the same file.
@@ -139,30 +137,30 @@ The `in_index` parameter controls which backbone output stage feeds into each he
 Dataset configuration defines the data pipeline including loading, transforms, and batching:
 
 ```python
-dataset_type = 'CityscapesDataset'
-data_root = 'data/cityscapes/'
+dataset_type = "CityscapesDataset"
+data_root = "data/cityscapes/"
 
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations'),
-    dict(type='RandomResize', scale=(2048, 1024), ratio_range=(0.5, 2.0)),
-    dict(type='RandomCrop', crop_size=(512, 1024), cat_max_ratio=0.75),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PhotoMetricDistortion'),
-    dict(type='PackSegInputs'),
+    dict(type="LoadImageFromFile"),
+    dict(type="LoadAnnotations"),
+    dict(type="RandomResize", scale=(2048, 1024), ratio_range=(0.5, 2.0)),
+    dict(type="RandomCrop", crop_size=(512, 1024), cat_max_ratio=0.75),
+    dict(type="RandomFlip", prob=0.5),
+    dict(type="PhotoMetricDistortion"),
+    dict(type="PackSegInputs"),
 ]
 
 train_dataloader = dict(
     batch_size=4,
     num_workers=4,
     persistent_workers=True,
-    sampler=dict(type='InfiniteSampler', shuffle=True),
+    sampler=dict(type="InfiniteSampler", shuffle=True),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        data_prefix=dict(img_path='leftImg8bit/train', seg_map_path='gtFine/train'),
+        data_prefix=dict(img_path="leftImg8bit/train", seg_map_path="gtFine/train"),
         pipeline=train_pipeline,
-    )
+    ),
 )
 ```
 
@@ -174,14 +172,14 @@ The schedule config defines the optimizer, learning rate scheduler, and total tr
 
 ```python
 # configs/_base_/schedules/schedule_80k.py
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer, clip_grad=None)
+optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
+optim_wrapper = dict(type="OptimWrapper", optimizer=optimizer, clip_grad=None)
 param_scheduler = [
-    dict(type='PolyLR', eta_min=1e-4, power=0.9, begin=0, end=80000, by_epoch=False),
+    dict(type="PolyLR", eta_min=1e-4, power=0.9, begin=0, end=80000, by_epoch=False),
 ]
-train_cfg = dict(type='IterBasedTrainLoop', max_iters=80000, val_interval=8000)
-val_cfg = dict(type='ValLoop')
-test_cfg = dict(type='TestLoop')
+train_cfg = dict(type="IterBasedTrainLoop", max_iters=80000, val_interval=8000)
+val_cfg = dict(type="ValLoop")
+test_cfg = dict(type="TestLoop")
 ```
 
 MMSegmentation uses iteration-based training (not epoch-based) by default, which is standard practice for segmentation where datasets can be very large. The `PolyLR` scheduler (polynomial decay) is the most commonly used scheduler in segmentation, gradually reducing the learning rate following `lr = base_lr * (1 - iter/max_iter)^power`.
@@ -192,20 +190,20 @@ The runtime config controls logging, checkpointing, environment settings, and ho
 
 ```python
 # configs/_base_/default_runtime.py
-default_scope = 'mmseg'
+default_scope = "mmseg"
 env_cfg = dict(
     cudnn_benchmark=True,
-    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
-    dist_cfg=dict(backend='nccl'),
+    mp_cfg=dict(mp_start_method="fork", opencv_num_threads=0),
+    dist_cfg=dict(backend="nccl"),
 )
-log_level = 'INFO'
+log_level = "INFO"
 log_processor = dict(by_epoch=False)
 default_hooks = dict(
-    timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=50, log_metric_by_epoch=False),
-    param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', by_epoch=False, interval=8000),
-    sampler_seed=dict(type='DistSamplerSeedHook'),
+    timer=dict(type="IterTimerHook"),
+    logger=dict(type="LoggerHook", interval=50, log_metric_by_epoch=False),
+    param_scheduler=dict(type="ParamSchedulerHook"),
+    checkpoint=dict(type="CheckpointHook", by_epoch=False, interval=8000),
+    sampler_seed=dict(type="DistSamplerSeedHook"),
 )
 ```
 
@@ -216,19 +214,23 @@ The journey from a config file to a running model follows this path:
 ```python
 # 1. Parse config file (resolves inheritance, merges dicts)
 from mmengine.config import Config
-cfg = Config.fromfile('configs/pspnet/pspnet_r50-d8_4xb4-80k_cityscapes-512x1024.py')
+
+cfg = Config.fromfile("configs/pspnet/pspnet_r50-d8_4xb4-80k_cityscapes-512x1024.py")
 
 # 2. Build model from config dict (uses MODELS registry)
 from mmseg.registry import MODELS
+
 model = MODELS.build(cfg.model)
 # Internally: EncoderDecoder(backbone=ResNetV1c(...), decode_head=PSPHead(...), ...)
 
 # 3. Build dataset from config (uses DATASETS registry)
 from mmseg.registry import DATASETS
+
 dataset = DATASETS.build(cfg.train_dataloader.dataset)
 
 # 4. Build runner (orchestrates training)
 from mmengine.runner import Runner
+
 runner = Runner.from_cfg(cfg)
 runner.train()
 ```
@@ -241,22 +243,22 @@ When creating experiment configs, follow these patterns for maintainability:
 
 ```python
 # Pattern 1: Minimal override config
-_base_ = './pspnet_r50-d8_4xb4-80k_cityscapes-512x1024.py'
+_base_ = "./pspnet_r50-d8_4xb4-80k_cityscapes-512x1024.py"
 model = dict(backbone=dict(depth=101))  # Only change backbone depth
 
 # Pattern 2: Multi-dataset with shared model
-_base_ = ['../_base_/models/pspnet_r50-d8.py', '../_base_/default_runtime.py']
+_base_ = ["../_base_/models/pspnet_r50-d8.py", "../_base_/default_runtime.py"]
 # Define dataset and schedule inline for custom experiments
 
 # Pattern 3: Hyperparameter sweep
-_base_ = './baseline.py'
+_base_ = "./baseline.py"
 optim_wrapper = dict(optimizer=dict(lr=0.005))  # Override learning rate only
 
 # Pattern 4: Delete inherited fields with _delete_=True
 model = dict(
     backbone=dict(
         _delete_=True,
-        type='SwinTransformer',
+        type="SwinTransformer",
         embed_dims=96,
         depths=[2, 2, 6, 2],
     )
