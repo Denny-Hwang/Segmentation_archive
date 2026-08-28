@@ -106,5 +106,52 @@
     ],
     "difficulty": "hard",
     "teaches": "Both halves use the exact same two colors \u2014 only the texture differs. Every color/intensity-based algorithm fails by design, revealing a shared blind spot of classical methods and motivating learned features (CNNs/Transformers), which capture texture through local receptive fields."
+  },
+  "photo_coins": {
+    "title": "Photo: Ancient Coins",
+    "classes": [
+      "background",
+      "coin"
+    ],
+    "difficulty": "medium",
+    "teaches": "A real photograph with a textured background and uneven illumination: plain global thresholding leaks or eats coins, which is why the classic recipe is edges + watershed. Also a natural instance case - watch watershed separate all 24 coins.",
+    "source": "scikit-image `coins` - Brooklyn Museum, no known copyright restrictions",
+    "gt_note": "Reference mask: marker-controlled watershed on the Sobel gradient (markers: gray<30 background, gray>150 coin), holes filled, regions <300px removed; human-verified (24/24 coins)."
+  },
+  "photo_coffee": {
+    "title": "Photo: Espresso Cup",
+    "classes": [
+      "table",
+      "saucer",
+      "cup",
+      "coffee",
+      "spoon"
+    ],
+    "difficulty": "hard",
+    "teaches": "An everyday photo: specular highlights on ceramic, shadows on the saucer, a metallic spoon reflecting its surroundings, and a wooden table sharing hues with the saucer. Color clustering splits the white cup into highlight/shadow clusters; graph methods leak through the soft shadow edges. This is why real-world segmentation needed learned features.",
+    "source": "scikit-image `coffee` - photo by Rachel Michetti, CC0, courtesy Pikolo Espresso Bar",
+    "gt_note": "Reference mask: hand-annotated geometric primitives (ellipses/polygons) verified against the photo; boundaries are approximate within a few pixels - real datasets carry similar annotation noise."
+  },
+  "photo_ihc": {
+    "title": "Photo: IHC Tissue",
+    "classes": [
+      "stroma/background",
+      "DAB-positive epithelium"
+    ],
+    "difficulty": "hard",
+    "teaches": "Real histopathology: the brown DAB stain marks epithelium, blue hematoxylin the stroma. Intensity alone cannot separate the stains (both are dark) - color is essential, and even in color the boundary is genuinely fuzzy. Compare Dice vs Boundary F1 here: overlap can look fine while contours are ragged, the everyday reality of medical segmentation.",
+    "source": "scikit-image `immunohistochemistry` - no known copyright restrictions",
+    "gt_note": "Reference mask: DAB channel of HED color deconvolution, Gaussian \u03c3=4, threshold at its 45th percentile, closed, regions <1500px removed, holes filled; human-verified. Stain-derived, so treat boundaries as approximate."
+  },
+  "photo_hubble": {
+    "title": "Photo: Hubble Deep Field",
+    "classes": [
+      "space",
+      "bright source"
+    ],
+    "difficulty": "medium",
+    "teaches": "Astronomical source extraction: thousands of tiny objects on a near-black background with sensor noise. Pixel accuracy is meaningless (predicting 'all space' scores ~95%) - this is the class-imbalance lesson at its most extreme. Region size filtering and threshold choice dominate the result.",
+    "source": "scikit-image `hubble_deep_field` - NASA, public domain",
+    "gt_note": "Reference mask: sources brighter than 0.16 luminance after opening, regions <12px removed (a stated brightness/area criterion, as astronomical catalogs use); human-verified."
   }
 }
