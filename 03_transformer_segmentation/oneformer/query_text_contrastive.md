@@ -31,7 +31,7 @@ The contrastive loss serves multiple purposes: (1) it provides a class-level sup
 ## Impact on Performance
 
 | Configuration | ADE20K PQ | ADE20K mIoU |
-|--------------|-----------|-------------|
+| -------------- | ----------- | ------------- |
 | Without contrastive loss | 49.0 | 57.2 |
 | With contrastive loss | 49.8 | 58.0 |
 | Δ | +0.8 | +0.8 |
@@ -41,7 +41,7 @@ The improvement is consistent across tasks and datasets, with slightly larger ga
 ## Comparison with Other Text-Guided Methods
 
 | Method | Text Source | Training Cost | Inference Cost |
-|--------|-----------|---------------|---------------|
+| -------- | ----------- | --------------- | --------------- |
 | OneFormer contrastive | CLIP (frozen) | Low (cached) | None |
 | Open-vocabulary seg | CLIP (frozen/tuned) | Moderate | Moderate |
 | Language-guided seg | Custom text encoder | High | High |

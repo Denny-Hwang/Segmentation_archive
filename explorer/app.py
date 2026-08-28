@@ -8,8 +8,9 @@ Run with:
     streamlit run app.py
 """
 
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 # ---------------------------------------------------------------------------
 # Page configuration
@@ -108,7 +109,7 @@ def main():
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from components.search_bar import render_search_bar, display_search_results
+    from components.search_bar import display_search_results, render_search_bar
 
     results = render_search_bar(
         ARCHIVE_ROOT, placeholder="Search papers, concepts, architectures..."

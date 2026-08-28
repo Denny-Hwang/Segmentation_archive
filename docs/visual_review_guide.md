@@ -6,7 +6,7 @@ and how to use them in papers, presentations, or the Streamlit explorer.
 ## Assets
 
 | Asset | Location | Source / Reproducibility |
-|-------|----------|------------------------|
+| ------- | ---------- | ------------------------ |
 | Taxonomy diagram | `docs/figures/taxonomy_diagram.mermaid` | Mermaid source; render with `mmdc` or Streamlit |
 | Timeline chart (matplotlib) | `docs/figures/timeline_evolution_chart.png` | `scripts/figures/generate_figures.py` |
 | Timeline diagram (mermaid) | `docs/figures/timeline_evolution.mermaid` | Mermaid source |

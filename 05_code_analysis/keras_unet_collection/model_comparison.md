@@ -11,7 +11,7 @@ tags: [keras, unet-variants, comparison, tensorflow]
 ## Available Models
 
 | Model | Function | Paper | Key Feature |
-|-------|----------|-------|-------------|
+| ------- | ---------- | ------- | ------------- |
 | U-Net | `models.unet_2d()` | Ronneberger 2015 | Baseline encoder-decoder |
 | U-Net++ | `models.unet_plus_2d()` | Zhou 2018 | Nested skip connections |
 | Attention U-Net | `models.att_unet_2d()` | Oktay 2018 | Attention gates on skip connections |
@@ -29,21 +29,21 @@ from keras_unet_collection import models
 
 # Common signature across all model functions:
 model = models.unet_2d(
-    input_size=(256, 256, 3),       # (H, W, C) input shape
-    filter_num=[64, 128, 256, 512], # Channels per encoder/decoder stage
-    n_labels=2,                      # Number of output classes
-    stack_num_down=2,                # Conv blocks per encoder stage
-    stack_num_up=2,                  # Conv blocks per decoder stage
-    activation='ReLU',               # Activation function name
-    output_activation='Softmax',     # Final activation ('Softmax' or 'Sigmoid')
-    batch_norm=True,                 # Whether to use BatchNormalization
-    pool=True,                       # True=MaxPool, False=strided conv
-    unpool=True,                     # True=UpSampling2D, False=Conv2DTranspose
-    backbone=None,                   # Optional pretrained backbone name
-    weights='imagenet',              # Pretrained weights (if backbone is set)
-    freeze_backbone=True,            # Whether to freeze backbone weights
-    freeze_batch_norm=True,          # Whether to freeze BN layers in backbone
-    name='unet',                     # Model name string
+    input_size=(256, 256, 3),  # (H, W, C) input shape
+    filter_num=[64, 128, 256, 512],  # Channels per encoder/decoder stage
+    n_labels=2,  # Number of output classes
+    stack_num_down=2,  # Conv blocks per encoder stage
+    stack_num_up=2,  # Conv blocks per decoder stage
+    activation="ReLU",  # Activation function name
+    output_activation="Softmax",  # Final activation ('Softmax' or 'Sigmoid')
+    batch_norm=True,  # Whether to use BatchNormalization
+    pool=True,  # True=MaxPool, False=strided conv
+    unpool=True,  # True=UpSampling2D, False=Conv2DTranspose
+    backbone=None,  # Optional pretrained backbone name
+    weights="imagenet",  # Pretrained weights (if backbone is set)
+    freeze_backbone=True,  # Whether to freeze backbone weights
+    freeze_batch_norm=True,  # Whether to freeze BN layers in backbone
+    name="unet",  # Model name string
 )
 ```
 
@@ -83,12 +83,12 @@ The skip connection strategy is the primary differentiator between models in thi
 ```python
 # Attention gate (simplified)
 def attention_gate(x_skip, x_decoder, filters):
-    theta_x = Conv2D(filters, 1)(x_skip)       # Encoder features
-    phi_g = Conv2D(filters, 1)(x_decoder)        # Decoder features (gate signal)
-    psi = Activation('relu')(theta_x + phi_g)
+    theta_x = Conv2D(filters, 1)(x_skip)  # Encoder features
+    phi_g = Conv2D(filters, 1)(x_decoder)  # Decoder features (gate signal)
+    psi = Activation("relu")(theta_x + phi_g)
     psi = Conv2D(1, 1)(psi)
-    psi = Activation('sigmoid')(psi)             # Attention coefficients [0, 1]
-    return x_skip * psi                           # Weighted encoder features
+    psi = Activation("sigmoid")(psi)  # Attention coefficients [0, 1]
+    return x_skip * psi  # Weighted encoder features
 ```
 
 **Recurrent + residual** (R2U-Net): Skip connections are standard concatenation, but the convolutional blocks themselves use recurrent processing (same conv applied multiple times with accumulated features) and residual connections.
@@ -107,7 +107,7 @@ All decoders follow the same general pattern: upsample, concatenate with skip co
 Approximate parameter counts for default configurations (`input_size=(256, 256, 3)`, `filter_num=[64, 128, 256, 512]`, `n_labels=2`):
 
 | Model | Parameters | Relative Size | Notes |
-|-------|-----------|--------------|-------|
+| ------- | ----------- | -------------- | ------- |
 | U-Net | ~7.8M | 1.0x (baseline) | Simplest architecture |
 | U-Net++ | ~9.2M | 1.18x | Extra nested convolution nodes |
 | Attention U-Net | ~8.7M | 1.12x | Attention gate parameters are small |

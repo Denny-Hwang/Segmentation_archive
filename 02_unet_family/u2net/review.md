@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | U²-Net: Going Deeper with Nested U-Structure for Salient Object Detection |
 | **Authors** | Qin, X., Zhang, Z., Huang, C., Dehghan, M., Zaiane, O.R., Jagersand, M. |
 | **Year** | 2020 |
@@ -33,6 +33,7 @@ The outer architecture follows U-Net's encoder-decoder pattern with 6 encoder st
 ## RSU Blocks
 
 The Residual U-block (RSU-L) has L internal levels:
+
 - Input features are processed through L encoding stages (with pooling) and L-1 decoding stages (with upsampling)
 - Skip connections within the RSU block connect encoding and decoding stages
 - A residual connection adds the input to the output
@@ -42,7 +43,7 @@ The depth L varies by position: deeper RSU blocks (L=7) in the early encoder sta
 ## Results
 
 | Dataset | Metric | BASNet | CPD | U²-Net |
-|---------|--------|--------|-----|--------|
+| --------- | -------- | -------- | ----- | -------- |
 | DUTS-TE | MAE | 0.048 | 0.043 | 0.023 |
 | DUT-OMRON | F-measure | 0.805 | 0.825 | 0.847 |
 | SOD | MAE | 0.113 | 0.110 | 0.098 |

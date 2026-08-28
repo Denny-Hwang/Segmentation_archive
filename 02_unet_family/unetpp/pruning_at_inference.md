@@ -17,7 +17,7 @@ One unique advantage of UNet++ with deep supervision is the ability to prune the
 UNet++ trained with deep supervision supports L pruning modes:
 
 | Mode | Active Nodes | Effective Depth | Speed | Accuracy |
-|------|-------------|-----------------|-------|----------|
+| ------ | ------------- | ----------------- | ------- | ---------- |
 | L1 | X^{0,1} only | 1-level U-Net | Fastest (~4×) | Lowest |
 | L2 | X^{0,1}, X^{0,2} | 2-level U-Net | Fast (~2.5×) | Moderate |
 | L3 | X^{0,1}...X^{0,3} | 3-level U-Net | Moderate (~1.5×) | Good |
@@ -30,7 +30,7 @@ At pruning level j, only the nodes needed to compute X^{0,j} are evaluated. All 
 The paper demonstrates that pruning at L3 retains >99% of the full model's accuracy while being ~1.5× faster. L2 pruning provides ~2.5× speedup with ~1-2% accuracy drop. This makes UNet++ adaptable to different deployment scenarios — full depth for offline analysis, shallow pruning for real-time applications.
 
 | Pruning Level | Liver Dice (%) | Cell IoU (%) | Relative Speed |
-|--------------|----------------|--------------|---------------|
+| -------------- | ---------------- | -------------- | --------------- |
 | L1 | 93.12 | 89.45 | 4.0× |
 | L2 | 94.56 | 91.23 | 2.5× |
 | L3 | 95.41 | 91.89 | 1.5× |

@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | Attention U-Net: Learning Where to Look for the Pancreas |
 | **Authors** | Oktay, O., Schlemper, J., Folgoc, L.L., et al. |
 | **Year** | 2018 |
@@ -32,7 +32,7 @@ Attention U-Net has the same encoder-decoder structure as U-Net, with attention 
 ## Key Results
 
 | Dataset | Model | Dice (%) |
-|---------|-------|----------|
+| --------- | ------- | ---------- |
 | CT Pancreas | U-Net | 71.95 |
 | CT Pancreas | Attention U-Net | 75.41 |
 | CT Pancreas | Attention U-Net + DS | 77.98 |

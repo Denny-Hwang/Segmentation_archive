@@ -14,7 +14,7 @@ license: Custom (research only)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | Cityscapes |
 | **Source** | [cityscapes-dataset.com](https://www.cityscapes-dataset.com/) |
 | **Size** | 5,000 finely annotated + 20,000 coarsely annotated images |

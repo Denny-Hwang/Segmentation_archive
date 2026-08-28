@@ -14,7 +14,7 @@ license: CC BY 4.0
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | COCO (Common Objects in Context) |
 | **Source** | [cocodataset.org](https://cocodataset.org/) |
 | **Size** | 330K images, 1.5M object instances |

@@ -20,7 +20,7 @@ Every segmentation repository separates the model into an encoder (feature extra
 ### Implementations
 
 | Repository | Approach | Notes |
-|-----------|----------|-------|
+| ----------- | ---------- | ------- |
 | Pytorch-UNet | Hardcoded composition | Encoder and decoder are defined together in `UNet.__init__()` with fixed module names (`inc`, `down1`-`down4`, `up1`-`up4`, `outc`). Changing the encoder requires modifying the class directly. Simplest to understand but least flexible. |
 | SMP | Registry + factory | Encoders are loaded via `get_encoder(name, weights)` from a registry of 400+ pretrained backbones. Decoders are separate classes (`UnetDecoder`, `FPNDecoder`). The `smp.Unet(encoder_name='resnet34')` factory composes them. Highly flexible but requires understanding the registry API. |
 | nnU-Net | Dynamic from plan | Architecture is generated at runtime from a `plans.json` file. `PlainConvUNet` or `ResidualEncoderUNet` is instantiated with dynamically computed parameters (depth, channels, kernel sizes). No manual architecture specification needed. |
@@ -65,10 +65,10 @@ loss = 0.5 * ce_loss + 0.5 * dice_loss  # at each supervision level
 total_loss = sum(weight[i] * loss[i] for i in range(num_supervision_levels))
 
 # SMP: configurable, default CE
-loss = smp.losses.DiceLoss(mode='multiclass')(pred, target)
+loss = smp.losses.DiceLoss(mode="multiclass")(pred, target)
 
 # MMSegmentation: config-driven with loss_weight
-loss_decode = dict(type='CrossEntropyLoss', loss_weight=1.0)
+loss_decode = dict(type="CrossEntropyLoss", loss_weight=1.0)
 # or: loss_decode=[dict(type='CrossEntropyLoss', loss_weight=1.0),
 #                  dict(type='DiceLoss', loss_weight=0.5)]
 ```
@@ -118,7 +118,7 @@ Data loading and augmentation show the widest variation across repositories:
 ## Summary Table
 
 | Pattern | Pytorch-UNet | SMP | nnU-Net | SAM 2 | MMSeg | keras-unet |
-|---------|-------------|-----|---------|-------|-------|------------|
+| --------- | ------------- | ----- | --------- | ------- | ------- | ------------ |
 | Encoder-Decoder | Hardcoded | Registry | Dynamic | Module | Config | Functional |
 | Skip Connections | Concat | Varies | Concat | Cross-attn | Varies | Varies |
 | Multi-Scale | Progressive | Varies | Progressive | FPN | Varies | Progressive |

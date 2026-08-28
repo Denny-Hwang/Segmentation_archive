@@ -1,7 +1,8 @@
 """Experiments Dashboard - View training results and experiment logs."""
 
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 try:
     import yaml

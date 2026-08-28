@@ -17,11 +17,13 @@ Source file: `train.py`
 From `train.py`, the optimizer is configured as:
 
 ```python
-optimizer = optim.RMSprop(model.parameters(),
-                          lr=learning_rate,
-                          weight_decay=weight_decay,
-                          momentum=momentum,
-                          foreach=True)
+optimizer = optim.RMSprop(
+    model.parameters(),
+    lr=learning_rate,
+    weight_decay=weight_decay,
+    momentum=momentum,
+    foreach=True,
+)
 ```
 
 - **Optimizer**: RMSprop (not Adam or SGD, which is an unusual choice for segmentation)
@@ -33,7 +35,7 @@ optimizer = optim.RMSprop(model.parameters(),
 ## Learning Rate Scheduler
 
 ```python
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, "max", patience=5)
 ```
 
 - **Type**: `ReduceLROnPlateau` -- reduces LR when the validation Dice score stops improving
@@ -46,15 +48,13 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)
 The loss combines cross-entropy and Dice loss:
 
 ```python
-criterion = nn.CrossEntropyLoss() if model.n_classes > 1 \
-            else nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
 # ...
-loss = criterion(masks_pred, true_masks) \
-     + dice_loss(
-         F.softmax(masks_pred, dim=1).float(),
-         F.one_hot(true_masks, model.n_classes).permute(0, 3, 1, 2).float(),
-         multiclass=True
-     )
+loss = criterion(masks_pred, true_masks) + dice_loss(
+    F.softmax(masks_pred, dim=1).float(),
+    F.one_hot(true_masks, model.n_classes).permute(0, 3, 1, 2).float(),
+    multiclass=True,
+)
 ```
 
 ### Implementation Details
@@ -74,14 +74,15 @@ loss = criterion(masks_pred, true_masks) \
 for epoch in range(1, epochs + 1):
     model.train()
     epoch_loss = 0
-    with tqdm(total=n_train, desc=f'Epoch {epoch}/{epochs}') as pbar:
+    with tqdm(total=n_train, desc=f"Epoch {epoch}/{epochs}") as pbar:
         for batch in train_loader:
-            images, true_masks = batch['image'], batch['mask']
+            images, true_masks = batch["image"], batch["mask"]
             images = images.to(device)
             true_masks = true_masks.to(device)
 
-            with torch.autocast(device.type if device.type != 'mps' else 'cpu',
-                                enabled=amp):
+            with torch.autocast(
+                device.type if device.type != "mps" else "cpu", enabled=amp
+            ):
                 masks_pred = model(images)
                 loss = criterion(masks_pred, true_masks) + dice_loss(...)
 
@@ -137,7 +138,7 @@ def evaluate(net, dataloader, device, amp):
     net.eval()
     dice_score = 0
     for batch in dataloader:
-        image, mask_true = batch['image'], batch['mask']
+        image, mask_true = batch["image"], batch["mask"]
         mask_pred = net(image.to(device))
         # Convert to one-hot / binary predictions
         # Compute Dice coefficient
@@ -155,7 +156,7 @@ def evaluate(net, dataloader, device, amp):
 ```python
 Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
 state_dict = model.state_dict()
-torch.save(state_dict, str(dir_checkpoint / f'checkpoint_epoch{epoch}.pth'))
+torch.save(state_dict, str(dir_checkpoint / f"checkpoint_epoch{epoch}.pth"))
 ```
 
 - Saves a checkpoint **every epoch** to `checkpoints/` directory
@@ -181,7 +182,7 @@ experiment.log({'learning rate': optimizer.param_groups[0]['lr'],
 ## Hyperparameter Defaults
 
 | Hyperparameter | Default Value | Notes |
-|---------------|---------------|-------|
+| --------------- | --------------- | ------- |
 | Learning Rate | 1e-5 | Very low; may need tuning per dataset |
 | Batch Size | 1 | Conservative; increase with available VRAM |
 | Epochs | 5 | Short; production training needs 50-200+ |

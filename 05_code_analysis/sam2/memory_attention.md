@@ -84,9 +84,7 @@ class MemoryAttentionLayer(nn.Module):
 
         # 2. Cross-attention: current attends to memory
         curr = self.cross_attn_image(
-            query=curr + pos_enc,
-            key=memory + memory_pos_enc,
-            value=memory
+            query=curr + pos_enc, key=memory + memory_pos_enc, value=memory
         )
 
         # 3. Feed-forward MLP
@@ -131,8 +129,9 @@ class SAM2VideoPredictor:
 
             # 5. Update memory bank
             memory = self.memory_encoder(image_features, masks)
-            memory_bank.add(memory, obj_ptrs, frame_idx,
-                          is_prompted=(frame_prompts is not None))
+            memory_bank.add(
+                memory, obj_ptrs, frame_idx, is_prompted=(frame_prompts is not None)
+            )
 
             yield frame_idx, masks
 ```

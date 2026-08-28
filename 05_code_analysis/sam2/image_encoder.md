@@ -44,7 +44,9 @@ Hiera uses windowed (local) attention within each stage to reduce the quadratic 
 class HieraBlock(nn.Module):
     def forward(self, x):
         # Partition tokens into windows
-        x = window_partition(x, window_size=self.window_size)  # [B*num_windows, win_h*win_w, C]
+        x = window_partition(
+            x, window_size=self.window_size
+        )  # [B*num_windows, win_h*win_w, C]
         # Apply self-attention within each window
         x = self.attn(x)
         # Merge windows back
@@ -115,7 +117,7 @@ The mask decoder typically uses the 1/16 resolution features as the primary inpu
 ## Model Variants
 
 | Variant | Embedding Dim | Depth (stages) | Heads | Parameters | Notes |
-|---------|--------------|----------------|-------|-----------|-------|
+| --------- | -------------- | ---------------- | ------- | ----------- | ------- |
 | Hiera-Tiny | 96 | 2+3+7+2 (14 total) | 1/2/4/8 | ~28M | Fastest, suitable for mobile/edge |
 | Hiera-Small | 96 | 2+3+16+2 (23 total) | 1/2/4/8 | ~35M | Good speed/accuracy trade-off |
 | Hiera-Base+ | 112 | 2+3+16+3 (24 total) | 2/4/8/16 | ~70M | Default for most applications |

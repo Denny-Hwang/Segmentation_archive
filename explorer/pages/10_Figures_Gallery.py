@@ -1,12 +1,13 @@
 """Figures Gallery - Browse all research diagrams, charts, and visual assets."""
 
 import sys
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.figure_gallery import render_figure_gallery
-from components.mermaid_render import render_mermaid, mermaid_png_download_button
+from components.mermaid_render import mermaid_png_download_button, render_mermaid
 
 st.set_page_config(page_title="Figures Gallery - Segmentation Archive", layout="wide")
 

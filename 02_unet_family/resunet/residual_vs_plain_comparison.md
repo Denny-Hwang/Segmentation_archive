@@ -14,7 +14,7 @@ This document compares plain convolution blocks (standard U-Net) with residual b
 
 ## Plain Convolution Block (U-Net)
 
-```
+```text
 Input → Conv3×3 → BN → ReLU → Conv3×3 → BN → ReLU → Output
 ```
 
@@ -22,7 +22,7 @@ Gradient must flow through all layers sequentially. During backpropagation, the 
 
 ## Residual Block (ResUNet)
 
-```
+```text
 Input → Conv3×3 → BN → ReLU → Conv3×3 → BN → (+Input) → ReLU → Output
 ```
 
@@ -31,7 +31,7 @@ The shortcut connection provides a direct gradient path: `∂L/∂x = ∂L/∂y 
 ## Comparison
 
 | Aspect | Plain Block | Residual Block |
-|--------|-------------|---------------|
+| -------- | ------------- | --------------- |
 | Gradient flow | Through all layers | Direct path via shortcut |
 | Training stability | Degrades with depth | Stable at any depth |
 | Learning task | Learn full mapping H(x) | Learn residual F(x) = H(x) - x |

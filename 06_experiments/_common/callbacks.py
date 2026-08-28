@@ -24,9 +24,10 @@ Usage:
 """
 
 import csv
-import torch
 from pathlib import Path
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
+
+import torch
 
 
 class EarlyStopping:

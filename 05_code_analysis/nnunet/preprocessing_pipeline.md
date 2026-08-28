@@ -10,7 +10,7 @@ tags: [nnunet, preprocessing, resampling, normalization]
 
 ## Pipeline Overview
 
-```
+```text
 Raw Data (any format)
     |
     +-- Dataset conversion to nnU-Net format
@@ -39,14 +39,20 @@ nnU-Net uses different interpolation methods for images and labels to preserve d
 ```python
 # For image data: third-order spline (high quality, smooth)
 resampled_image = resample_data_or_seg_to_shape(
-    data, new_shape, is_seg=False,
-    order=3, order_z=0  # order_z=0 for anisotropic axis
+    data,
+    new_shape,
+    is_seg=False,
+    order=3,
+    order_z=0,  # order_z=0 for anisotropic axis
 )
 
 # For segmentation labels: nearest-neighbor (preserves discrete values)
 resampled_seg = resample_data_or_seg_to_shape(
-    seg, new_shape, is_seg=True,
-    order=0, order_z=0  # Always nearest for labels
+    seg,
+    new_shape,
+    is_seg=True,
+    order=0,
+    order_z=0,  # Always nearest for labels
 )
 ```
 
@@ -63,8 +69,8 @@ nnU-Net applies different normalization strategies depending on the imaging moda
 ```python
 # CT normalization (CTNormalization class):
 # 1. Clip to [percentile_00_5, percentile_99_5] of foreground intensities
-lower_bound = dataset_fingerprint['foreground_intensity_properties']['percentile_00_5']
-upper_bound = dataset_fingerprint['foreground_intensity_properties']['percentile_99_5']
+lower_bound = dataset_fingerprint["foreground_intensity_properties"]["percentile_00_5"]
+upper_bound = dataset_fingerprint["foreground_intensity_properties"]["percentile_99_5"]
 image = np.clip(image, lower_bound, upper_bound)
 # 2. Z-score normalize using global foreground mean and std
 image = (image - global_mean) / global_std
@@ -118,7 +124,7 @@ This step can significantly reduce image size for modalities with large backgrou
 
 nnU-Net expects data organized in a specific directory structure under `nnUNet_raw/`:
 
-```
+```text
 nnUNet_raw/
   Dataset001_BrainTumour/
     dataset.json          # Metadata: modalities, labels, num_training, file_endings
@@ -138,7 +144,7 @@ The `_XXXX` suffix on image files indicates the channel index (zero-padded to 4 
 
 Preprocessed data is stored under `nnUNet_preprocessed/DatasetXXX/` as compressed NumPy arrays:
 
-```
+```text
 nnUNet_preprocessed/
   Dataset001_BrainTumour/
     nnUNetPlans.json           # The experiment plan
@@ -159,7 +165,10 @@ Each `.npz` file contains the preprocessed image data (float32, shape `[C, D, H,
 Users can customize preprocessing by subclassing the default preprocessor or by modifying the plans file. The main extension points are:
 
 ```python
-from nnunetv2.preprocessing.preprocessors.default_preprocessor import DefaultPreprocessor
+from nnunetv2.preprocessing.preprocessors.default_preprocessor import (
+    DefaultPreprocessor,
+)
+
 
 class MyPreprocessor(DefaultPreprocessor):
     def run_case_npy(self, data, seg, properties):

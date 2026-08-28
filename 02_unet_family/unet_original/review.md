@@ -15,15 +15,15 @@ difficulty: beginner
 
 ## Meta Information
 
-| Field          | Details |
-|----------------|---------|
-| **Paper Title**   | U-Net: Convolutional Networks for Biomedical Image Segmentation |
-| **Authors**       | Olaf Ronneberger, Philipp Fischer, Thomas Brox |
-| **Year**          | 2015 |
-| **Venue**         | MICCAI 2015 |
-| **ArXiv ID**      | [1505.04597](https://arxiv.org/abs/1505.04597) |
-| **Citations**     | 70,000+ |
-| **Codebase**      | [Original Caffe implementation](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/) |
+| Field | Details |
+| ---------------- | --------- |
+| **Paper Title** | U-Net: Convolutional Networks for Biomedical Image Segmentation |
+| **Authors** | Olaf Ronneberger, Philipp Fischer, Thomas Brox |
+| **Year** | 2015 |
+| **Venue** | MICCAI 2015 |
+| **ArXiv ID** | [1505.04597](https://arxiv.org/abs/1505.04597) |
+| **Citations** | 70,000+ |
+| **Codebase** | [Original Caffe implementation](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/) |
 
 ## One-Line Summary
 
@@ -158,7 +158,7 @@ This crop-and-concatenate mechanism is essential because:
 U-Net uses a pixel-wise softmax combined with a weighted cross-entropy loss. The key
 innovation is the pre-computed weight map `w(x)` for each ground truth segmentation:
 
-```
+```text
 w(x) = w_c(x) + w_0 * exp(-(d1(x) + d2(x))^2 / (2 * sigma^2))
 ```
 
@@ -201,7 +201,7 @@ weight map computation formula.
 ## Experimental Results
 
 | Dataset | Metric | U-Net Result | Previous SOTA |
-|---------|--------|--------------|---------------|
+| --------- | -------- | -------------- | --------------- |
 | ISBI 2012 (EM segmentation) | Warping Error | 0.0003529 | 0.0005 (Ciresan et al.) |
 | ISBI 2015 (Cell tracking, PhC-U373) | IoU | 0.9203 | 0.777 (2nd place) |
 | ISBI 2015 (Cell tracking, DIC-HeLa) | IoU | 0.7756 | 0.4600 (2nd place) |
@@ -263,7 +263,7 @@ Key observations from the results:
 ## Connections to Other Work
 
 | Related Paper | Relationship |
-|---------------|-------------|
+| --------------- | ------------- |
 | FCN (Long et al., 2015) | Predecessor -- first fully convolutional approach |
 | V-Net (Milletari et al., 2016) | Extension to 3D with Dice loss |
 | Attention U-Net (Oktay et al., 2018) | Adds attention gates to skip connections |

@@ -1,7 +1,8 @@
 """Historical Timeline - Trace the evolution of segmentation methods."""
 
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 try:
     import plotly.graph_objects as go

@@ -58,7 +58,6 @@ class Canvas:
     def add_noise(self, sigma: float, seed: int = 0):
         """Add Gaussian noise to the image only (ground truth unchanged)."""
         import numpy as np
-
         from PIL import Image
 
         rng = np.random.default_rng(seed)

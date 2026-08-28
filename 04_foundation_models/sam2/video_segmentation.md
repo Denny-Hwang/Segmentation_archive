@@ -47,6 +47,7 @@ This design means SAM 2 does not require explicit motion estimation. The model l
 A key challenge in video segmentation is handling objects that leave and re-enter the frame. SAM 2 includes an explicit occlusion head that predicts the probability that the target object is not visible in the current frame.
 
 **Behavior when occlusion is detected:**
+
 - The model still processes the frame and updates the memory bank
 - The predicted mask is suppressed (not output) for occluded frames
 - When the object reappears, the memory bank contains pre-occlusion information that helps re-identify it
@@ -54,6 +55,7 @@ A key challenge in video segmentation is handling objects that leave and re-ente
 ### Occlusion Training
 
 During training, video clips are sampled to include frames where target objects are absent. The model learns to distinguish between:
+
 - Object visible and segmented correctly
 - Object partially occluded (output partial mask)
 - Object fully occluded (output empty mask with high occlusion score)
@@ -96,7 +98,7 @@ The memory bank helps handle gradual appearance changes (e.g., rotation, deforma
 SAM 2 is evaluated on semi-supervised VOS benchmarks where the first-frame mask is given:
 
 | Benchmark | Setting | J&F |
-|-----------|---------|-----|
+| ----------- | --------- | ----- |
 | DAVIS 2017 val | 1-click prompt | 78.4 |
 | DAVIS 2017 val | Ground-truth mask | 82.5 |
 | YouTube-VOS 2019 | GT mask | 81.2 |

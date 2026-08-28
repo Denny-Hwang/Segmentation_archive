@@ -15,10 +15,11 @@ Usage:
     plot_training_curves(log_path="training_log.csv")
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Optional, Sequence, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Default color palette for segmentation classes
 DEFAULT_PALETTE = [

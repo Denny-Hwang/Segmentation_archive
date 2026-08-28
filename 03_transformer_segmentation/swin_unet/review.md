@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | Swin-Unet: Unet-like Pure Transformer for Medical Image Segmentation |
 | **Authors** | Cao, H., Wang, Y., Chen, J., Jiang, D., Zhang, X., Tian, Q., Wang, M. |
 | **Year** | 2021 |

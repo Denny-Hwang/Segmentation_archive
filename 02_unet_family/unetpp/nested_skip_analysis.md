@@ -41,7 +41,7 @@ This progressive refinement means the decoder receives features that are semanti
 ## Comparison with U-Net
 
 | Aspect | U-Net | UNet++ |
-|--------|-------|--------|
+| -------- | ------- | -------- |
 | Skip connection | Direct (encoder → decoder) | Nested dense (encoder → intermediate → decoder) |
 | Semantic gap | Large | Gradually reduced |
 | Feature reuse | Single-scale | Multi-scale via dense connections |

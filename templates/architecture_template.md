@@ -48,7 +48,7 @@ See `architecture_diagram.mermaid` for the full diagram.
 ## Parameter Count Analysis
 
 | Component | Parameters | Percentage |
-|-----------|-----------|------------|
+| ----------- | ----------- | ------------ |
 | Encoder | | |
 | Bottleneck | | |
 | Decoder | | |

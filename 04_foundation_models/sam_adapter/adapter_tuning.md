@@ -18,7 +18,7 @@ Adapter tuning is a parameter-efficient fine-tuning (PEFT) strategy that inserts
 
 The most common adapter design follows a bottleneck pattern:
 
-```
+```text
 x (input, dimension D)
 |
 Linear_down: D -> d     (d << D, e.g., d=64 when D=1280)
@@ -35,7 +35,7 @@ Output: x + s * adapter(x)    (residual connection)
 ### Key Hyperparameters
 
 | Hyperparameter | Typical Range | Effect |
-|----------------|--------------|--------|
+| ---------------- | -------------- | -------- |
 | Bottleneck dim (d) | 32-256 | Capacity vs. efficiency tradeoff |
 | Scale factor (s) | 0.1-1.0 | Controls adapter influence; small initial values ensure stable training |
 | Activation | ReLU, GELU | GELU often slightly better for ViT |
@@ -44,6 +44,7 @@ Output: x + s * adapter(x)    (residual connection)
 ### Parameter Count
 
 For a ViT-H with D=1280 and bottleneck d=64:
+
 - Parameters per adapter: 2 x 1280 x 64 + 64 + 1280 = ~164K
 - With 2 adapters per block and 32 blocks: 32 x 2 x 164K = ~10.5M
 - This is approximately 1.6% of ViT-H's 632M parameters
@@ -54,7 +55,7 @@ For a ViT-H with D=1280 and bottleneck d=64:
 
 Adapters placed after the multi-head self-attention (MHSA) layer modify the attention output before it enters the residual stream:
 
-```
+```text
 MHSA output -> LayerNorm -> Adapter -> + residual
 ```
 
@@ -64,7 +65,7 @@ This position allows the adapter to refine which spatial relationships the atten
 
 Adapters placed after the feed-forward network (FFN) modify the feature transformation:
 
-```
+```text
 FFN output -> LayerNorm -> Adapter -> + residual
 ```
 
@@ -88,7 +89,7 @@ Parallel adapters can be slightly more efficient at inference (adapter and main 
 LoRA decomposes weight updates as low-rank matrices: W' = W + BA where B is D x r and A is r x D.
 
 | Aspect | Adapters | LoRA |
-|--------|----------|------|
+| -------- | ---------- | ------ |
 | Modification type | New modules added | Existing weights modified |
 | Inference overhead | Slight (extra layers) | None (weights merged) |
 | Where applied | After attention/FFN | Attention Q, K, V, O matrices |
@@ -98,11 +99,13 @@ LoRA decomposes weight updates as low-rank matrices: W' = W + BA where B is D x 
 | Performance | Slightly higher | Competitive |
 
 **When to use LoRA:**
+
 - When inference latency is critical (merged weights add zero overhead)
 - When parameter budget is very tight
 - When no auxiliary information needs to be injected
 
 **When to use adapters:**
+
 - When auxiliary task information (depth, edges, etc.) should be incorporated
 - When multiple adaptations need to be switched dynamically
 - When slightly higher capacity is justified
@@ -112,7 +115,7 @@ LoRA decomposes weight updates as low-rank matrices: W' = W + BA where B is D x 
 VPT prepends learnable tokens to the input sequence of each ViT layer.
 
 | Aspect | Adapters | VPT |
-|--------|----------|-----|
+| -------- | ---------- | ----- |
 | Parameters | ~8-12M | ~0.5-2M |
 | Performance | Higher | Lower (2-5 points) |
 | Mechanism | Transforms features | Adds context tokens |
@@ -141,6 +144,7 @@ Only the mask decoder is trained; the encoder is completely frozen.
 ### Learning Rate
 
 Adapters typically require higher learning rates than full fine-tuning:
+
 - Full fine-tuning: 1e-5 to 5e-5
 - Adapter tuning: 1e-4 to 5e-4
 - The adapter parameters are randomly initialized and need larger updates to learn effectively
@@ -162,6 +166,7 @@ Zero initialization of the up-projection is critical: it ensures the model start
 ### Data Augmentation
 
 Since adapter training uses small datasets, strong augmentation is important:
+
 - Random horizontal/vertical flips
 - Random rotation (up to 30 degrees)
 - Color jitter (for natural images)
@@ -174,7 +179,7 @@ Since adapter training uses small datasets, strong augmentation is important:
 
 A key advantage of adapters is the ability to maintain a single frozen backbone with multiple adapter sets:
 
-```
+```text
 Frozen SAM backbone
   |-- Medical adapters    (swap in for medical images)
   |-- Remote sensing adapters (swap in for satellite images)
@@ -182,6 +187,7 @@ Frozen SAM backbone
 ```
 
 At inference time, the appropriate adapter set is loaded based on the input domain. This requires:
+
 - Storing only the adapter weights per domain (~8-12M per set)
 - No duplication of the backbone (~632M shared)
 - A domain identification mechanism (manual or automatic)
@@ -189,6 +195,7 @@ At inference time, the appropriate adapter set is loaded based on the input doma
 ### Adapter Fusion
 
 When input domains are mixed or unknown, adapter fusion combines multiple adapter outputs:
+
 - Simple averaging of adapter outputs from multiple domains
 - Learned attention weights over adapter outputs
 - This can improve robustness but adds inference cost
@@ -196,7 +203,7 @@ When input domains are mixed or unknown, adapter fusion combines multiple adapte
 ## Practical Recommendations
 
 | Scenario | Recommended Approach |
-|----------|---------------------|
+| ---------- | --------------------- |
 | Large domain shift, large dataset | Full fine-tuning or adapters with d=128 |
 | Large domain shift, small dataset | Adapters with d=64 + strong augmentation |
 | Small domain shift | LoRA rank 8 or head-only fine-tuning |

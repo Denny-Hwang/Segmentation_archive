@@ -12,8 +12,8 @@ tags: [smp, pytorch, encoder-decoder, pretrained, segmentation-library]
 ## Repository Summary
 
 | Field | Details |
-|-------|---------|
-| URL | https://github.com/qubvel/segmentation_models.pytorch |
+| ------- | --------- |
+| URL | <https://github.com/qubvel/segmentation_models.pytorch> |
 | License | MIT |
 | Framework | PyTorch |
 | Primary Use Case | Plug-and-play segmentation with pretrained encoders |
@@ -25,7 +25,7 @@ SMP is the de facto standard library for encoder-decoder segmentation in PyTorch
 
 ## Repository Structure
 
-```
+```text
 segmentation_models_pytorch/
 ├── encoders/
 │   ├── __init__.py          # Encoder registry
@@ -58,7 +58,7 @@ segmentation_models_pytorch/
 ## Analysis Files
 
 | File | Description | Status |
-|------|-------------|--------|
+| ------ | ------------- | -------- |
 | `encoder_registry.md` | How encoders are registered and loaded | Planned |
 | `decoder_comparison.md` | Comparison of decoder architectures | Planned |
 | `pretrained_weights.md` | Pretrained weight management system | Planned |

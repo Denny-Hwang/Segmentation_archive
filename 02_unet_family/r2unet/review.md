@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | Recurrent Residual Convolutional Neural Network based on U-Net (R2U-Net) |
 | **Authors** | Alom, M.Z., Hasan, M., Yakopcic, C., Taha, T.M., Asari, V.K. |
 | **Year** | 2018 |
@@ -44,7 +44,7 @@ With t=2 time steps, each pixel's receptive field effectively doubles without in
 ## Results
 
 | Task | Metric | U-Net | R2U-Net |
-|------|--------|-------|---------|
+| ------ | -------- | ------- | --------- |
 | Retina (DRIVE) | Acc | 97.26% | 97.84% |
 | Skin (ISIC) | Acc | 88.30% | 90.20% |
 | Lung | Acc | 97.45% | 98.76% |

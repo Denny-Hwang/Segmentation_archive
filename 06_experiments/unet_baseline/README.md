@@ -30,7 +30,7 @@ Establish a reproducible U-Net baseline on a standard segmentation benchmark. Th
 See `config.yaml` for full configuration. Key settings:
 
 | Parameter | Value |
-|-----------|-------|
+| ----------- | ------- |
 | Optimizer | Adam |
 | Learning Rate | 1e-4 |
 | Batch Size | 8 |
@@ -48,7 +48,7 @@ See `config.yaml` for full configuration. Key settings:
 ## Expected Results
 
 | Metric | Target |
-|--------|--------|
+| -------- | -------- |
 | IoU | > 0.75 |
 | Dice | > 0.85 |
 | Pixel Accuracy | > 0.90 |
@@ -66,7 +66,7 @@ tensorboard --logdir runs/
 ## Files
 
 | File | Description |
-|------|-------------|
+| ------ | ------------- |
 | `config.yaml` | Experiment configuration |
 | `train.py` | Training script (TODO) |
 | `evaluate.py` | Evaluation script (TODO) |

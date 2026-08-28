@@ -14,7 +14,7 @@ license: Custom (Meta license)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | SA-V (Segment Anything Video) |
 | **Source** | [Meta AI](https://ai.meta.com/datasets/segment-anything-video/) |
 | **Size** | 50.9K videos, 642.6K spatio-temporal masklets |

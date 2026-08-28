@@ -26,7 +26,7 @@ The connection between segmentation and diffusion U-Nets lies in the per-pixel p
 ## Key Architectural Differences from Segmentation U-Net
 
 | Feature | Segmentation U-Net | Diffusion U-Net |
-|---------|-------------------|-----------------|
+| --------- | ------------------- | ----------------- |
 | Input | Image | Noisy image + time step |
 | Output | Class probabilities | Predicted noise |
 | Time conditioning | None | Sinusoidal embedding → AdaGN/AdaLN |

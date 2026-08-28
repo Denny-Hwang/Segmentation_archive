@@ -13,7 +13,7 @@ This section provides the theoretical and practical groundwork for understanding
 ## Table of Contents
 
 | # | Document | Description |
-|---|----------|-------------|
+| --- | ---------- | ------------- |
 | 1 | [Segmentation Taxonomy](segmentation_taxonomy.md) | Classification of segmentation tasks: Semantic, Instance, and Panoptic segmentation; Image vs. Video domains; Interactive and Open-Vocabulary paradigms. |
 | 2 | [Historical Evolution](historical_evolution.md) | Timeline of segmentation research from classical image processing through FCN, U-Net, DeepLab, Transformer-based models, and modern foundation models. |
 | 3 | [Evaluation Metrics](evaluation_metrics.md) | Comprehensive reference for IoU, Dice, Pixel Accuracy, Hausdorff Distance, Panoptic Quality, Average Precision, and mIoU, with formulas, intuitions, and trade-offs. |

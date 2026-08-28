@@ -34,7 +34,7 @@ Full fine-tuning on these domains is expensive and risks catastrophic forgetting
 
 Each adapter module is a bottleneck MLP inserted into the ViT encoder blocks:
 
-```
+```text
 Input features (dim D)
        |
    Linear (D -> d)     [down-projection, d << D]
@@ -51,6 +51,7 @@ Output features (dim D)
 ```
 
 Key parameters:
+
 - **Bottleneck dimension d:** Typically 64 or 128 (vs. D=1280 for ViT-H)
 - **Scale factor s:** Learned scalar that controls the adapter's influence, initialized to a small value (0.1)
 - **Residual connection:** Ensures the adapter's contribution is additive and the model degrades gracefully
@@ -58,6 +59,7 @@ Key parameters:
 ### Insertion Points
 
 Adapters are inserted at two locations within each ViT transformer block:
+
 1. **After the multi-head self-attention (MHSA) layer**
 2. **After the feed-forward network (FFN) layer**
 
@@ -66,6 +68,7 @@ This follows the standard adapter placement from NLP (Houlsby et al., 2019), ada
 ### Task-Specific Information Injection
 
 SAM-Adapter can optionally incorporate task-specific prior information:
+
 - For shadow detection: depth maps or edge maps can be encoded and injected through the adapters
 - For camouflaged detection: frequency domain features can supplement the spatial features
 - The adapter's down-projection can accept concatenated features from auxiliary inputs
@@ -75,7 +78,7 @@ SAM-Adapter can optionally incorporate task-specific prior information:
 ### What Is Trained
 
 | Component | Trainable | Parameters |
-|-----------|-----------|------------|
+| ----------- | ----------- | ------------ |
 | ViT image encoder | Frozen | 0 |
 | Adapter modules | Trained | ~4M (0.6% of ViT-H) |
 | Prompt encoder | Frozen | 0 |
@@ -96,7 +99,7 @@ SAM-Adapter can optionally incorporate task-specific prior information:
 ### Camouflaged Object Detection
 
 | Method | S-measure | E-measure | MAE |
-|--------|-----------|-----------|-----|
+| -------- | ----------- | ----------- | ----- |
 | SAM (zero-shot) | 0.669 | 0.719 | 0.092 |
 | SINet-V2 (specialized) | 0.820 | 0.882 | 0.048 |
 | SAM-Adapter | 0.841 | 0.899 | 0.039 |
@@ -106,7 +109,7 @@ SAM-Adapter surpasses both zero-shot SAM and the specialized SINet-V2 model on c
 ### Shadow Detection
 
 | Method | BER (lower is better) |
-|--------|----------------------|
+| -------- | ---------------------- |
 | SAM (zero-shot) | 12.8 |
 | MTMT (specialized) | 5.1 |
 | SAM-Adapter | 4.2 |
@@ -114,7 +117,7 @@ SAM-Adapter surpasses both zero-shot SAM and the specialized SINet-V2 model on c
 ### Parameter Efficiency
 
 | Adaptation Method | Trainable Params | COD S-measure |
-|-------------------|-----------------|---------------|
+| ------------------- | ----------------- | --------------- |
 | Full fine-tuning | 636M (100%) | 0.838 |
 | Head-only | 4M (0.6%) | 0.762 |
 | LoRA (rank 16) | 6M (0.9%) | 0.825 |
@@ -125,16 +128,19 @@ SAM-Adapter achieves the best performance while training only 1.2% of total para
 ## Comparison to Other Adaptation Methods
 
 ### vs. Full Fine-Tuning
+
 - SAM-Adapter matches or slightly exceeds full fine-tuning performance
 - Requires 80x fewer trainable parameters
 - Multiple domain adaptations can share the same frozen backbone
 
 ### vs. LoRA
+
 - SAM-Adapter and LoRA achieve similar performance
 - SAM-Adapter provides a more flexible architecture for injecting auxiliary information
 - LoRA modifies existing weight matrices; adapters add new pathways
 
 ### vs. Prompt Tuning
+
 - Visual prompt tuning (prepending learnable tokens) is even more parameter-efficient
 - But typically achieves 3-5 points lower performance than SAM-Adapter
 - SAM-Adapter modifies deeper feature representations, which is more effective for large domain shifts
@@ -161,6 +167,6 @@ SAM-Adapter established parameter-efficient adaptation as a viable strategy for 
 
 ## Citation
 
-```
+```text
 Chen, T., et al. "SAM-Adapter: Adapting Segment Anything Model in Underperformed Scenes." ICCV Workshop 2023.
 ```

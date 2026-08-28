@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | UNETR: Transformers for 3D Medical Image Segmentation |
 | **Authors** | Hatamizadeh, A., Tang, Y., Nath, V., Yang, D., Myronenko, A., Landman, B., Roth, H.R., Xu, D. |
 | **Year** | 2022 |
@@ -67,6 +67,7 @@ The decoder takes skip connection features from four intermediate Transformer la
 Features from earlier Transformer layers (layer 3) are upsampled more aggressively to match higher resolutions, while features from later layers require less upsampling. The decoder merges skip connection features with upsampled features from deeper decoder stages through concatenation, followed by residual convolutional blocks for feature refinement. The final layer uses a $1 \times 1 \times 1$ convolution to produce the per-voxel class predictions.
 
 The decoder structure processes features at five resolution levels:
+
 - $\frac{H}{32} \times \frac{W}{32} \times \frac{D}{32}$: From Transformer output (layer 12)
 - $\frac{H}{16} \times \frac{W}{16} \times \frac{D}{16}$: Skip from layer 9
 - $\frac{H}{8} \times \frac{W}{8} \times \frac{D}{8}$: Skip from layer 6

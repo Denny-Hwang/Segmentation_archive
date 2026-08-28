@@ -6,7 +6,7 @@ from typing import Any
 import streamlit as st
 
 try:
-    from whoosh.index import open_dir, exists_in
+    from whoosh.index import exists_in, open_dir
     from whoosh.qparser import MultifieldParser
 
     HAS_WHOOSH = True

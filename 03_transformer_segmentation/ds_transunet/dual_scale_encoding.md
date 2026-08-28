@@ -31,7 +31,7 @@ The two paths provide complementary information: fine features have rich spatial
 ## Comparison with Single-Scale Approaches
 
 | Approach | Fine Detail | Global Context | Cost |
-|----------|-----------|----------------|------|
+| ---------- | ----------- | ---------------- | ------ |
 | Single encoder (high-res) | Strong | Limited | 1× |
 | Single encoder (low-res) | Weak | Strong | 0.25× |
 | Multi-scale CNN (FPN) | Good | Good | 1.3× |

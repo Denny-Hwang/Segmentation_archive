@@ -5,7 +5,7 @@ from typing import Any
 import streamlit as st
 
 try:
-    from streamlit_agraph import agraph, Node, Edge, Config
+    from streamlit_agraph import Config, Edge, Node, agraph
 
     HAS_AGRAPH = True
 except ImportError:

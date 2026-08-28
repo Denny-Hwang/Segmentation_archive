@@ -24,7 +24,7 @@ File discovery uses `pathlib.Path.glob('*')` and filters by known image suffixes
 
 ### Directory Structure Expected
 
-```
+```text
 data/
 ├── imgs/          # Input images
 │   ├── image1.png
@@ -49,8 +49,9 @@ In `BasicDataset.preprocess()`:
 def preprocess(mask_values, pil_img, scale, is_mask):
     w, h = pil_img.size
     newW, newH = int(scale * w), int(scale * h)
-    pil_img = pil_img.resize((newW, newH),
-                              resample=Image.NEAREST if is_mask else Image.BICUBIC)
+    pil_img = pil_img.resize(
+        (newW, newH), resample=Image.NEAREST if is_mask else Image.BICUBIC
+    )
     img = np.asarray(pil_img)
 ```
 
@@ -69,6 +70,7 @@ def preprocess(mask_values, pil_img, scale, is_mask):
 ## Augmentation
 
 The base Pytorch-UNet implementation does **not** include built-in augmentation. The `BasicDataset.__getitem__` only applies:
+
 1. Loading from disk
 2. Resize by scale factor
 3. Normalization
@@ -78,7 +80,7 @@ Users are expected to add augmentation externally via `torchvision.transforms` o
 ## DataLoader Configuration
 
 | Parameter | Value | Notes |
-|-----------|-------|-------|
+| ----------- | ------- | ------- |
 | Batch Size | 1 (default) | Configurable via `--batch-size` CLI arg |
 | Num Workers | `os.cpu_count()` | Uses all available CPU cores |
 | Pin Memory | `True` | Enables faster CPU-to-GPU transfer |
@@ -96,7 +98,7 @@ Note: `drop_last=True` is used for the validation loader to avoid issues with ba
 
 ## Data Flow Diagram
 
-```
+```text
 Raw Image (PNG/JPG)  +  Mask (PNG)
     │                       │
     ├── PIL.Image.open()    ├── PIL.Image.open()

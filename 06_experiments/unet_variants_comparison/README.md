@@ -21,7 +21,7 @@ of U-Net successors translate into meaningful accuracy gains, and at what comput
 ## Models Compared
 
 | Model | Key Modification | Reference | Param Count (approx.) |
-|-------|-----------------|-----------|----------------------|
+| ------- | ----------------- | ----------- | ---------------------- |
 | U-Net | Baseline encoder-decoder with skip connections | Ronneberger 2015 | ~31M |
 | U-Net++ | Nested, dense skip connections with deep supervision | Zhou 2018 | ~36M |
 | Attention U-Net | Attention gates on skip connections | Oktay 2018 | ~34M |
@@ -79,23 +79,27 @@ We recommend running this comparison on two datasets to test generalizability:
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-train_transform = A.Compose([
-    A.Resize(256, 256),
-    A.HorizontalFlip(p=0.5),
-    A.VerticalFlip(p=0.5),
-    A.RandomRotate90(p=0.5),
-    A.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=15, p=0.5),
-    A.ElasticTransform(alpha=120, sigma=120 * 0.05, p=0.3),
-    A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.3),
-    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ToTensorV2(),
-])
+train_transform = A.Compose(
+    [
+        A.Resize(256, 256),
+        A.HorizontalFlip(p=0.5),
+        A.VerticalFlip(p=0.5),
+        A.RandomRotate90(p=0.5),
+        A.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=15, p=0.5),
+        A.ElasticTransform(alpha=120, sigma=120 * 0.05, p=0.3),
+        A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.3),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ]
+)
 
-val_transform = A.Compose([
-    A.Resize(256, 256),
-    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-    ToTensorV2(),
-])
+val_transform = A.Compose(
+    [
+        A.Resize(256, 256),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2(),
+    ]
+)
 ```
 
 ---
@@ -105,12 +109,12 @@ val_transform = A.Compose([
 All models are trained under identical conditions to ensure a fair comparison:
 
 | Variable | Value | Rationale |
-|----------|-------|-----------|
+| ---------- | ------- | ----------- |
 | Optimizer | Adam | Widely used, stable convergence |
 | Learning rate | 1e-4 | Standard starting point for Adam |
 | LR scheduler | CosineAnnealingLR (T_max=100) | Smooth decay, avoids sharp drops |
 | Batch size | 8 | Fits all models in ~8 GB GPU memory |
-| Loss function | 0.5 * BCE + 0.5 * Dice Loss | Combines pixel-level and region-level supervision |
+| Loss function | 0.5 *BCE + 0.5* Dice Loss | Combines pixel-level and region-level supervision |
 | Epochs | 100 | Sufficient for convergence on these datasets |
 | Early stopping | Patience=15 on validation Dice | Prevents overfitting |
 | Random seed | 42 | Reproducibility |
@@ -165,7 +169,7 @@ python statistical_tests.py --results-dir results/ --test paired-ttest
 ### Quantitative Metrics
 
 | Metric | Description | Implementation |
-|--------|-------------|----------------|
+| -------- | ------------- | ---------------- |
 | **Dice Coefficient** | 2*TP / (2*TP + FP + FN). Primary metric for region overlap. | `torchmetrics.Dice` |
 | **IoU (Jaccard Index)** | TP / (TP + FP + FN). Stricter than Dice. | `torchmetrics.JaccardIndex` |
 | **Pixel Accuracy** | (TP + TN) / Total. Can be misleading with class imbalance. | Manual computation |
@@ -176,7 +180,7 @@ python statistical_tests.py --results-dir results/ --test paired-ttest
 ### Efficiency Metrics
 
 | Metric | How to Measure |
-|--------|---------------|
+| -------- | --------------- |
 | Parameter count | `sum(p.numel() for p in model.parameters())` |
 | FLOPs | `fvcore.nn.FlopCountAnalysis` or `ptflops` |
 | GPU memory (peak) | `torch.cuda.max_memory_allocated()` |
@@ -203,7 +207,7 @@ considered significant at p < 0.05.
 Based on published literature and typical performance on similar datasets:
 
 | Model | Dice (ISIC 2018) | IoU (ISIC 2018) | Params (M) | Inference (ms) |
-|-------|------------------|-----------------|------------|----------------|
+| ------- | ------------------ | ----------------- | ------------ | ---------------- |
 | U-Net (scratch) | ~0.87 | ~0.78 | 31.0 | ~15 |
 | U-Net++ | ~0.89 | ~0.80 | 36.6 | ~22 |
 | Attention U-Net | ~0.88 | ~0.79 | 34.8 | ~19 |
@@ -292,7 +296,7 @@ evaluation:
 ## Files
 
 | File | Description |
-|------|-------------|
+| ------ | ------------- |
 | `config.yaml` | Comparison experiment configuration |
 | `run_comparison.py` | Script to train all variants sequentially |
 | `train.py` | Single-model training script |
@@ -322,6 +326,6 @@ evaluation:
 3. Oktay, O., et al. (2018). Attention U-Net: Learning Where to Look for the Pancreas.
    MIDL 2018.
 4. Iakubovskii, P. (2019). Segmentation Models PyTorch.
-   https://github.com/qubvel/segmentation_models.pytorch
+   <https://github.com/qubvel/segmentation_models.pytorch>
 5. Codella, N., et al. (2019). Skin Lesion Analysis Toward Melanoma Detection 2018:
    A Challenge Hosted by the ISIC. arXiv:1902.03368.

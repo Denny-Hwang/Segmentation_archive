@@ -55,7 +55,7 @@ Computes a 2D attention map indicating important spatial positions. Can be imple
 ## Comparative Analysis
 
 | Mechanism | Complexity | Global Context | Local Detail | Convergence | Used In |
-|-----------|-----------|----------------|--------------|-------------|---------|
+| ----------- | ----------- | ---------------- | -------------- | ------------- | --------- |
 | Global MSA | O((HW)²) | Excellent | Good | Moderate | ViT, UNETR, TransUNet |
 | Window MSA | O(HW·M²) | Limited | Excellent | Fast | Swin-Unet, Swin UNETR |
 | Shifted Window | O(HW·M²) | Good | Excellent | Fast | Swin Transformer family |

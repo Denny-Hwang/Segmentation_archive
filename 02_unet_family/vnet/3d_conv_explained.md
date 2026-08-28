@@ -24,7 +24,7 @@ A 3D convolution kernel has shape (D×H×W) where D is the depth dimension. V-Ne
 3D convolutions are significantly more expensive than 2D:
 
 | Operation | Parameters | FLOPs per output voxel |
-|-----------|-----------|----------------------|
+| ----------- | ----------- | ---------------------- |
 | 2D conv (3×3, C_in→C_out) | 9 · C_in · C_out | 9 · C_in |
 | 3D conv (3×3×3, C_in→C_out) | 27 · C_in · C_out | 27 · C_in |
 | 3D conv (5×5×5, C_in→C_out) | 125 · C_in · C_out | 125 · C_in |
@@ -48,7 +48,7 @@ A single 3D feature map with C=64 channels at 128×128×64 resolution requires 6
 ## 2D vs 3D Trade-offs
 
 | Aspect | 2D (slice-by-slice) | 3D (volumetric) |
-|--------|---------------------|-----------------|
+| -------- | --------------------- | ----------------- |
 | Z-axis context | None | Full |
 | Memory | Low | High (~8-16×) |
 | Training speed | Fast | Slow |

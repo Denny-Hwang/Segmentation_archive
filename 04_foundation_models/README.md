@@ -15,7 +15,7 @@ This section covers foundation models for image segmentation -- large-scale mode
 ## Table of Contents
 
 | Model | Authors | Year | Venue | Key Contribution |
-|-------|---------|------|-------|------------------|
+| ------- | --------- | ------ | ------- | ------------------ |
 | [SAM](sam/review.md) | Kirillov et al. | 2023 | ICCV | Promptable segmentation foundation model trained on SA-1B |
 | [SAM 2](sam2/review.md) | Ravi et al. | 2024 | arXiv | Extension to video with streaming memory architecture |
 | [MedSAM](medsam/review.md) | Ma et al. | 2024 | Nature Communications | SAM adapted for universal medical image segmentation |

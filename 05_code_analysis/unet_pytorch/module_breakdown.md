@@ -11,7 +11,7 @@ tags: [unet, modules, pytorch, components]
 ## Module Inventory
 
 | Module | File | Parameters | Description |
-|--------|------|-----------|-------------|
+| -------- | ------ | ----------- | ------------- |
 | `DoubleConv` | `unet_parts.py` | ~221K (64->128 case) | Two consecutive Conv-BN-ReLU blocks |
 | `Down` | `unet_parts.py` | Same as DoubleConv (pool has no params) | MaxPool followed by DoubleConv |
 | `Up` | `unet_parts.py` | ~1.5M (bilinear, 1024->512 case) | Upsample + skip concatenation + DoubleConv |
@@ -41,6 +41,7 @@ nn.ReLU(inplace=True)
 ### Design Decisions
 
 **BatchNorm** was chosen over alternatives for several practical reasons:
+
 - BatchNorm was the dominant normalization technique when this implementation was created
 - Works well with reasonably sized mini-batches (batch size >= 8)
 - Provides regularization effect during training, reducing need for dropout
@@ -55,8 +56,7 @@ class Down(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.maxpool_conv = nn.Sequential(
-            nn.MaxPool2d(2),
-            DoubleConv(in_channels, out_channels)
+            nn.MaxPool2d(2), DoubleConv(in_channels, out_channels)
         )
 ```
 
@@ -71,7 +71,7 @@ class Down(nn.Module):
 The `Up` block supports two upsampling modes controlled by the `bilinear` flag:
 
 | Aspect | `bilinear=True` | `bilinear=False` |
-|--------|-----------------|------------------|
+| -------- | ----------------- | ------------------ |
 | Upsampling op | `nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)` | `nn.ConvTranspose2d(in_ch, in_ch//2, kernel_size=2, stride=2)` |
 | Learnable upsampling | No | Yes |
 | Channel reduction before concat | None (done in DoubleConv via `mid_channels`) | Yes (in ConvTranspose2d) |
@@ -90,8 +90,7 @@ def forward(self, x1, x2):
     x1 = self.up(x1)
     diffY = x2.size()[2] - x1.size()[2]
     diffX = x2.size()[3] - x1.size()[3]
-    x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2,
-                     diffY // 2, diffY - diffY // 2])
+    x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
     x = torch.cat([x2, x1], dim=1)
     return self.conv(x)
 ```
@@ -110,6 +109,7 @@ class OutConv(nn.Module):
 ```
 
 A **1x1 convolution** is used for the final layer because:
+
 - It acts as a per-pixel linear classifier across the 64 feature channels
 - No spatial context is needed at this stage (already captured by preceding layers)
 - It maps from the feature dimension (64) to the number of output classes
@@ -121,7 +121,7 @@ A **1x1 convolution** is used for the final layer because:
 Parameter counts for the default configuration (`n_channels=3, n_classes=2, bilinear=True`):
 
 | Component | Parameters | % of Total |
-|-----------|-----------|------------|
+| ----------- | ----------- | ------------ |
 | Encoder (inc + down1-3) | ~2.77M | 16.0% |
 | Bottleneck (down4) | ~4.72M | 27.3% |
 | Decoder (up1-4) | ~9.68M | 56.0% |

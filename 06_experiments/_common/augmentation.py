@@ -15,9 +15,10 @@ Usage:
     aug_image, aug_mask = result["image"], result["mask"]
 """
 
+from typing import Tuple
+
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from typing import Tuple
 
 
 def get_training_augmentation(

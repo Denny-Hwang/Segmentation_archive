@@ -14,7 +14,7 @@ license: CC BY-NC-SA 4.0
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | Mapillary Vistas Dataset |
 | **Source** | [Mapillary Research](https://www.mapillary.com/dataset/vistas) |
 | **Size** | 25,000 high-resolution street-level images |

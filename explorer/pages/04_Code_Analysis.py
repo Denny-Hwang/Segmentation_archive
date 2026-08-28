@@ -1,16 +1,17 @@
 """Code Analysis Viewer - Explore implementation details and code patterns."""
 
 import sys
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.frontmatter import strip_frontmatter
 
 try:
     from pygments import highlight  # noqa: F401
-    from pygments.lexers import PythonLexer  # noqa: F401
     from pygments.formatters import HtmlFormatter  # noqa: F401
+    from pygments.lexers import PythonLexer  # noqa: F401
 
     HAS_PYGMENTS = True
 except ImportError:

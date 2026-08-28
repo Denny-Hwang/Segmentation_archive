@@ -14,7 +14,7 @@ license: Custom (Synapse terms)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | Synapse Multi-Organ CT Segmentation |
 | **Source** | [Synapse Platform](https://www.synapse.org/#!Synapse:syn3193805) |
 | **Size** | 30 abdominal CT cases (3779 axial slices) |

@@ -33,17 +33,20 @@ MedSAM addresses this by fine-tuning SAM on a comprehensive medical dataset rath
 MedSAM retains SAM's three-component architecture:
 
 ### Image Encoder
+
 - ViT-B backbone (chosen over ViT-H for efficiency in clinical settings)
 - Pretrained weights from SAM, fine-tuned on medical data
 - Input resolution: 1024x1024 (medical images resized accordingly)
 
 ### Prompt Encoder
+
 - **Bounding box prompts only** during both training and inference
 - The authors found that box prompts provide the best quality-effort tradeoff for medical applications
 - Point prompts were excluded because they require more expertise to place effectively on medical structures
 - Box prompts align naturally with how radiologists identify regions of interest
 
 ### Mask Decoder
+
 - Lightweight transformer decoder identical to SAM's
 - Fine-tuned alongside the encoder
 - Single mask output (no multi-mask ambiguity resolution needed with box prompts)
@@ -53,7 +56,7 @@ MedSAM retains SAM's three-component architecture:
 ### Scale and Composition
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Total image-mask pairs | 1,570,263 |
 | Imaging modalities | 10+ |
 | Anatomical structures | 30+ organ/tissue types |
@@ -94,7 +97,7 @@ MedSAM retains SAM's three-component architecture:
 ### Comparison to SAM (Zero-Shot)
 
 | Modality | SAM (zero-shot) DSC | MedSAM DSC |
-|----------|---------------------|------------|
+| ---------- | --------------------- | ------------ |
 | CT (abdominal) | 0.62 | 0.87 |
 | MRI (brain) | 0.55 | 0.84 |
 | Dermoscopy | 0.70 | 0.90 |
@@ -130,6 +133,6 @@ MedSAM demonstrated that foundation model adaptation is viable for medical imagi
 
 ## Citation
 
-```
+```text
 Ma, J., et al. "Segment anything in medical images." Nature Communications 15, 654 (2024).
 ```

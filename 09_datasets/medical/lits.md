@@ -14,7 +14,7 @@ license: Custom (challenge terms)
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | LiTS (Liver Tumor Segmentation Challenge) |
 | **Source** | [CodaLab](https://competitions.codalab.org/competitions/17094) |
 | **Size** | 201 contrast-enhanced abdominal CT scans (131 train, 70 test) |

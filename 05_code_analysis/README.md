@@ -26,7 +26,7 @@ Each repository is analyzed using a consistent template (`_analysis_template.md`
 ## Analyzed Repositories
 
 | Directory | Repository | Framework | Focus |
-|-----------|-----------|-----------|-------|
+| ----------- | ----------- | ----------- | ------- |
 | `unet_pytorch/` | [milesial/Pytorch-UNet](https://github.com/milesial/Pytorch-UNet) | PyTorch | Clean U-Net reference implementation |
 | `segmentation_models_pytorch/` | [qubvel/segmentation_models.pytorch](https://github.com/qubvel/segmentation_models.pytorch) | PyTorch | Encoder-decoder library with pretrained backbones |
 | `nnunet/` | [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet) | PyTorch | Self-configuring medical segmentation |

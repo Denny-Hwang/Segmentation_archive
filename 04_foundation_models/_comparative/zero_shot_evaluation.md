@@ -31,22 +31,26 @@ In the context of foundation segmentation models, zero-shot refers to applying t
 When evaluating zero-shot segmentation, prompts must be generated consistently:
 
 **Point prompts:**
+
 - Center of mass of the ground truth mask
 - Random point inside the ground truth mask
 - Multiple random interior points (e.g., 1, 3, 5, 10 points)
 
 **Box prompts:**
+
 - Tight bounding box of the ground truth mask
 - Bounding box with added jitter (e.g., +/- 10% padding) to simulate detector output
 - Boxes from an actual object detector (Grounding DINO, Faster R-CNN)
 
 **Oracle evaluation:**
+
 - Use the ground truth mask as the prompt to establish an upper bound
 - Use the best of N random prompts (oracle point selection)
 
 ### Multi-Mask Handling
 
 SAM and SAM 2 output multiple mask candidates (typically 3). Evaluation protocols:
+
 - **Default:** Use the mask with the highest predicted IoU score
 - **Oracle:** Use the mask with the highest actual IoU against ground truth
 - **All masks:** Report metrics for each granularity level separately
@@ -56,7 +60,7 @@ SAM and SAM 2 output multiple mask candidates (typically 3). Evaluation protocol
 ### Natural Image Benchmarks
 
 | Benchmark | Images | Task | Primary Metric |
-|-----------|--------|------|---------------|
+| ----------- | -------- | ------ | --------------- |
 | COCO val2017 | 5,000 | Instance segmentation | AP, AR |
 | LVIS v1 val | 19,809 | Long-tail instance seg | AP, AR |
 | ADE20K | 2,000 | Semantic segmentation | mIoU |
@@ -67,7 +71,7 @@ SAM and SAM 2 output multiple mask candidates (typically 3). Evaluation protocol
 ### Medical Imaging Benchmarks
 
 | Benchmark | Images | Modality | Primary Metric |
-|-----------|--------|----------|---------------|
+| ----------- | -------- | ---------- | --------------- |
 | BTCV | 30 volumes | CT (abdominal) | DSC |
 | ACDC | 100 volumes | MRI (cardiac) | DSC |
 | Synapse | 30 volumes | CT (multi-organ) | DSC, HD95 |
@@ -77,7 +81,7 @@ SAM and SAM 2 output multiple mask candidates (typically 3). Evaluation protocol
 ### Specialized Domain Benchmarks
 
 | Benchmark | Domain | Images | Primary Metric |
-|-----------|--------|--------|---------------|
+| ----------- | -------- | -------- | --------------- |
 | iSAID | Remote sensing | 2,806 | mIoU |
 | DeepGlobe | Satellite | 803 | mIoU |
 | COD10K | Camouflage | 2,026 | S-measure, MAE |
@@ -115,7 +119,7 @@ Precision-recall curve area, used for instance segmentation. AP50 uses IoU thres
 ### COCO
 
 | Prompt | AR@100 | AR@1000 |
-|--------|--------|---------|
+| -------- | -------- | --------- |
 | Automatic (grid) | 47.2 | 69.7 |
 | 1 center point | 54.3 | -- |
 | GT bounding box | 76.8 | -- |
@@ -125,7 +129,7 @@ Precision-recall curve area, used for instance segmentation. AP50 uses IoU thres
 SAM was evaluated across 23 datasets spanning different domains:
 
 | Prompt Setting | Mean mIoU |
-|---------------|-----------|
+| --------------- | ----------- |
 | 1 point (center) | 60.6 |
 | 1 point (oracle) | 67.8 |
 | 3 points | 69.2 |
@@ -135,7 +139,7 @@ SAM was evaluated across 23 datasets spanning different domains:
 ### Domain-Specific Zero-Shot Performance
 
 | Domain | SAM mIoU (1 point) | SAM mIoU (box) |
-|--------|--------------------|--------------------|
+| -------- | -------------------- | -------------------- |
 | Natural images | 72.5 | 83.1 |
 | Medical (CT/MRI) | 38.2 | 55.8 |
 | Remote sensing | 45.6 | 62.3 |
@@ -149,7 +153,7 @@ Performance degrades significantly on out-of-distribution domains, motivating ad
 ### Image Segmentation
 
 | Benchmark | SAM (ViT-H) | SAM 2 (Hiera-L) |
-|-----------|-------------|-----------------|
+| ----------- | ------------- | ----------------- |
 | COCO AR@1000 | 69.7 | 71.2 |
 | LVIS AR@1000 | 75.4 | 76.8 |
 | SA-23 mIoU (box) | 75.3 | 76.1 |
@@ -159,7 +163,7 @@ SAM 2 slightly improves over SAM on image benchmarks while being significantly f
 ### Video Segmentation (Zero-Shot)
 
 | Benchmark | SAM (per-frame) | SAM 2 |
-|-----------|----------------|-------|
+| ----------- | ---------------- | ------- |
 | DAVIS 2017 J&F | 63.2 (no propagation) | 82.5 |
 | YouTube-VOS J&F | 55.8 (no propagation) | 81.2 |
 
@@ -170,6 +174,7 @@ The gap on video benchmarks is dramatic because SAM lacks any temporal mechanism
 ### Reporting Guidelines
 
 When reporting zero-shot results, always specify:
+
 1. **Prompt type** (point, box, mask) and how prompts were generated
 2. **Multi-mask selection strategy** (highest predicted IoU vs. oracle)
 3. **Image preprocessing** (resolution, normalization)

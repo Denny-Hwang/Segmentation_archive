@@ -64,7 +64,7 @@ Geometric augmentations (rotation, flipping, elastic deformation, scaling) must 
 # WRONG: different random transforms for image and mask
 transform = transforms.RandomHorizontalFlip()
 image = transform(image)  # May or may not flip
-mask = transform(mask)    # Independent random decision!
+mask = transform(mask)  # Independent random decision!
 
 # CORRECT: use functional API with shared random state
 if random.random() > 0.5:
@@ -118,7 +118,7 @@ Transposed convolutions (`ConvTranspose2d`) can produce **checkerboard artifacts
 ```python
 # Artifact-free upsampling alternatives:
 # Option 1: bilinear + conv (used by Pytorch-UNet bilinear mode)
-x = F.interpolate(x, scale_factor=2, mode='bilinear', align_corners=True)
+x = F.interpolate(x, scale_factor=2, mode="bilinear", align_corners=True)
 x = conv(x)
 
 # Option 2: pixel shuffle (sub-pixel convolution)
@@ -136,10 +136,12 @@ When using a pretrained encoder with a randomly initialized decoder, applying th
 
 ```python
 # Differential learning rates (common in SMP and MMSegmentation)
-optimizer = torch.optim.Adam([
-    {'params': model.encoder.parameters(), 'lr': 1e-5},   # Lower LR
-    {'params': model.decoder.parameters(), 'lr': 1e-4},   # Higher LR
-])
+optimizer = torch.optim.Adam(
+    [
+        {"params": model.encoder.parameters(), "lr": 1e-5},  # Lower LR
+        {"params": model.decoder.parameters(), "lr": 1e-4},  # Higher LR
+    ]
+)
 ```
 
 MMSegmentation handles this via `paramwise_cfg` in the optimizer config, which applies learning rate multipliers to different parameter groups based on their names or layer types. SMP leaves this to the user.

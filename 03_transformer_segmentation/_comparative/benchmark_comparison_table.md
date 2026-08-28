@@ -17,7 +17,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### Synapse Multi-Organ (CT)
 
 | Model | Year | DSC (%) | HD95 (mm) | Params (M) | Notes |
-|-------|------|---------|-----------|------------|-------|
+| ------- | ------ | --------- | ----------- | ------------ | ------- |
 | U-Net | 2015 | 76.85 | 39.70 | 31.0 | CNN baseline |
 | Attention U-Net | 2018 | 77.77 | 36.02 | 34.9 | Attention gating |
 | TransUNet | 2021 | 77.48 | 31.69 | 105.3 | R50 + ViT-B/16 |
@@ -30,7 +30,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### ACDC (Cardiac MRI)
 
 | Model | Year | DSC (%) | RV | Myo | LV | Notes |
-|-------|------|---------|-----|-----|-----|-------|
+| ------- | ------ | --------- | ----- | ----- | ----- | ------- |
 | U-Net | 2015 | 87.55 | 87.10 | 80.63 | 94.92 | Baseline |
 | TransUNet | 2021 | 89.71 | 88.86 | 84.53 | 95.73 | R50-ViT |
 | Swin-Unet | 2021 | 90.00 | 88.55 | 85.62 | 95.83 | Swin-T |
@@ -40,7 +40,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### BraTS (Brain Tumor MRI)
 
 | Model | Year | WT Dice | TC Dice | ET Dice | Params (M) | Notes |
-|-------|------|---------|---------|---------|------------|-------|
+| ------- | ------ | --------- | --------- | --------- | ------------ | ------- |
 | 3D U-Net | 2016 | 88.7 | 83.2 | 78.1 | 19.1 | 3D baseline |
 | UNETR | 2022 | 90.4 | 85.7 | 82.4 | 92.8 | ViT-B, 3D |
 | Swin UNETR | 2022 | 92.1 | 88.3 | 84.6 | 62.2 | Swin-T, 3D |
@@ -51,7 +51,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### ADE20K
 
 | Model | Year | mIoU (%) | Params (M) | FLOPs (G) | Notes |
-|-------|------|----------|------------|-----------|-------|
+| ------- | ------ | ---------- | ------------ | ----------- | ------- |
 | PSPNet (R101) | 2017 | 44.4 | 68.1 | 256 | Pyramid pooling |
 | DeepLab v3+ (R101) | 2018 | 45.5 | 62.7 | 255 | ASPP + decoder |
 | SegFormer-B5 | 2021 | 51.8 | 84.7 | 183 | Mix Transformer |
@@ -61,7 +61,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### Cityscapes
 
 | Model | Year | mIoU (%) | Params (M) | Notes |
-|-------|------|----------|------------|-------|
+| ------- | ------ | ---------- | ------------ | ------- |
 | PSPNet (R101) | 2017 | 79.7 | 68.1 | Pyramid pooling |
 | DeepLab v3+ (R101) | 2018 | 80.9 | 62.7 | ASPP |
 | SegFormer-B5 | 2021 | 84.0 | 84.7 | Mix Transformer |
@@ -71,7 +71,7 @@ This document provides comprehensive performance comparisons of transformer-base
 ### COCO Panoptic
 
 | Model | Year | PQ (%) | PQ_th | PQ_st | Params (M) | Notes |
-|-------|------|--------|-------|-------|------------|-------|
+| ------- | ------ | -------- | ------- | ------- | ------------ | ------- |
 | Panoptic FPN (R101) | 2019 | 40.9 | 48.3 | 29.7 | 56.0 | Baseline |
 | MaskFormer (Swin-L) | 2021 | 52.7 | 58.5 | 44.0 | 212 | Mask classification |
 | Mask2Former (Swin-L) | 2022 | 57.8 | 64.2 | 48.1 | 216 | Masked attention |

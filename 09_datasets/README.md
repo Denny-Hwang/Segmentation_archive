@@ -5,7 +5,7 @@ Reference documentation for key datasets used in image segmentation research and
 ## Dataset Classification
 
 | Dataset | Domain | Task | Modality | Classes | Size |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | Synapse Multi-Organ | Medical | Semantic | CT | 13 organs | 30 cases |
 | ACDC | Medical | Semantic | Cardiac MRI | 4 | 100 patients |
 | BraTS | Medical | Semantic | Brain MRI | 4 | 2000+ scans |
@@ -23,7 +23,7 @@ Reference documentation for key datasets used in image segmentation research and
 
 ## Directory Structure
 
-```
+```text
 09_datasets/
 ├── README.md                      # This file
 ├── _registry.yaml                 # Machine-readable dataset metadata

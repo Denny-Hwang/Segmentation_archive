@@ -1,8 +1,9 @@
 """Architecture Gallery - Visual architecture comparison and exploration."""
 
 import sys
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.frontmatter import strip_frontmatter

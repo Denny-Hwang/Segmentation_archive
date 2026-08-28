@@ -17,7 +17,7 @@ U-Net (Ronneberger et al., 2015) is a symmetric encoder-decoder architecture wit
 The encoder follows a standard CNN pattern with four downsampling blocks:
 
 | Block | Input Size | Operations | Output Size |
-|-------|-----------|------------|-------------|
+| ------- | ----------- | ------------ | ------------- |
 | Block 1 | 572×572×1 | 2× (3×3 conv + ReLU) | 568×568×64 → pool → 284×284×64 |
 | Block 2 | 284×284×64 | 2× (3×3 conv + ReLU) | 280×280×128 → pool → 140×140×128 |
 | Block 3 | 140×140×128 | 2× (3×3 conv + ReLU) | 136×136×256 → pool → 68×68×256 |
@@ -34,7 +34,7 @@ The bottleneck consists of two 3×3 convolutions with 1024 channels at the lowes
 The decoder mirrors the encoder with four upsampling blocks:
 
 | Block | Input | Up-conv | Concat Skip | 2× Conv | Output |
-|-------|-------|---------|-------------|---------|--------|
+| ------- | ------- | --------- | ------------- | --------- | -------- |
 | Block 5 | 32×32×1024 | 64×64×512 | 64×64×1024 | 2×(3×3) | 60×60×512 |
 | Block 6 | 60×60×512 | 120×120×256 | 120×120×512 | 2×(3×3) | 116×116×256 |
 | Block 7 | 116×116×256 | 232×232×128 | 232×232×256 | 2×(3×3) | 228×228×128 |

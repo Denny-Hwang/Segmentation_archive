@@ -14,7 +14,7 @@ license: CC BY 4.0
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | Kvasir-SEG |
 | **Source** | [SimulaMet / Datasets](https://datasets.simula.no/kvasir-seg/) |
 | **Size** | 1,000 polyp images with masks |

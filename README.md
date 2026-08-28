@@ -16,7 +16,7 @@ paper reviews, code reverse engineering, reproduction experiments, and visualiza
 ## Repository Structure
 
 | Directory | Content | Status |
-|-----------|---------|--------|
+| ----------- | --------- | -------- |
 | `01_foundations/` | Segmentation fundamentals, metrics, loss functions | In Progress |
 | `02_unet_family/` | U-Net series paper reviews & architecture analysis | In Progress |
 | `03_transformer_segmentation/` | TransUNet, Swin-UNet, Mask2Former, etc. | Planned |

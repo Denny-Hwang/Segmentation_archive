@@ -1,8 +1,9 @@
 """Home - Dashboard with overview tabs, key diagrams, and archive stats."""
 
 import sys
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.mermaid_render import render_mermaid_file

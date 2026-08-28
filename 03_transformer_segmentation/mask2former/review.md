@@ -11,7 +11,7 @@ difficulty: advanced
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | Masked-attention Mask Transformer for Universal Image Segmentation |
 | **Authors** | Cheng, B., Misra, I., Schwing, A.G., Kirillov, A., Girdhar, R. |
 | **Year** | 2022 |
@@ -67,7 +67,7 @@ ADE20K (150 semantic classes), Cityscapes (semantic/instance/panoptic), COCO (80
 ### Key Results
 
 | Task | Dataset | Backbone | Metric | Score |
-|------|---------|----------|--------|-------|
+| ------ | --------- | ---------- | -------- | ------- |
 | Semantic | ADE20K | Swin-L | mIoU | 57.8% |
 | Panoptic | COCO | Swin-L | PQ | 57.8% |
 | Instance | COCO | Swin-L | AP | 50.1% |

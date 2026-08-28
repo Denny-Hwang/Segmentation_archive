@@ -40,7 +40,7 @@ def freeu_forward(backbone_features, skip_features, s, b):
 ## Recommended Parameters
 
 | Model | Level 1 (s₁, b₁) | Level 2 (s₂, b₂) |
-|-------|-------------------|-------------------|
+| ------- | ------------------- | ------------------- |
 | SD 1.4 | (1.2, 0.9) | (1.4, 0.2) |
 | SD 2.1 | (1.1, 0.9) | (1.2, 0.2) |
 | SDXL | (1.1, 0.6) | (1.1, 0.4) |
@@ -50,6 +50,7 @@ Note the stronger attenuation at deeper levels (b₂ < b₁), where skip connect
 ## Spectral Analysis
 
 The authors analyzed skip features vs backbone features using FFT:
+
 - **Skip features**: Dominant high-frequency components (edges, textures, noise)
 - **Backbone features**: Dominant low-frequency components (structure, color, layout)
 - **Default U-Net**: Equal weighting leads to high-frequency dominance in early denoising steps

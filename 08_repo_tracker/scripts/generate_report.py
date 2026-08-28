@@ -14,7 +14,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-
 TRACKER_DIR = Path(__file__).resolve().parent.parent
 REPO_STATS_FILE = TRACKER_DIR / "repo_stats.json"
 CITATION_STATS_FILE = TRACKER_DIR / "citation_stats.json"

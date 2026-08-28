@@ -17,8 +17,9 @@ Usage:
     iou = iou_score(pred_mask, true_mask, num_classes=5)
 """
 
-import torch
 from typing import Optional
+
+import torch
 
 
 def iou_score(

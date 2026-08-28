@@ -34,7 +34,7 @@ $$\mathbf{F}_s^{\text{enc}} \in \mathbb{R}^{B \times C_s \times \frac{H}{2^s} \t
 Typical encoder stages (using ResNet as an example):
 
 | Stage | Output Stride | Resolution (for 512x512 input) | Channels (ResNet-50) | Feature Type |
-|-------|:---:|:---:|:---:|---|
+| ------- | :---: | :---: | :---: | --- |
 | 0 (stem) | 2 | 256x256 | 64 | Low-level edges, textures |
 | 1 | 4 | 128x128 | 256 | Local patterns, corners |
 | 2 | 8 | 64x64 | 512 | Object parts |
@@ -84,7 +84,7 @@ Encoder features are projected to match the channel dimension and element-wise a
 ### 2.3 Comparison: Concatenation vs. Addition
 
 | Aspect | Concatenation | Addition |
-|--------|:---:|:---:|
+| -------- | :---: | :---: |
 | Information preservation | Higher (all channels retained) | Lower (channels merged) |
 | Parameters | More (convolution over wider input) | Fewer |
 | Representation capacity | Higher | Lower |
@@ -99,7 +99,7 @@ In practice, concatenation tends to produce slightly better results at the cost 
 
 Instead of connecting only corresponding encoder-decoder layers, U-Net++ introduces nested dense connections. Each decoder node receives features from all prior encoder and decoder nodes at the same or lower resolution:
 
-```
+```text
 X^{0,0} ------> X^{0,1} ------> X^{0,2} ------> X^{0,3}
   \                / \              / \              /
 X^{1,0} ------> X^{1,1} ------> X^{1,2}
@@ -126,7 +126,7 @@ where $\alpha_s$ is the spatial attention map and $\odot$ denotes element-wise m
 Empirical evidence consistently shows large performance gains from skip connections:
 
 | Architecture | Skip Connection Type | PASCAL VOC mIoU |
-|-------------|---------------------|:---:|
+| ------------- | --------------------- | :---: |
 | FCN-32s | None | 59.4 |
 | FCN-16s | Addition (pool4) | 62.4 |
 | FCN-8s | Addition (pool4 + pool3) | 62.7 |
@@ -175,7 +175,7 @@ The result is a set of feature maps $\{P_2, P_3, P_4, P_5\}$ that all have 256 c
 ### 3.4 FPN vs. Standard Encoder-Decoder
 
 | Aspect | Standard Encoder-Decoder (U-Net) | FPN |
-|--------|:---:|:---:|
+| -------- | :---: | :---: |
 | Multi-scale output | No (single output) | Yes (pyramid of features) |
 | Semantic enrichment direction | Top-down only | Top-down with lateral connections |
 | Connection type | Concatenation | Addition (lateral) |
@@ -213,7 +213,7 @@ where $Q_{ij}$ are the four neighboring grid points.
 **Properties:**
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Learnable parameters | 0 |
 | Computational cost | Very low |
 | Artifacts | Smooth but can be blurry |
@@ -237,7 +237,7 @@ For $2\times$ upsampling: kernel $= 4$, stride $= 2$, padding $= 1$ gives $H_{ou
 **Properties:**
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Learnable parameters | $C_{in} \times C_{out} \times k \times k$ |
 | Computational cost | Moderate (same as forward convolution) |
 | Artifacts | **Checkerboard artifacts** (a well-known problem) |
@@ -264,14 +264,14 @@ In practice, PixelShuffle is preceded by a standard convolution that increases t
 ```python
 nn.Sequential(
     nn.Conv2d(in_channels, out_channels * r * r, kernel_size=3, padding=1),
-    nn.PixelShuffle(r)
+    nn.PixelShuffle(r),
 )
 ```
 
 **Properties:**
 
 | Property | Value |
-|----------|-------|
+| ---------- | ------- |
 | Learnable parameters | Via preceding convolution |
 | Computational cost | Moderate (convolution at low resolution + rearrange) |
 | Artifacts | Minimal (but periodic patterns possible if not properly initialized) |
@@ -285,7 +285,7 @@ nn.Sequential(
 ### 4.4 Comparison Table
 
 | Method | Parameters | Speed | Quality | Artifacts | Typical Use in Segmentation |
-|--------|:---:|:---:|:---:|:---:|---|
+| -------- | :---: | :---: | :---: | :---: | --- |
 | Bilinear | 0 | Fast | Good (smooth) | None | FPN, DeepLab, SegFormer, most modern decoders |
 | Transposed Conv | Many | Medium | Good (learnable) | Checkerboard risk | FCN, U-Net (original), some GANs |
 | PixelShuffle | Many (in conv) | Medium | Good | Minimal | Real-time networks, super-resolution branches |
@@ -298,6 +298,7 @@ The dominant approach in modern segmentation architectures is:
 $$\text{Upsample} = \text{Bilinear Interpolation}(2\times) + \text{Conv}_{3\times3} + \text{BN} + \text{ReLU}$$
 
 This combination provides:
+
 - No checkerboard artifacts (bilinear is smooth).
 - Learnable refinement (the convolution corrects interpolation errors).
 - Computational efficiency (the convolution operates at the target resolution, but bilinear upsampling is very cheap).
@@ -310,7 +311,7 @@ This "resize-conv" approach was popularized by Odena et al. (2016) as a drop-in 
 
 ### Recipe 1: Classic U-Net Style
 
-```
+```text
 Encoder: ResNet-50 (stages 0-4)
 Skip: Concatenation at each resolution
 Decoder: [Bilinear 2x -> Conv 3x3 -> BN -> ReLU] x4
@@ -321,7 +322,7 @@ Best for: Medical imaging, small-to-medium datasets, tasks where boundary precis
 
 ### Recipe 2: DeepLab v3+ Style
 
-```
+```text
 Encoder: ResNet-101 with output stride 16 (atrous convolutions in stage 4)
 Bottleneck: ASPP module
 Skip: One skip from low-level features (stride 4), 1x1 projection
@@ -333,7 +334,7 @@ Best for: Semantic segmentation on natural images, large datasets.
 
 ### Recipe 3: FPN / Mask2Former Style
 
-```
+```text
 Encoder: Swin Transformer (4 stages)
 Multi-scale: FPN with top-down + lateral connections
 Decoder: Transformer decoder with masked attention + multi-scale deformable attention
@@ -344,7 +345,7 @@ Best for: Universal segmentation (semantic + instance + panoptic), complex scene
 
 ### Recipe 4: Lightweight / Real-Time
 
-```
+```text
 Encoder: MobileNetV3 or EfficientNet-B0
 Skip: Addition (to save memory)
 Decoder: [Bilinear 2x -> Depthwise Separable Conv 3x3] x3

@@ -2,13 +2,13 @@
 
 import re
 import sys
-
-import streamlit as st
 from pathlib import Path
 
+import streamlit as st
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from components.paper_figures import render_paper_figures
 from components.frontmatter import strip_frontmatter
+from components.paper_figures import render_paper_figures
 
 st.set_page_config(page_title="Paper Reviews - Segmentation Archive", layout="wide")
 

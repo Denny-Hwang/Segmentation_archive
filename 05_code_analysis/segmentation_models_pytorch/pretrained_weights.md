@@ -15,7 +15,7 @@ SMP manages pretrained encoder weights through a registry of URL-based weight co
 ## Weight Sources
 
 | Source | Training Data | Models |
-|--------|--------------|--------|
+| -------- | -------------- | -------- |
 | ImageNet-1k | 1.2M images, 1000 classes | All ResNet, VGG, DenseNet, EfficientNet, DPN, SE-Net, MobileNet variants |
 | ImageNet-21k | 14M images, 21k classes | Select timm models (ViT, BEiT, Swin) |
 | Noisy Student | ImageNet + 300M unlabeled images (pseudo-labeled) | EfficientNet-b0 through b7, EfficientNet-L2 |
@@ -29,6 +29,7 @@ SMP manages pretrained encoder weights through a registry of URL-based weight co
 ### Download and Caching
 
 Weights are downloaded via `torch.utils.model_zoo.load_url()`, which:
+
 1. Checks `~/.cache/torch/hub/checkpoints/` for cached files
 2. Downloads from the URL specified in the encoder's `pretrained_settings` dict if not cached
 3. Stores the downloaded file with a hash-based filename for deduplication
@@ -44,6 +45,7 @@ For `timm`-based encoders, weight loading delegates to `timm.create_model(pretra
 ### State Dict Adaptation
 
 When the model's state dict has minor mismatches with the pretrained checkpoint:
+
 - **Missing keys** (e.g., new layers not in pretrained model): Initialized randomly
 - **Extra keys** (e.g., classification head in pretrained but not in encoder-only model): Silently ignored via `strict=False` in some paths
 - **Shape mismatches**: Handled explicitly for the first conv layer (see Input Channel Handling below)
@@ -73,6 +75,7 @@ def set_in_channels(self, in_channels, pretrained=True):
 ```
 
 This strategy preserves pretrained knowledge for non-RGB inputs:
+
 - **1-channel (grayscale)**: Averages RGB weights into a single channel weight
 - **4-channel (RGBD)**: Copies RGB weights for first 3 channels, averages for the 4th
 - **>3 channels**: Tiles the averaged weight across all input channels
@@ -88,6 +91,7 @@ model.encoder.load_state_dict(torch.load("my_custom_encoder.pth"))
 
 # Method 2: Register custom weights in the encoder registry
 from segmentation_models_pytorch.encoders import encoders
+
 encoders["resnet34"]["pretrained_settings"]["my_dataset"] = {
     "url": "file:///path/to/weights.pth",  # or http URL
     "mean": [0.5, 0.5, 0.5],
@@ -106,6 +110,7 @@ model = smp.Unet(encoder_name="tu-resnet34")  # timm-universal prefix
 When only the encoder is pretrained, the remaining components are initialized as follows:
 
 **Decoder**: Uses default PyTorch initialization:
+
 - `Conv2d` layers: Kaiming uniform (He initialization)
 - `BatchNorm2d` layers: weight=1, bias=0
 - Some decoders apply Xavier initialization via `initialize_decoder()`:
@@ -127,6 +132,7 @@ def initialize_decoder(module):
 **ClassificationHead**: Linear layer uses default PyTorch initialization (Kaiming uniform).
 
 This asymmetric initialization (pretrained encoder + random decoder) is standard practice and works well because:
+
 1. The encoder provides strong feature representations from day one
 2. The decoder learns to combine these features, which converges quickly
 3. Using differential learning rates (lower for encoder, higher for decoder) can further improve results

@@ -37,7 +37,7 @@ Theoretical complexity remains O(N × H × W) per query, but effective attention
 ## Ablation Results
 
 | Configuration | ADE20K PQ | Convergence |
-|--------------|-----------|-------------|
+| -------------- | ----------- | ------------- |
 | Standard cross-attention | 48.1 | 200+ epochs |
 | Masked attention | 52.5 | 50 epochs |
 | Masked attention + multi-scale | 54.5 | 50 epochs |
@@ -52,7 +52,7 @@ Key details: the mask is detached from the computation graph to prevent gradient
 def masked_cross_attention(query, key, value, mask_pred):
     attn = torch.bmm(query, key.transpose(1, 2)) / math.sqrt(d)
     mask = (mask_pred.detach().sigmoid() > 0.5).flatten(2)  # (B, N, HW)
-    attn_bias = torch.where(mask, 0.0, float('-inf'))
+    attn_bias = torch.where(mask, 0.0, float("-inf"))
     attn = F.softmax(attn + attn_bias, dim=-1)
     return torch.bmm(attn, value)
 ```

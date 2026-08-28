@@ -10,7 +10,7 @@ tags: []
 ## Repository Information
 
 | Field | Details |
-|-------|---------|
+| ------- | --------- |
 | URL | |
 | Stars / Forks | |
 | License | |
@@ -21,7 +21,7 @@ tags: []
 
 ## 1. Repository Structure Map
 
-```
+```text
 (tree output + key file descriptions)
 ```
 
@@ -29,7 +29,7 @@ tags: []
 
 ### 2.1 Model Definition (Forward Pass Flow)
 
-```
+```text
 Input -> [ModuleA] -> [ModuleB] -> ... -> Output
           | shape changes tracked
 (B, 3, 512, 512) -> (B, 64, 256, 256) -> ...
@@ -42,8 +42,11 @@ Input -> [ModuleA] -> [ModuleB] -> ... -> Output
 ## 3. Training Pipeline
 
 ### 3.1 Data Loading & Augmentation
+
 ### 3.2 Optimizer & Scheduler
+
 ### 3.3 Loss Function Implementation
+
 ### 3.4 Validation & Checkpointing
 
 ## 4. Reverse Engineering Insights

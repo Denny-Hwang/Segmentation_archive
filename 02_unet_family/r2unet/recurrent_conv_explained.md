@@ -16,11 +16,12 @@ Recurrent convolution blocks are the core building block of R2U-Net. Instead of 
 
 At each time step t, the output is:
 
-```
+```text
 x_o^t = f(W_f * x_i + W_r * x_o^{t-1} + b)
 ```
 
 where:
+
 - `x_i` is the original input (constant across time steps)
 - `x_o^{t-1}` is the output from the previous time step (t-1)
 - `W_f` are the feedforward convolution weights
@@ -49,9 +50,9 @@ class RecurrentBlock(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv2d(channels, channels, 3, padding=1),
             nn.BatchNorm2d(channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
         )
-    
+
     def forward(self, x):
         x_r = self.conv(x)  # t=0
         for _ in range(self.t - 1):
@@ -64,7 +65,7 @@ Note that `x` (the original input) is added at each step, not `x_r`. This ensure
 ## Comparison with Standard Convolutions
 
 | Approach | Params | FLOPs | Effective RF |
-|----------|--------|-------|-------------|
+| ---------- | -------- | ------- | ------------- |
 | Single conv | C²K² | 1× | K |
 | DoubleConv (U-Net) | 2C²K² | 2× | 2K-1 |
 | RecurrentConv (t=2) | C²K² | 2× | ~2K |

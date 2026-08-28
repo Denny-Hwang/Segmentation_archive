@@ -12,8 +12,8 @@ tags: [keras, tensorflow, unet-variants, model-collection]
 ## Repository Summary
 
 | Field | Details |
-|-------|---------|
-| URL | https://github.com/yingkaisha/keras-unet-collection |
+| ------- | --------- |
+| URL | <https://github.com/yingkaisha/keras-unet-collection> |
 | License | MIT |
 | Framework | TensorFlow / Keras |
 | Primary Use Case | Collection of U-Net variants in Keras |
@@ -25,7 +25,7 @@ This repository provides the primary Keras/TensorFlow implementations of U-Net v
 
 ## Repository Structure
 
-```
+```text
 keras_unet_collection/
 ├── keras_unet_collection/
 │   ├── _model_unet_2d.py          # Standard U-Net

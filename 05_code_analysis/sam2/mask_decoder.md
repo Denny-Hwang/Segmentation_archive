@@ -77,18 +77,25 @@ The decoder produces multiple mask candidates to handle ambiguous prompts. When 
 
 ```python
 class MaskDecoder(nn.Module):
-    def predict_masks(self, image_embeddings, image_pe, sparse_prompt_embeddings,
-                      dense_prompt_embeddings):
+    def predict_masks(
+        self,
+        image_embeddings,
+        image_pe,
+        sparse_prompt_embeddings,
+        dense_prompt_embeddings,
+    ):
         # Concatenate output tokens with prompt tokens
-        output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens.weight], dim=0)
+        output_tokens = torch.cat(
+            [self.iou_token.weight, self.mask_tokens.weight], dim=0
+        )
         tokens = torch.cat([output_tokens, sparse_prompt_embeddings], dim=1)
 
         # Run two-way transformer
         hs, src = self.transformer(tokens, image_embeddings)
 
         # Extract mask tokens and IoU token from output
-        iou_token_out = hs[:, 0, :]           # IoU prediction token
-        mask_tokens_out = hs[:, 1:1+self.num_mask_tokens, :]  # Mask tokens
+        iou_token_out = hs[:, 0, :]  # IoU prediction token
+        mask_tokens_out = hs[:, 1 : 1 + self.num_mask_tokens, :]  # Mask tokens
 
         # Upscale image features: 64x64 -> 256x256
         src = src.transpose(1, 2).view(b, c, h, w)
@@ -97,8 +104,10 @@ class MaskDecoder(nn.Module):
         # Generate masks via dot product: mask_tokens x upscaled_features
         masks = []
         for i in range(self.num_mask_tokens):
-            mask = (mask_tokens_out[:, i, :] @ self.output_hypernetworks_mlps[i](
-                mask_tokens_out[:, i, :])).view(b, 1, h*4, w*4)
+            mask = (
+                mask_tokens_out[:, i, :]
+                @ self.output_hypernetworks_mlps[i](mask_tokens_out[:, i, :])
+            ).view(b, 1, h * 4, w * 4)
             masks.append(mask)
         masks = torch.stack(masks, dim=1)  # [B, num_masks, H*4, W*4]
 
@@ -117,14 +126,18 @@ self.output_upscaling = nn.Sequential(
     nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
     LayerNorm2d(transformer_dim // 4),
     nn.GELU(),
-    nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
+    nn.ConvTranspose2d(
+        transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2
+    ),
 )
 
 # Per-mask hypernetwork MLPs
-self.output_hypernetworks_mlps = nn.ModuleList([
-    MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-    for _ in range(self.num_mask_tokens)
-])
+self.output_hypernetworks_mlps = nn.ModuleList(
+    [
+        MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+        for _ in range(self.num_mask_tokens)
+    ]
+)
 ```
 
 The upscaled image features have shape `[B, 32, 256, 256]` (for 1024x1024 input). Each mask token is projected through its own MLP to produce a 32-dimensional vector, which is then used as a per-pixel classifier via dot product with the upscaled features. This hypernetwork approach allows each mask to have its own spatial classification weights without explicitly storing a full spatial mask.
@@ -134,8 +147,9 @@ The upscaled image features have shape `[B, 32, 256, 256]` (for 1024x1024 input)
 The IoU prediction head estimates the quality of each generated mask, enabling automatic mask selection during inference:
 
 ```python
-self.iou_prediction_head = MLP(transformer_dim, iou_head_hidden_dim,
-                                self.num_mask_tokens, iou_head_depth)
+self.iou_prediction_head = MLP(
+    transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth
+)
 
 # During forward:
 iou_pred = self.iou_prediction_head(iou_token_out)  # [B, num_mask_tokens]
@@ -152,7 +166,7 @@ SAM 2's multi-mask output is specifically designed to handle prompt ambiguity. A
 masks, iou_scores, _ = mask_decoder(
     image_embeddings=img_emb,
     sparse_prompt_embeddings=point_emb,
-    multimask_output=True  # Returns 3 masks
+    multimask_output=True,  # Returns 3 masks
 )
 # masks shape: [B, 3, 256, 256]
 # iou_scores shape: [B, 3]

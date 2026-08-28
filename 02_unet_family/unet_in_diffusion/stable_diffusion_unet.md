@@ -17,7 +17,7 @@ The U-Net in Stable Diffusion operates in the latent space of a variational auto
 The U-Net has 4 resolution levels (64→32→16→8 in latent space) with each level containing ResBlocks and SpatialTransformer blocks:
 
 | Level | Resolution | Channels | ResBlocks | Attention |
-|-------|-----------|----------|-----------|-----------|
+| ------- | ----------- | ---------- | ----------- | ----------- |
 | Down 1 | 64×64 | 320 | 2 | Optional |
 | Down 2 | 32×32 | 640 | 2 | Yes |
 | Down 3 | 16×16 | 1280 | 2 | Yes |
@@ -29,12 +29,13 @@ The U-Net has 4 resolution levels (64→32→16→8 in latent space) with each l
 
 The diffusion time step t is encoded using sinusoidal positional encoding, then projected through a 2-layer MLP:
 
-```
+```text
 t_emb = MLP(sinusoidal_embedding(t))  # → (batch, 1280)
 ```
 
 This embedding conditions each ResBlock via Adaptive Group Normalization:
-```
+
+```text
 h = GroupNorm(h)
 h = h * (1 + scale(t_emb)) + shift(t_emb)
 ```
@@ -49,7 +50,7 @@ Text prompts are encoded by a CLIP text encoder into a sequence of token embeddi
 2. **Cross-attention**: spatial features (queries) attend to text tokens (keys, values)
 3. **FFN**: feedforward network
 
-```
+```text
 Q = W_q · spatial_features    # from image latents
 K = W_k · text_embeddings     # from CLIP
 V = W_v · text_embeddings     # from CLIP

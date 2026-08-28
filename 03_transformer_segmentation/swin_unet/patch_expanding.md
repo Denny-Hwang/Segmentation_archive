@@ -65,7 +65,7 @@ The patch expanding layer is straightforward to implement in PyTorch. The core o
 ```python
 # Conceptual implementation
 x = self.linear_expand(x)  # (B, H/2k, W/2k, 2*C) -> expand channels
-x = rearrange(x, 'b h w (p1 p2 c) -> b (h p1) (w p2) c', p1=2, p2=2)
+x = rearrange(x, "b h w (p1 p2 c) -> b (h p1) (w p2) c", p1=2, p2=2)
 ```
 
 Key implementation considerations include: (1) ensuring the channel dimension is divisible by the upsampling factor squared (4 for $2\times$ upsampling); (2) matching the output channel dimension with the skip connection dimension for proper concatenation; (3) applying layer normalization after the rearrangement to stabilize the distribution of the redistributed features. The final $4\times$ patch expanding uses a linear layer that expands channels by $16\times$, followed by rearrangement with $p1 = p2 = 4$.

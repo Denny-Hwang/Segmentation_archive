@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | Swin UNETR: Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images |
 | **Authors** | Hatamizadeh, A., Nath, V., Tang, Y., Yang, D., Roth, H.R., Xu, D. |
 | **Year** | 2022 |
@@ -50,6 +50,7 @@ The 3D Swin Transformer adapts the 2D Swin Transformer for volumetric data. The 
 **3D Relative Position Bias**: The relative position bias is extended to 3D, with a bias table of shape $(2M-1) \times (2M-1) \times (2M-1)$ to encode relative positions along all three spatial axes.
 
 The encoder stages are configured as:
+
 - **Stage 1**: Resolution $\frac{H}{2} \times \frac{W}{2} \times \frac{D}{2}$, $C$ channels, 2 Swin Transformer blocks
 - **Stage 2**: Resolution $\frac{H}{4} \times \frac{W}{4} \times \frac{D}{4}$, $2C$ channels, 2 Swin Transformer blocks
 - **Stage 3**: Resolution $\frac{H}{8} \times \frac{W}{8} \times \frac{D}{8}$, $4C$ channels, 2 Swin Transformer blocks
@@ -106,7 +107,7 @@ Swin UNETR was primarily evaluated on:
 On BraTS 2021, Swin UNETR achieved state-of-the-art results:
 
 | Region | Dice Score | HD95 (mm) |
-|--------|-----------|-----------|
+| -------- | ----------- | ----------- |
 | Whole Tumor (WT) | 92.0% | 4.45 |
 | Tumor Core (TC) | 88.3% | 6.73 |
 | Enhancing Tumor (ET) | 82.5% | 9.14 |

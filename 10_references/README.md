@@ -5,7 +5,7 @@ A curated collection of reference materials for image segmentation research.
 ## Contents
 
 | File | Description |
-|---|---|
+| --- | --- |
 | [glossary.md](glossary.md) | Alphabetical glossary of segmentation terms |
 | [survey_papers.md](survey_papers.md) | Key survey papers on image segmentation |
 | [awesome_links.md](awesome_links.md) | Curated collection of tutorials, repos, and blogs |

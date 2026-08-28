@@ -1,8 +1,9 @@
 """Repository Tracker - Monitor GitHub repos and paper citations."""
 
 import json
-import streamlit as st
 from pathlib import Path
+
+import streamlit as st
 
 try:
     import yaml

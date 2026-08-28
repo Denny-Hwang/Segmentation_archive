@@ -8,7 +8,7 @@ Dates are approximate and should be verified each year.
 ## Tier 1 Computer Vision Conferences
 
 | Conference | Typical Submission | Typical Event | Website |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **CVPR** | November | June | [cvpr.thecvf.com](https://cvpr.thecvf.com/) |
 | **ICCV** | March (odd years) | October (odd years) | [iccv.thecvf.com](https://iccv.thecvf.com/) |
 | **ECCV** | March (even years) | October (even years) | [eccv.ecva.net](https://eccv.ecva.net/) |
@@ -20,7 +20,7 @@ Dates are approximate and should be verified each year.
 ## Medical Imaging Conferences
 
 | Conference | Typical Submission | Typical Event | Website |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **MICCAI** | March | October | [miccai.org](https://www.miccai.org/) |
 | **ISBI** | November | April | [biomedicalimaging.org](https://biomedicalimaging.org/) |
 | **MIDL** | January | July | [midl.io](https://midl.io/) |
@@ -30,7 +30,7 @@ Dates are approximate and should be verified each year.
 ## Workshops and Challenges
 
 | Event | Associated With | Focus |
-|---|---|---|
+| --- | --- | --- |
 | **BraTS Challenge** | MICCAI | Brain tumor segmentation |
 | **ACDC Challenge** | MICCAI/STACOM | Cardiac segmentation |
 | **COCO Challenges** | ECCV/ICCV | Instance/panoptic segmentation |
@@ -40,7 +40,7 @@ Dates are approximate and should be verified each year.
 ## Journals
 
 | Journal | Impact | Turnaround |
-|---|---|---|
+| --- | --- | --- |
 | **IEEE TPAMI** | Very High | 6-12 months |
 | **Medical Image Analysis** | Very High | 3-6 months |
 | **IEEE TMI** | High | 3-6 months |

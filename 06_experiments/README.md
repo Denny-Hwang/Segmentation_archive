@@ -31,6 +31,7 @@ pip install -r requirements.txt
 
 ```python
 import torch
+
 print(f"CUDA available: {torch.cuda.is_available()}")
 print(f"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A'}")
 ```
@@ -38,7 +39,7 @@ print(f"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N
 ### 4. Recommended Hardware
 
 | Component | Minimum | Recommended |
-|-----------|---------|-------------|
+| ----------- | --------- | ------------- |
 | GPU VRAM | 8 GB | 16+ GB |
 | RAM | 16 GB | 32+ GB |
 | Storage | 50 GB | 200+ GB (for datasets) |
@@ -46,7 +47,7 @@ print(f"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N
 ## Experiment Index
 
 | Directory | Description | Status |
-|-----------|-------------|--------|
+| ----------- | ------------- | -------- |
 | `unet_baseline/` | U-Net baseline on a standard dataset | Planned |
 | `unet_variants_comparison/` | Compare U-Net, U-Net++, Attention U-Net | Planned |
 | `transformer_vs_cnn/` | SegFormer vs DeepLabV3+ comparison | Planned |
@@ -57,7 +58,7 @@ print(f"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N
 The `_common/` directory provides shared code used across experiments:
 
 | File | Description |
-|------|-------------|
+| ------ | ------------- |
 | `metrics.py` | IoU, Dice coefficient, pixel accuracy |
 | `visualization.py` | Mask overlay, training curve plotting |
 | `augmentation.py` | Standard augmentation pipelines via albumentations |

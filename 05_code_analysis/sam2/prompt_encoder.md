@@ -97,8 +97,9 @@ class PositionEmbeddingRandom(nn.Module):
     def __init__(self, num_pos_feats=128, scale=None):
         super().__init__()
         # Fixed random matrix for Fourier features
-        self.register_buffer('positional_encoding_gaussian_matrix',
-                           torch.randn(2, num_pos_feats))
+        self.register_buffer(
+            "positional_encoding_gaussian_matrix", torch.randn(2, num_pos_feats)
+        )
 
     def forward_with_coords(self, coords_input, image_size):
         # Normalize coordinates to [0, 1]
@@ -167,12 +168,14 @@ Multiple prompt types can be freely combined in a single prediction. The encodin
 
 ```python
 # Example: box + 2 positive points + 1 negative point + mask
-sparse = concat([
-    box_embed,        # [B, 2, 256] - two corner tokens
-    point_embed,      # [B, 3, 256] - three point tokens (2 pos + 1 neg)
-])  # Total: [B, 5, 256]
+sparse = concat(
+    [
+        box_embed,  # [B, 2, 256] - two corner tokens
+        point_embed,  # [B, 3, 256] - three point tokens (2 pos + 1 neg)
+    ]
+)  # Total: [B, 5, 256]
 
-dense = mask_embed   # [B, 256, 64, 64] - from input mask
+dense = mask_embed  # [B, 256, 64, 64] - from input mask
 
 # These are passed together to the mask decoder
 masks, iou = mask_decoder(image_emb, sparse, dense)

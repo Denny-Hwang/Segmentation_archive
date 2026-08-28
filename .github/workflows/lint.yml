@@ -27,7 +27,7 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          pip install ruff
+          pip install ruff==0.16.5
       - name: Ruff check
         run: ruff check .
       - name: Ruff format check

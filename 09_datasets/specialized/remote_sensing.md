@@ -14,7 +14,7 @@ license: varies
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | Remote Sensing Segmentation (collection) |
 | **Source** | Various (see individual datasets below) |
 | **Size** | Varies by dataset |
@@ -29,20 +29,24 @@ Remote sensing segmentation encompasses several specialized datasets for segment
 ## Notable Datasets
 
 ### ISPRS Vaihingen & Potsdam
+
 - **Task**: Urban land cover classification
 - **Classes**: 6 (impervious surfaces, building, low vegetation, tree, car, clutter)
 - **Source**: [ISPRS WG III/4](https://www.isprs.org/education/benchmarks/UrbanSemLab/)
 
 ### DeepGlobe Land Cover
+
 - **Task**: Land cover classification
 - **Classes**: 7 (urban, agriculture, rangeland, forest, water, barren, unknown)
 - **Source**: [DeepGlobe Challenge](http://deepglobe.org/)
 
 ### SpaceNet
+
 - **Task**: Building footprint extraction, road network mapping
 - **Source**: [SpaceNet on AWS](https://spacenet.ai/)
 
 ### LoveDA
+
 - **Task**: Domain adaptive land cover segmentation
 - **Classes**: 7
 - **Source**: [GitHub](https://github.com/Junjue-Wang/LoveDA)

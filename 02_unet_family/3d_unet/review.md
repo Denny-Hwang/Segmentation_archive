@@ -11,7 +11,7 @@ difficulty: intermediate
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | 3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation |
 | **Authors** | Çiçek, Ö., Abdulkadir, A., Lienkamp, S.S., Brox, T., Ronneberger, O. |
 | **Year** | 2016 |

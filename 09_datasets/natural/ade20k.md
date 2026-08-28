@@ -14,7 +14,7 @@ license: BSD 3-Clause
 ## Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Name** | ADE20K (MIT Scene Parsing Benchmark) |
 | **Source** | [MIT CSAIL](https://groups.csail.mit.edu/vision/datasets/ADE20K/) |
 | **Size** | 20,210 training + 2,000 validation + 3,352 testing images |
@@ -36,6 +36,7 @@ ADE20K serves as the primary benchmark for many semantic segmentation architectu
 
 ```python
 from datasets import load_dataset
+
 dataset = load_dataset("scene_parse_150")
 ```
 

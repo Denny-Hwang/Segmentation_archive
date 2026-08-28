@@ -5,8 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import streamlit as st
-
-from components.mermaid_render import render_mermaid, mermaid_png_download_button
+from components.mermaid_render import mermaid_png_download_button, render_mermaid
 
 
 def render_figure_gallery(figures_dir: Path) -> None:

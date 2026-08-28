@@ -19,6 +19,7 @@ OMG-Seg proposes a unified segmentation model that handles all major segmentatio
 ## Motivation
 
 The segmentation field has produced specialized architectures for each task type:
+
 - Semantic segmentation: FCN, DeepLab, SegFormer
 - Instance segmentation: Mask R-CNN, SOLO, Mask2Former
 - Panoptic segmentation: Panoptic FPN, MaskFormer, Mask2Former
@@ -47,6 +48,7 @@ OMG-Seg consists of three components:
 ### Pixel Decoder
 
 A feature pyramid-style decoder that refines the multi-scale features from CLIP into high-resolution feature maps:
+
 - Takes features from multiple ViT layers (e.g., layers 6, 12, 18, 24)
 - Progressively upsamples and fuses features
 - Produces feature maps at 1/4, 1/8, 1/16, and 1/32 resolution
@@ -56,20 +58,24 @@ A feature pyramid-style decoder that refines the multi-scale features from CLIP 
 Each segmentation task has a lightweight query-based decoder:
 
 **Semantic segmentation head:**
+
 - Learnable class queries (one per category)
 - Cross-attention between queries and pixel features
 - Produces per-class probability maps
 
 **Instance segmentation head:**
+
 - Learnable object queries (N queries for up to N instances)
 - Cross-attention and self-attention layers
 - Produces per-instance masks and classification scores
 
 **Panoptic segmentation head:**
+
 - Combines thing queries (instances) and stuff queries (semantic regions)
 - Merging strategy to produce non-overlapping panoptic maps
 
 **Open-vocabulary head:**
+
 - Uses CLIP text embeddings as classification weights
 - Region features are matched against text embeddings in the shared CLIP space
 - Can recognize categories not seen during training
@@ -81,7 +87,7 @@ Each segmentation task has a lightweight query-based decoder:
 OMG-Seg is trained on multiple datasets simultaneously:
 
 | Dataset | Task | Categories |
-|---------|------|------------|
+| --------- | ------ | ------------ |
 | COCO | Panoptic, Instance | 133 classes |
 | ADE20K | Semantic | 150 classes |
 | Cityscapes | Panoptic, Semantic | 19 classes |
@@ -105,7 +111,7 @@ OMG-Seg is trained on multiple datasets simultaneously:
 ### Panoptic Segmentation
 
 | Method | COCO PQ | ADE20K PQ |
-|--------|---------|-----------|
+| -------- | --------- | ----------- |
 | Mask2Former (Swin-L) | 57.8 | 48.1 |
 | OneFormer (Swin-L) | 58.0 | 49.0 |
 | **OMG-Seg (CLIP ViT-L)** | **58.3** | **49.5** |
@@ -120,7 +126,7 @@ OMG-Seg is trained on multiple datasets simultaneously:
 ### Open-Vocabulary Segmentation
 
 | Method | ADE20K (open-vocab) mIoU |
-|--------|--------------------------|
+| -------- | -------------------------- |
 | SAN (CLIP ViT-L) | 33.3 |
 | FC-CLIP | 34.1 |
 | **OMG-Seg** | **35.2** |
@@ -132,7 +138,7 @@ The key result is that a single OMG-Seg model achieves competitive performance a
 ## Comparison to Other Unified Models
 
 | Model | Semantic | Instance | Panoptic | Open-Vocab | Single Model |
-|-------|----------|----------|----------|------------|-------------|
+| ------- | ---------- | ---------- | ---------- | ------------ | ------------- |
 | Mask2Former | Yes | Yes | Yes | No | Yes |
 | OneFormer | Yes | Yes | Yes | No | Yes |
 | X-Decoder | Yes | Yes | Yes | Yes | Yes |
@@ -162,6 +168,6 @@ OMG-Seg advanced the trend toward universal segmentation models, showing that th
 
 ## Citation
 
-```
+```text
 Li, X., et al. "OMG-Seg: Is One Model Good Enough For All Segmentation?" CVPR 2024.
 ```

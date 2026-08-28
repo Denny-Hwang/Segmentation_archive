@@ -67,7 +67,7 @@ Formally, the output is a map $P : \{1, \dots, H\} \times \{1, \dots, W\} \right
 ### 1.4 Comparison Table
 
 | Property | Semantic | Instance | Panoptic |
-|----------|----------|----------|----------|
+| ---------- | ---------- | ---------- | ---------- |
 | Pixel-level labels | Yes | Only for detected objects | Yes (all pixels) |
 | Distinguishes instances | No | Yes | Yes (for things) |
 | Handles "stuff" classes | Yes | No | Yes |
@@ -130,6 +130,7 @@ The user provides guidance to help the model produce or refine a segmentation ma
 - **Text / language-based:** Natural language descriptions guide segmentation. (Overlaps with referring segmentation; see below.)
 
 **Key design principles for interactive systems:**
+
 - Fast inference (the user is waiting).
 - Graceful refinement (each additional interaction should improve the result, not degrade it).
 - Minimal number of interactions needed to reach a satisfactory mask.
@@ -164,7 +165,7 @@ Traditional segmentation models are limited to a fixed set of classes seen durin
 ## 4. Other Notable Task Variants
 
 | Task | Description |
-|------|-------------|
+| ------ | ------------- |
 | **Part segmentation** | Segment object parts (e.g., head, torso, limbs of a person). Datasets: Pascal-Part, PartImageNet. |
 | **Scene parsing** | Dense semantic segmentation with a very large label set covering the full scene. Dataset: ADE20K (150 classes). |
 | **Amodal segmentation** | Predict the full extent of objects, including occluded regions. |

@@ -22,8 +22,9 @@ Connected component analysis is applied per-class to remove small spurious predi
 # Simplified connected component logic
 from scipy.ndimage import label as scipy_label
 
+
 def apply_cc_filtering(prediction, class_id, min_size=None):
-    binary_mask = (prediction == class_id)
+    binary_mask = prediction == class_id
     labeled_array, num_features = scipy_label(binary_mask)
     if num_features <= 1:
         return prediction
@@ -49,7 +50,7 @@ nnU-Net trains 5-fold cross-validation by default, producing 5 independently tra
 # Fold ensembling (simplified)
 ensemble_probs = np.zeros_like(fold_0_probs)
 for fold_idx in range(5):
-    model = load_model(f'fold_{fold_idx}/checkpoint_final.pth')
+    model = load_model(f"fold_{fold_idx}/checkpoint_final.pth")
     fold_probs = predict_with_model(model, image)
     ensemble_probs += fold_probs
 ensemble_probs /= 5.0
@@ -64,7 +65,7 @@ nnU-Net can also ensemble across configurations (e.g., combining 2D and 3D_fullr
 
 ```python
 # Configuration ensembling
-configs_to_try = ['2d', '3d_fullres', '3d_lowres', '3d_cascade_fullres']
+configs_to_try = ["2d", "3d_fullres", "3d_lowres", "3d_cascade_fullres"]
 best_score = 0
 best_ensemble = None
 for combo in all_pairs_and_singles(configs_to_try):
@@ -82,12 +83,14 @@ nnU-Net applies mirroring-based test-time augmentation during inference. For 3D 
 
 ```python
 # TTA with mirroring (3D case - 8 augmentations)
-mirror_axes = [(0,), (1,), (2,), (0,1), (0,2), (1,2), (0,1,2)]
+mirror_axes = [(0,), (1,), (2,), (0, 1), (0, 2), (1, 2), (0, 1, 2)]
 all_predictions = [model(image)]  # Original
 for axes in mirror_axes:
-    flipped_input = torch.flip(image, dims=[d+2 for d in axes])  # +2 for batch+channel
+    flipped_input = torch.flip(
+        image, dims=[d + 2 for d in axes]
+    )  # +2 for batch+channel
     pred = model(flipped_input)
-    pred = torch.flip(pred, dims=[d+2 for d in axes])  # Flip prediction back
+    pred = torch.flip(pred, dims=[d + 2 for d in axes])  # Flip prediction back
     all_predictions.append(pred)
 avg_prediction = torch.stack(all_predictions).mean(dim=0)
 ```
@@ -102,13 +105,15 @@ After inference produces predictions at the preprocessed resolution and spacing,
 
 ```python
 # Reverse resampling (simplified)
-def resample_prediction_to_original(prediction, original_shape, original_spacing, target_spacing):
+def resample_prediction_to_original(
+    prediction, original_shape, original_spacing, target_spacing
+):
     # Resample from target_spacing back to original_spacing
     resampled = resample_data_or_seg_to_shape(
         prediction[None],  # Add channel dim
         original_shape,
         is_seg=True,  # Use nearest-neighbor
-        order=0
+        order=0,
     )
     # Pad back to original image size (undo cropping)
     result = np.zeros(full_original_shape, dtype=prediction.dtype)

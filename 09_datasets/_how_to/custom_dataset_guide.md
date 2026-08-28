@@ -14,7 +14,7 @@ How to create and organize your own segmentation dataset for training.
 ### Recommended Tools
 
 | Tool | Type | Best For |
-|---|---|---|
+| --- | --- | --- |
 | [Label Studio](https://labelstud.io/) | Web-based | Polygon and brush annotation |
 | [CVAT](https://www.cvat.ai/) | Web-based | Team annotation workflows |
 | [Labelme](https://github.com/wkentaro/labelme) | Desktop | Quick polygon annotation |
@@ -22,7 +22,7 @@ How to create and organize your own segmentation dataset for training.
 
 ### Annotation Formats
 
-```
+```text
 # COCO format (JSON with RLE or polygon)
 {
   "images": [...],
@@ -48,7 +48,7 @@ How to create and organize your own segmentation dataset for training.
 
 ### Recommended Layout
 
-```
+```text
 my_dataset/
 ├── images/
 │   ├── train/
@@ -164,8 +164,8 @@ def validate_dataset(image_dir, mask_dir):
 ```python
 # Add custom dataset config:
 # configs/_base_/datasets/my_dataset.py
-dataset_type = 'CustomDataset'
-data_root = 'data/my_dataset'
-img_suffix = '.jpg'
-seg_map_suffix = '.png'
+dataset_type = "CustomDataset"
+data_root = "data/my_dataset"
+img_suffix = ".jpg"
+seg_map_suffix = ".png"
 ```

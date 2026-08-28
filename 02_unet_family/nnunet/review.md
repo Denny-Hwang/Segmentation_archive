@@ -11,7 +11,7 @@ difficulty: advanced
 ## Meta Information
 
 | Field | Value |
-|-------|-------|
+| ------- | ------- |
 | **Paper Title** | nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation |
 | **Authors** | Isensee, F., Jaeger, P.F., Kohl, S.A.A., Petersen, J., Maier-Hein, K.H. |
 | **Year** | 2021 |
@@ -36,7 +36,7 @@ Most medical segmentation methods require extensive manual tuning of preprocessi
 ## Key Results
 
 | Challenge | Year | nnU-Net Rank |
-|-----------|------|-------------|
+| ----------- | ------ | ------------- |
 | Medical Segmentation Decathlon | 2018 | 1st (6/10 tasks) |
 | KiTS19 | 2019 | 1st |
 | ACDC | 2017 | Top-3 |

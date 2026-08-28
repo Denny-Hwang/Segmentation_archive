@@ -15,7 +15,7 @@ Foundation segmentation models like SAM are trained on broad data (SA-1B) and pe
 ## Strategy Comparison Matrix
 
 | Strategy | Trainable Params | Training Cost | Performance | Forgetting Risk | Multi-Domain |
-|----------|-----------------|---------------|-------------|-----------------|-------------|
+| ---------- | ----------------- | --------------- | ------------- | ----------------- | ------------- |
 | Full fine-tuning | 100% (~636M) | Very high | Highest | High | Separate models |
 | LoRA (rank 16) | ~1% (~6M) | Low | High | Low | Swappable weights |
 | Adapters (d=64) | ~1.5% (~10M) | Low | High | Very low | Swappable modules |
@@ -45,11 +45,13 @@ All parameters of the model (encoder + prompt encoder + decoder) are updated dur
 ### Pros and Cons
 
 **Pros:**
+
 - Highest adaptation capacity
 - All layers adjust to the new domain
 - Straightforward implementation
 
 **Cons:**
+
 - Risk of catastrophic forgetting (model loses general capabilities)
 - Requires large datasets to avoid overfitting
 - Full model copy needed per domain (~2.5 GB per adaptation for ViT-H)
@@ -64,6 +66,7 @@ LoRA factorizes weight updates as low-rank matrices. For a weight matrix W in th
 ### Where to Apply
 
 Typically applied to the attention projection matrices in the ViT encoder:
+
 - Query projection (W_q)
 - Value projection (W_v)
 - Optionally: Key projection (W_k) and output projection (W_o)
@@ -73,7 +76,7 @@ Applying LoRA to Q and V only is the most common and cost-effective configuratio
 ### Rank Selection
 
 | Rank | Parameters | Typical Performance Impact |
-|------|-----------|---------------------------|
+| ------ | ----------- | --------------------------- |
 | 1 | ~0.4M | Minimal adaptation, small domain shift only |
 | 4 | ~1.5M | Good for moderate domain shifts |
 | 8 | ~3M | Strong adaptation for most domains |
@@ -115,6 +118,7 @@ Small bottleneck MLP modules are inserted after the attention and FFN layers in 
 ### Key Advantage: Auxiliary Input Injection
 
 Unlike LoRA, adapters can incorporate additional input signals:
+
 - Depth maps for scene understanding
 - Edge maps for boundary refinement
 - Frequency features for camouflage detection
@@ -127,7 +131,7 @@ This makes adapters particularly suitable for tasks where auxiliary information 
 On medical imaging benchmarks (adapting SAM ViT-B):
 
 | Method | Params | Liver DSC | Kidney DSC | Brain DSC |
-|--------|--------|-----------|------------|-----------|
+| -------- | -------- | ----------- | ------------ | ----------- |
 | Full fine-tune | 91M | 0.91 | 0.89 | 0.83 |
 | LoRA r=8 | 3M | 0.89 | 0.87 | 0.80 |
 | Adapter d=64 | 8M | 0.90 | 0.88 | 0.81 |
@@ -149,6 +153,7 @@ Learnable tokens are prepended to the input sequence of each ViT layer. These to
 ### Token Count
 
 Typical configuration: 10-50 tokens per layer
+
 - 10 tokens x 32 layers x 1280 dim = ~0.4M parameters
 - 50 tokens x 32 layers x 1280 dim = ~2M parameters
 
@@ -182,6 +187,7 @@ Only the mask decoder (and optionally the prompt encoder) is trained. The image 
 ### LoRA + Head Fine-Tuning
 
 Apply LoRA to the encoder and fine-tune the decoder fully. This is a common effective combination that:
+
 - Adapts encoder features with minimal parameter overhead
 - Allows the decoder maximum flexibility to use the adapted features
 - Typically performs within 1-2 points of full fine-tuning
@@ -189,12 +195,14 @@ Apply LoRA to the encoder and fine-tune the decoder fully. This is a common effe
 ### Adapters + Frozen Decoder
 
 Use adapters in the encoder but keep the decoder frozen. This tests whether the adaptation is purely in the feature space:
+
 - Works when the decoder architecture is general enough
 - Limits adaptation if the decoder has task-specific biases
 
 ### Progressive Unfreezing
 
 Start with head-only fine-tuning, then gradually unfreeze encoder layers from top to bottom:
+
 1. Epoch 1-5: Only decoder
 2. Epoch 5-10: Decoder + last 8 encoder blocks
 3. Epoch 10-20: Decoder + all encoder blocks
@@ -203,7 +211,7 @@ This approach stabilizes training and often outperforms direct full fine-tuning 
 
 ## Decision Guide
 
-```
+```text
 Is the domain gap large?
 ├── No → Head-only fine-tuning or LoRA rank 4
 └── Yes
