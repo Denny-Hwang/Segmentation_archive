@@ -44,6 +44,25 @@ The Streamlit explorer provides an interactive interface to browse all content
 in this archive — paper reviews, architecture diagrams, code analysis,
 experiment results, and benchmark comparisons.
 
+Hands-on learning pages:
+
+- **Segmentation Lab** — run classical algorithms (Otsu, K-Means, SLIC,
+  Felzenszwalb, watershed, Chan–Vese, quickshift) side-by-side on example
+  images with ground-truth masks, tune parameters live, and compare a full
+  evaluation-metric suite (pixel accuracy, mIoU, Dice, boundary F1, HD95,
+  ARI) per example.
+- **Metrics Guide** — an interactive study guide: distort a prediction with
+  sliders and watch every metric react, plus formulas, strengths,
+  weaknesses, and limitations of each metric.
+- **Playground** — run deep segmentation models (SegFormer) on your own
+  images via Hugging Face pipelines.
+
+```bash
+cd explorer
+pip install -r requirements.txt
+streamlit run app.py
+```
+
 ## Related Resources
 
 - [segmentation_models.pytorch](https://github.com/qubvel-org/segmentation_models.pytorch) — 500+ pretrained backbones, multiple decoders

@@ -5,7 +5,6 @@ import streamlit as st
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from components.frontmatter import strip_frontmatter
 from components.mermaid_render import render_mermaid_file
 
 st.set_page_config(page_title="Home - Segmentation Archive", layout="wide")
@@ -25,9 +24,9 @@ def main():
     st.markdown("Overview of the Segmentation Archive — research, models, and tools.")
 
     # ---------- Tabs ----------
-    tab_overview, tab_stats, tab_quick = st.tabs([
-        "Overview", "Archive Statistics", "Quick Start"
-    ])
+    tab_overview, tab_stats, tab_quick = st.tabs(
+        ["Overview", "Archive Statistics", "Quick Start"]
+    )
 
     # ===== Tab 1: Overview =====
     with tab_overview:
@@ -63,7 +62,11 @@ def main():
         st.subheader("Archive Statistics")
         col1, col2, col3, col4 = st.columns(4)
 
-        paper_dirs = ["02_unet_family", "03_transformer_segmentation", "04_foundation_models"]
+        paper_dirs = [
+            "02_unet_family",
+            "03_transformer_segmentation",
+            "04_foundation_models",
+        ]
         paper_count = sum(count_files(ARCHIVE_ROOT / d) for d in paper_dirs)
 
         with col1:
@@ -79,15 +82,47 @@ def main():
         st.subheader("Archive Sections")
 
         sections = [
-            ("01_foundations", "Foundations", "Core concepts, taxonomy, metrics, and loss functions"),
-            ("02_unet_family", "U-Net Family", "U-Net variants: original, ++, Attention, 3D, R2, etc."),
-            ("03_transformer_segmentation", "Transformer Segmentation", "TransUNet, Swin-Unet, SegFormer, Mask2Former, OneFormer"),
-            ("04_foundation_models", "Foundation Models", "SAM, SAM2, MedSAM, and adaptation strategies"),
-            ("05_code_analysis", "Code Analysis", "Implementation deep-dives and code walkthroughs"),
-            ("06_experiments", "Experiments", "Training utilities, metrics, visualization, and augmentation"),
-            ("07_visualizations", "Visualizations", "Evolution trees, timelines, and architecture diagrams"),
+            (
+                "01_foundations",
+                "Foundations",
+                "Core concepts, taxonomy, metrics, and loss functions",
+            ),
+            (
+                "02_unet_family",
+                "U-Net Family",
+                "U-Net variants: original, ++, Attention, 3D, R2, etc.",
+            ),
+            (
+                "03_transformer_segmentation",
+                "Transformer Segmentation",
+                "TransUNet, Swin-Unet, SegFormer, Mask2Former, OneFormer",
+            ),
+            (
+                "04_foundation_models",
+                "Foundation Models",
+                "SAM, SAM2, MedSAM, and adaptation strategies",
+            ),
+            (
+                "05_code_analysis",
+                "Code Analysis",
+                "Implementation deep-dives and code walkthroughs",
+            ),
+            (
+                "06_experiments",
+                "Experiments",
+                "Training utilities, metrics, visualization, and augmentation",
+            ),
+            (
+                "07_visualizations",
+                "Visualizations",
+                "Evolution trees, timelines, and architecture diagrams",
+            ),
             ("08_repo_tracker", "Repo Tracker", "GitHub repository and paper tracking"),
-            ("09_datasets", "Datasets", "Dataset documentation and preprocessing guides"),
+            (
+                "09_datasets",
+                "Datasets",
+                "Dataset documentation and preprocessing guides",
+            ),
             ("10_references", "References", "Glossary, surveys, and reading roadmap"),
         ]
 
@@ -120,7 +155,9 @@ def main():
 | **Benchmark Compare** | Side-by-side performance comparison |
 | **Timeline** | Historical evolution of segmentation methods |
 | **Figures Gallery** | All diagrams & charts (download/view) |
-| **Playground** | Run segmentation models on your images |
+| **Playground** | Run deep segmentation models on your images |
+| **Segmentation Lab** | Experiment with classical algorithms + live metrics |
+| **Metrics Guide** | Interactive study guide for evaluation metrics |
 
 **Run locally:**
 

@@ -50,7 +50,9 @@ def render_sidebar():
         8. Timeline - Historical evolution
         9. Reading Roadmap - Learning path
         10. Figures Gallery - Diagrams & charts
-        11. Playground - Try models live
+        11. Playground - Try deep models live
+        12. Segmentation Lab - Classical algorithms + metrics
+        13. Metrics Guide - Evaluation metrics explained
 
         ---
         *Segmentation Archive Explorer*
@@ -86,7 +88,11 @@ def main():
         - **Timeline**: Trace the historical evolution of segmentation methods
         - **Reading Roadmap**: Follow a structured learning path
         - **Figures Gallery**: Browse and download all research diagrams
-        - **Playground**: Run segmentation models on your own images
+        - **Playground**: Run deep segmentation models on your own images
+        - **Segmentation Lab**: Experiment with classical algorithms on
+          ground-truth examples and compare them with a full metric suite
+        - **Metrics Guide**: Learn every evaluation metric interactively -
+          formulas, strengths, weaknesses, and limitations
 
         ### Archive Structure
 
@@ -100,9 +106,13 @@ def main():
     st.markdown("---")
     st.subheader("Quick Search")
     import sys
+
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from components.search_bar import render_search_bar, display_search_results
-    results = render_search_bar(ARCHIVE_ROOT, placeholder="Search papers, concepts, architectures...")
+
+    results = render_search_bar(
+        ARCHIVE_ROOT, placeholder="Search papers, concepts, architectures..."
+    )
     if results:
         display_search_results(results)
 

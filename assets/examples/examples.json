@@ -1,0 +1,110 @@
+{
+  "shapes_basic": {
+    "title": "Basic Shapes",
+    "classes": [
+      "background",
+      "square",
+      "circle",
+      "triangle",
+      "bar"
+    ],
+    "difficulty": "easy",
+    "teaches": "High-contrast, noise-free regions: nearly every algorithm succeeds here. Use it as a sanity check and to learn each method's parameters before moving to harder cases."
+  },
+  "shapes_noisy": {
+    "title": "Noisy Low-Contrast Shapes",
+    "classes": [
+      "background",
+      "square",
+      "circle",
+      "triangle"
+    ],
+    "difficulty": "hard",
+    "teaches": "Heavy Gaussian noise + low gray-level contrast. Global thresholding (Otsu) becomes unstable, per-pixel clustering produces speckle, while region-based methods (Felzenszwalb, Chan-Vese) that integrate evidence over areas degrade more gracefully. Shows why denoising/regularization matters."
+  },
+  "cells_synthetic": {
+    "title": "Touching Cells",
+    "classes": [
+      "background",
+      "cell"
+    ],
+    "difficulty": "medium",
+    "teaches": "Overlapping blob-like objects, as in microscopy. Binary foreground extraction is easy, but separating touching instances is not \u2014 this is where watershed with distance-transform markers shines. Also shows that a perfect semantic score can hide a poor instance separation."
+  },
+  "city_blocks": {
+    "title": "City Blocks",
+    "classes": [
+      "street",
+      "block yellow",
+      "block purple",
+      "block green",
+      "block orange",
+      "block blue",
+      "block red"
+    ],
+    "difficulty": "easy",
+    "teaches": "Many small regions with distinct colors. Clustering with the right K recovers the palette; superpixel methods (SLIC) over-segment neatly along the grid. Try setting K wrong and watch classes merge \u2014 a lesson in model selection."
+  },
+  "road_synthetic": {
+    "title": "Road with Illumination Gradient",
+    "classes": [
+      "terrain",
+      "road",
+      "lane markings"
+    ],
+    "difficulty": "medium",
+    "teaches": "A smooth illumination gradient across the scene: a single global threshold cannot separate terrain from road everywhere. Color clustering and graph-based methods cope better. The thin lane markings also expose class-imbalance problems \u2014 overall pixel accuracy stays high even when markings are missed."
+  },
+  "nature_synthetic": {
+    "title": "Nature Scene",
+    "classes": [
+      "sky",
+      "grass",
+      "trunk",
+      "foliage",
+      "sun"
+    ],
+    "difficulty": "medium",
+    "teaches": "Semantically distinct but small classes (trunks, sun) versus large ones (sky, grass). Mean IoU punishes missing the small classes; pixel accuracy barely notices. Grass vs. foliage are both green \u2014 close in color space, so clustering may merge them while graph methods keep them apart spatially."
+  },
+  "indoor_synthetic": {
+    "title": "Indoor Scene",
+    "classes": [
+      "wall",
+      "floor",
+      "table",
+      "cabinet",
+      "lamp"
+    ],
+    "difficulty": "medium",
+    "teaches": "Several beige/brown surfaces with similar hues (wall, floor, table): color-only methods blur their boundaries, while edge/graph-aware methods keep straight architectural edges. A good case for comparing boundary F1 across algorithms."
+  },
+  "animal_synthetic": {
+    "title": "Animal Silhouette",
+    "classes": [
+      "sky",
+      "grass",
+      "cat"
+    ],
+    "difficulty": "easy",
+    "teaches": "A dark object on bright background \u2014 the classic figure/ground problem where Otsu thresholding and Chan-Vese active contours excel. Compare their boundaries around the ears: curvature is where energy-based methods smooth away detail."
+  },
+  "tissue_synthetic": {
+    "title": "Tissue (Low Contrast)",
+    "classes": [
+      "background",
+      "nuclei"
+    ],
+    "difficulty": "hard",
+    "teaches": "Low foreground/background contrast plus noise, as in histopathology. Threshold choice becomes ambiguous and small IoU differences between algorithms matter. Dice \u2014 the standard medical metric \u2014 is more forgiving of small errors on small structures than IoU; compare both columns here."
+  },
+  "texture_halves": {
+    "title": "Texture: Stripes vs Dots",
+    "classes": [
+      "stripes",
+      "dots"
+    ],
+    "difficulty": "hard",
+    "teaches": "Both halves use the exact same two colors \u2014 only the texture differs. Every color/intensity-based algorithm fails by design, revealing a shared blind spot of classical methods and motivating learned features (CNNs/Transformers), which capture texture through local receptive fields."
+  }
+}
