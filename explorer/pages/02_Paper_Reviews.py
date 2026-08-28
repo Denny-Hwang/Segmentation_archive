@@ -29,7 +29,7 @@ def _parse_markdown_file(file_path: Path) -> dict:
     match = re.match(r"\A\s*---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n?", raw, re.DOTALL)
     if match:
         yaml_block = match.group(1)
-        content = raw[match.end():]
+        content = raw[match.end() :]
         for line in yaml_block.splitlines():
             line = line.strip()
             if not line or ":" not in line:
@@ -89,7 +89,14 @@ def main():
     categories = sorted({r.get("category", "uncategorized") for r in reviews})
     selected_category = st.sidebar.selectbox("Category", ["All"] + categories)
 
-    all_tags = sorted({t for r in reviews for t in r.get("tags", []) if isinstance(r.get("tags"), list)})
+    all_tags = sorted(
+        {
+            t
+            for r in reviews
+            for t in r.get("tags", [])
+            if isinstance(r.get("tags"), list)
+        }
+    )
     selected_tags = st.sidebar.multiselect("Tags", all_tags)
 
     years = sorted({r.get("year", "unknown") for r in reviews})
@@ -107,15 +114,18 @@ def main():
         filtered = [r for r in filtered if r.get("category") == selected_category]
     if selected_tags:
         filtered = [
-            r for r in filtered
-            if isinstance(r.get("tags"), list) and any(t in r["tags"] for t in selected_tags)
+            r
+            for r in filtered
+            if isinstance(r.get("tags"), list)
+            and any(t in r["tags"] for t in selected_tags)
         ]
     if selected_years:
         filtered = [r for r in filtered if r.get("year") in selected_years]
     if search_query:
         q = search_query.lower()
         filtered = [
-            r for r in filtered
+            r
+            for r in filtered
             if q in r.get("title", "").lower() or q in r.get("content", "").lower()
         ]
 
@@ -135,7 +145,9 @@ def main():
     # ---------- Display as cards ----------
     for review in filtered:
         status = review.get("status", "")
-        status_icon = {"complete": "✅", "in-progress": "🔄", "planned": "📋"}.get(status, "")
+        status_icon = {"complete": "✅", "in-progress": "🔄", "planned": "📋"}.get(
+            status, ""
+        )
         header = f"**{review['title']}** ({review.get('year', '?')})"
         if status_icon:
             header = f"{status_icon} {header}"
@@ -147,13 +159,21 @@ def main():
                 content_preview = content[:1200]
                 st.markdown(content_preview)
                 if len(content) > 1200:
-                    if st.button("Show full content", key=f"expand_{review['file_path']}"):
+                    if st.button(
+                        "Show full content", key=f"expand_{review['file_path']}"
+                    ):
                         st.markdown(content[1200:])
             with cols[1]:
                 difficulty = review.get("difficulty", "")
                 if difficulty:
-                    diff_colors = {"beginner": "🟢", "intermediate": "🟡", "advanced": "🔴"}
-                    st.markdown(f"**Difficulty**: {diff_colors.get(difficulty, '')} {difficulty}")
+                    diff_colors = {
+                        "beginner": "🟢",
+                        "intermediate": "🟡",
+                        "advanced": "🔴",
+                    }
+                    st.markdown(
+                        f"**Difficulty**: {diff_colors.get(difficulty, '')} {difficulty}"
+                    )
                 st.markdown(f"**Category**: {review.get('category')}")
                 st.markdown(f"**Year**: {review.get('year')}")
                 tags = review.get("tags", [])
@@ -161,12 +181,16 @@ def main():
                     st.markdown(f"**Tags**: {' '.join(f'`{t}`' for t in tags)}")
                 arxiv_id = review.get("arxiv", "")
                 if arxiv_id:
-                    st.markdown(f"**arXiv**: [{arxiv_id}](https://arxiv.org/abs/{arxiv_id})")
+                    st.markdown(
+                        f"**arXiv**: [{arxiv_id}](https://arxiv.org/abs/{arxiv_id})"
+                    )
                 st.markdown(f"**File**: `{review['file_path']}`")
 
             # Architecture figures
             if not arxiv_id:
-                arxiv_match = re.search(r"arxiv[:/](\d{4}\.\d{4,5})", review.get("content", ""), re.I)
+                arxiv_match = re.search(
+                    r"arxiv[:/](\d{4}\.\d{4,5})", review.get("content", ""), re.I
+                )
                 if arxiv_match:
                     arxiv_id = arxiv_match.group(1)
             if arxiv_id:

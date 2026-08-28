@@ -63,7 +63,9 @@ def main():
         stats = load_repo_stats()
 
         if not repos:
-            st.info("No tracked repositories found. Check `08_repo_tracker/tracked_repos.yaml`.")
+            st.info(
+                "No tracked repositories found. Check `08_repo_tracker/tracked_repos.yaml`."
+            )
         else:
             st.subheader(f"Tracked Repositories ({len(repos)})")
 
@@ -76,21 +78,25 @@ def main():
                     stat = stats_lookup.get(owner_repo, {})
                     info = stat.get("info", {})
 
-                    repo_data.append({
-                        "Repository": owner_repo,
-                        "Category": repo.get("category", ""),
-                        "Framework": repo.get("framework", ""),
-                        "Stars": info.get("stars", "N/A"),
-                        "Forks": info.get("forks", "N/A"),
-                        "URL": repo.get("url", ""),
-                    })
+                    repo_data.append(
+                        {
+                            "Repository": owner_repo,
+                            "Category": repo.get("category", ""),
+                            "Framework": repo.get("framework", ""),
+                            "Stars": info.get("stars", "N/A"),
+                            "Forks": info.get("forks", "N/A"),
+                            "URL": repo.get("url", ""),
+                        }
+                    )
 
                 df = pd.DataFrame(repo_data)
                 st.dataframe(df, use_container_width=True, hide_index=True)
             else:
                 for repo in repos:
                     with st.expander(repo.get("name", "Unknown")):
-                        st.markdown(f"**Repo**: [{repo.get('repo')}]({repo.get('url')})")
+                        st.markdown(
+                            f"**Repo**: [{repo.get('repo')}]({repo.get('url')})"
+                        )
                         st.markdown(f"**Category**: {repo.get('category')}")
                         st.markdown(f"**Framework**: {repo.get('framework')}")
                         st.markdown(f"**Description**: {repo.get('description', '')}")
@@ -106,20 +112,24 @@ def main():
         papers = load_tracked_papers()
 
         if not papers:
-            st.info("No tracked papers found. Check `08_repo_tracker/tracked_papers.yaml`.")
+            st.info(
+                "No tracked papers found. Check `08_repo_tracker/tracked_papers.yaml`."
+            )
         else:
             st.subheader(f"Tracked Papers ({len(papers)})")
 
             if pd is not None:
                 paper_data = []
                 for paper in papers:
-                    paper_data.append({
-                        "Title": paper.get("title", ""),
-                        "Year": paper.get("year", ""),
-                        "Venue": paper.get("venue", ""),
-                        "Category": paper.get("category", ""),
-                        "arXiv": paper.get("arxiv", ""),
-                    })
+                    paper_data.append(
+                        {
+                            "Title": paper.get("title", ""),
+                            "Year": paper.get("year", ""),
+                            "Venue": paper.get("venue", ""),
+                            "Category": paper.get("category", ""),
+                            "arXiv": paper.get("arxiv", ""),
+                        }
+                    )
 
                 df = pd.DataFrame(paper_data)
                 st.dataframe(df, use_container_width=True, hide_index=True)

@@ -17,22 +17,21 @@ Usage:
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 from pathlib import Path
 from typing import Optional, Sequence, Union
 
 # Default color palette for segmentation classes
 DEFAULT_PALETTE = [
-    [0, 0, 0],        # background (black)
-    [255, 0, 0],      # class 1 (red)
-    [0, 255, 0],      # class 2 (green)
-    [0, 0, 255],      # class 3 (blue)
-    [255, 255, 0],    # class 4 (yellow)
-    [255, 0, 255],    # class 5 (magenta)
-    [0, 255, 255],    # class 6 (cyan)
-    [128, 0, 0],      # class 7 (dark red)
-    [0, 128, 0],      # class 8 (dark green)
-    [0, 0, 128],      # class 9 (dark blue)
+    [0, 0, 0],  # background (black)
+    [255, 0, 0],  # class 1 (red)
+    [0, 255, 0],  # class 2 (green)
+    [0, 0, 255],  # class 3 (blue)
+    [255, 255, 0],  # class 4 (yellow)
+    [255, 0, 255],  # class 5 (magenta)
+    [0, 255, 255],  # class 6 (cyan)
+    [128, 0, 0],  # class 7 (dark red)
+    [0, 128, 0],  # class 8 (dark green)
+    [0, 0, 128],  # class 9 (dark blue)
 ]
 
 
@@ -194,7 +193,10 @@ def plot_training_curves(
         if val_metrics:
             for name, values in val_metrics.items():
                 axes[1].plot(
-                    range(1, len(values) + 1), values, label=f"Val {name}", linestyle="--"
+                    range(1, len(values) + 1),
+                    values,
+                    label=f"Val {name}",
+                    linestyle="--",
                 )
         axes[1].set_xlabel("Epoch")
         axes[1].set_ylabel("Score")
@@ -264,8 +266,11 @@ def plot_confusion_matrix(
     for i in range(num_classes):
         for j in range(num_classes):
             ax.text(
-                j, i, format(cm_display[i, j], fmt),
-                ha="center", va="center",
+                j,
+                i,
+                format(cm_display[i, j], fmt),
+                ha="center",
+                va="center",
                 color="white" if cm_display[i, j] > thresh else "black",
             )
 

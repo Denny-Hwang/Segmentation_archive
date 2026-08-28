@@ -8,9 +8,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from components.frontmatter import strip_frontmatter
 
 try:
-    from pygments import highlight
-    from pygments.lexers import PythonLexer
-    from pygments.formatters import HtmlFormatter
+    from pygments import highlight  # noqa: F401
+    from pygments.lexers import PythonLexer  # noqa: F401
+    from pygments.formatters import HtmlFormatter  # noqa: F401
 
     HAS_PYGMENTS = True
 except ImportError:
@@ -34,12 +34,14 @@ def load_code_analyses() -> list[dict]:
         try:
             raw = md_file.read_text(encoding="utf-8")
             content = strip_frontmatter(raw)
-            analyses.append({
-                "name": md_file.stem.replace("_", " ").title(),
-                "content": content,
-                "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
-                "parent": md_file.parent.name,
-            })
+            analyses.append(
+                {
+                    "name": md_file.stem.replace("_", " ").title(),
+                    "content": content,
+                    "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
+                    "parent": md_file.parent.name,
+                }
+            )
         except Exception:
             continue
 
@@ -93,7 +95,7 @@ def main():
 
         with st.expander("Skip Connection Pattern", expanded=True):
             st.code(
-                '''# Encoder path stores features at each scale
+                """# Encoder path stores features at each scale
 encoder_features = []
 for encoder_block in self.encoders:
     x = encoder_block(x)
@@ -105,7 +107,7 @@ for i, decoder_block in enumerate(self.decoders):
     x = self.upconv[i](x)
     skip = encoder_features[-(i + 1)]
     x = torch.cat([x, skip], dim=1)
-    x = decoder_block(x)''',
+    x = decoder_block(x)""",
                 language="python",
             )
 

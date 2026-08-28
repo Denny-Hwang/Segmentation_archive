@@ -112,13 +112,15 @@ def fetch_recent_releases(
             pub_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
             if pub_dt < since:
                 continue
-        results.append({
-            "tag": rel.get("tag_name"),
-            "name": rel.get("name"),
-            "published_at": published,
-            "prerelease": rel.get("prerelease", False),
-            "html_url": rel.get("html_url"),
-        })
+        results.append(
+            {
+                "tag": rel.get("tag_name"),
+                "name": rel.get("name"),
+                "published_at": published,
+                "prerelease": rel.get("prerelease", False),
+                "html_url": rel.get("html_url"),
+            }
+        )
 
     return results
 
@@ -155,10 +157,12 @@ def check_all_repos(
         for rel in releases:
             tag = rel.get("tag")
             if tag and tag != last_known:
-                new_releases.append({
-                    "repo": owner_repo,
-                    **rel,
-                })
+                new_releases.append(
+                    {
+                        "repo": owner_repo,
+                        **rel,
+                    }
+                )
 
         # Update known releases cache
         if releases:
@@ -173,9 +177,9 @@ def print_results(new_releases: list[dict[str, Any]]) -> None:
         print("\nNo new releases found.")
         return
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Found {len(new_releases)} new release(s)")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     for rel in new_releases:
         pre = " [PRE-RELEASE]" if rel.get("prerelease") else ""

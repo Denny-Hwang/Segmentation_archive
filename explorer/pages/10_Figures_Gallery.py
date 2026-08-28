@@ -22,9 +22,9 @@ def main():
         "Download images or view interactive Mermaid diagrams."
     )
 
-    tab_main, tab_arch, tab_gen = st.tabs([
-        "Research Figures", "Architecture Diagrams", "Generate Figures"
-    ])
+    tab_main, tab_arch, tab_gen = st.tabs(
+        ["Research Figures", "Architecture Diagrams", "Generate Figures"]
+    )
 
     with tab_main:
         render_figure_gallery(FIGURES_DIR)
@@ -59,7 +59,9 @@ def main():
             else:
                 st.info("No `.mermaid` files found in architecture diagrams.")
         else:
-            st.info("No architecture diagrams found in `07_visualizations/architecture_diagrams/`.")
+            st.info(
+                "No architecture diagrams found in `07_visualizations/architecture_diagrams/`."
+            )
 
     with tab_gen:
         st.markdown("### Regenerate Figures")

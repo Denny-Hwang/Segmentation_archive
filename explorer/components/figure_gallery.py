@@ -56,7 +56,7 @@ def render_figure_gallery(figures_dir: Path) -> None:
                 dl_col1, dl_col2 = st.columns(2)
                 with dl_col1:
                     st.download_button(
-                        f"Download .mermaid source",
+                        "Download .mermaid source",
                         code,
                         file_name=mmd_path.name,
                         mime="text/plain",

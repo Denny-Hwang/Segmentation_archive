@@ -12,7 +12,9 @@ try:
 except ImportError:
     yaml = None
 
-st.set_page_config(page_title="Architecture Gallery - Segmentation Archive", layout="wide")
+st.set_page_config(
+    page_title="Architecture Gallery - Segmentation Archive", layout="wide"
+)
 
 ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
 ARCH_DIRS = [
@@ -36,12 +38,14 @@ def load_architectures() -> list[dict]:
             try:
                 raw = md_file.read_text(encoding="utf-8")
                 content = strip_frontmatter(raw)
-                architectures.append({
-                    "name": md_file.stem.replace("_", " ").title(),
-                    "content": content,
-                    "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
-                    "category": arch_dir.name,
-                })
+                architectures.append(
+                    {
+                        "name": md_file.stem.replace("_", " ").title(),
+                        "content": content,
+                        "file_path": str(md_file.relative_to(ARCHIVE_ROOT)),
+                        "category": arch_dir.name,
+                    }
+                )
             except Exception:
                 continue
 
@@ -69,7 +73,13 @@ def main():
         st.subheader("Architecture Categories")
 
         categories = {
-            "CNN-Based": ["U-Net", "UNet++", "Attention U-Net", "DeepLab v3+", "PSPNet"],
+            "CNN-Based": [
+                "U-Net",
+                "UNet++",
+                "Attention U-Net",
+                "DeepLab v3+",
+                "PSPNet",
+            ],
             "Transformer-Based": ["TransUNet", "Swin-Unet", "SegFormer"],
             "Universal / Panoptic": ["Mask2Former", "OneFormer"],
             "Foundation Models": ["SAM", "SAM 2"],

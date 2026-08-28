@@ -17,7 +17,7 @@ Usage:
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from typing import Tuple, Optional
+from typing import Tuple
 
 
 def get_training_augmentation(
@@ -84,10 +84,12 @@ def get_training_augmentation(
             )
         )
 
-    transforms.extend([
-        A.GaussNoise(p=0.2),
-        A.GaussianBlur(blur_limit=(3, 5), p=0.2),
-    ])
+    transforms.extend(
+        [
+            A.GaussNoise(p=0.2),
+            A.GaussianBlur(blur_limit=(3, 5), p=0.2),
+        ]
+    )
 
     # Normalization and tensor conversion
     if normalize:

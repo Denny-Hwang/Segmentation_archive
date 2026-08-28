@@ -73,10 +73,12 @@ def extract_code_blocks(markdown_text: str) -> list[dict]:
             current_lines = []
         elif stripped == "```" and in_code:
             in_code = False
-            blocks.append({
-                "language": current_lang,
-                "code": "\n".join(current_lines),
-            })
+            blocks.append(
+                {
+                    "language": current_lang,
+                    "code": "\n".join(current_lines),
+                }
+            )
         elif in_code:
             current_lines.append(line)
 

@@ -81,7 +81,9 @@ def fetch_repo_info(owner_repo: str, headers: dict[str, str]) -> dict[str, Any]:
             "forks": data.get("forks_count"),
             "open_issues": data.get("open_issues_count"),
             "language": data.get("language"),
-            "license": data.get("license", {}).get("spdx_id") if data.get("license") else None,
+            "license": data.get("license", {}).get("spdx_id")
+            if data.get("license")
+            else None,
             "last_push": data.get("pushed_at"),
             "created_at": data.get("created_at"),
             "description": data.get("description"),
@@ -91,7 +93,9 @@ def fetch_repo_info(owner_repo: str, headers: dict[str, str]) -> dict[str, Any]:
         return {"full_name": owner_repo, "error": str(e)}
 
 
-def fetch_latest_release(owner_repo: str, headers: dict[str, str]) -> dict[str, Any] | None:
+def fetch_latest_release(
+    owner_repo: str, headers: dict[str, str]
+) -> dict[str, Any] | None:
     """Fetch the latest release information for a repository.
 
     Args:
@@ -139,12 +143,14 @@ def fetch_all_stats(repos: list[dict], headers: dict[str, str]) -> list[dict[str
         info = fetch_repo_info(owner_repo, headers)
         release = fetch_latest_release(owner_repo, headers)
 
-        results.append({
-            "repo": owner_repo,
-            "info": info,
-            "latest_release": release,
-            "fetched_at": datetime.now(timezone.utc).isoformat(),
-        })
+        results.append(
+            {
+                "repo": owner_repo,
+                "info": info,
+                "latest_release": release,
+                "fetched_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
     return results
 
@@ -159,7 +165,8 @@ def save_results(results: list[dict[str, Any]], output_path: Path) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Fetch GitHub stats for tracked repos")
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=DEFAULT_OUTPUT,
         help="Output JSON file path",
