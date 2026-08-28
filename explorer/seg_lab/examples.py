@@ -129,3 +129,16 @@ def resize_pair(
             Image.fromarray(mask.astype(np.uint8)).resize(new_size, Image.NEAREST)
         ).astype(np.int32)
     return image_r, mask_r
+
+
+def class_legend_html(class_names: list[str]) -> str:
+    """HTML color chips mapping palette colors to class names."""
+    chips = []
+    for i, name in enumerate(class_names):
+        r, g, b = PALETTE[i % len(PALETTE)]
+        chips.append(
+            f'<span style="background:rgb({r},{g},{b});color:#fff;'
+            f"padding:2px 10px;border-radius:10px;font-size:0.85em;"
+            f'margin-right:4px;white-space:nowrap;">{i}: {name}</span>'
+        )
+    return " ".join(chips)

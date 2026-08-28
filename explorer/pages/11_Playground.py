@@ -1,8 +1,12 @@
 """Playground - Try deep segmentation models on your own images.
 
-Upload an image or select an example, pick one or more models,
-and compare segmentation results side-by-side. For classical
-algorithms with ground-truth metrics, see the Segmentation Lab page.
+Upload an image or select an example, pick one or more models, and
+compare segmentation results side-by-side. Picking an example with a
+ground-truth mask also scores every model with the full evaluation
+metric suite (pixel accuracy, mIoU, Dice, boundary F1, HD95, ARI),
+exactly like the classical algorithms in the Segmentation Lab - so deep
+and classical methods can be compared on the same examples with the
+same numbers.
 """
 
 from __future__ import annotations
@@ -14,6 +18,17 @@ from pathlib import Path
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from seg_lab.examples import (  # noqa: E402
+    class_legend_html,
+    load_image,
+    load_manifest,
+    load_mask,
+    overlay_labels,
+    resize_pair,
+)
+from seg_lab.metric_info import METRIC_COLUMNS  # noqa: E402
+from seg_lab.metrics import compute_all  # noqa: E402
 
 st.set_page_config(page_title="Playground - Segmentation Archive", layout="wide")
 
@@ -139,6 +154,45 @@ def build_class_legend(results) -> str:
     return " ".join(lines)
 
 
+def results_to_labelmap(results, shape: tuple[int, int]):
+    """Convert HF pipeline output (list of per-class PIL masks) to a label map.
+
+    Pixels covered by no mask stay 0; each segment paints i+1. Masks that
+    come back at a different resolution are nearest-resized to `shape`.
+    """
+    import numpy as np
+    from PIL import Image
+
+    labels = np.zeros(shape, dtype=np.int32)
+    for i, seg in enumerate(results):
+        m = seg["mask"]
+        if m.size != (shape[1], shape[0]):
+            m = m.resize((shape[1], shape[0]), Image.NEAREST)
+        labels[np.array(m.convert("L")) > 127] = i + 1
+    return labels
+
+
+def render_metric_table(rows: list[dict], mapping: str) -> None:
+    """Comparison table across models, styled like the Segmentation Lab."""
+    import pandas as pd
+
+    df = pd.DataFrame(rows).set_index("Model")
+    rename = {k: label for k, label, _ in METRIC_COLUMNS}
+    df = df.rename(columns=rename)
+    score_cols = [label for k, label, _ in METRIC_COLUMNS if k != "hd95"]
+    styled = (
+        df.style.format({label: fmt for _, label, fmt in METRIC_COLUMNS})
+        .highlight_max(subset=score_cols, color="rgba(80, 200, 120, 0.35)")
+        .highlight_min(subset=["HD95 (px)"], color="rgba(80, 200, 120, 0.35)")
+    )
+    st.dataframe(styled, use_container_width=True)
+    st.caption(
+        f"Mapping: **{mapping}** · green = best per column. The same metric "
+        "suite the Segmentation Lab applies to classical algorithms - run "
+        "them on this example there and compare the two tables directly."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Page
 # ---------------------------------------------------------------------------
@@ -148,9 +202,10 @@ def main():
     st.title("Segmentation Playground")
     st.markdown(
         "Upload your own image or pick an example, select one or more deep "
-        "models, and compare segmentation results side-by-side. To experiment "
-        "with **classical algorithms and ground-truth metrics**, head to the "
-        "**Segmentation Lab** page."
+        "models, and compare results side-by-side. Picking a **ground-truth "
+        "example** also scores every model with the same metric suite as the "
+        "**Segmentation Lab**, so deep and classical methods are directly "
+        "comparable."
     )
 
     # Check dependencies
@@ -169,6 +224,8 @@ def main():
             "```"
         )
         _deps_ok = False
+
+    examples = load_manifest()
 
     # ----- Sidebar: model selection & options -----
     st.sidebar.subheader("Model Selection")
@@ -190,16 +247,33 @@ def main():
         value=512,
     )
 
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Evaluation")
+    mapping = st.sidebar.radio(
+        "Segment → class mapping",
+        ["majority", "hungarian"],
+        help=(
+            "Used when a ground-truth example is selected. The model's "
+            "predicted segments are mapped onto the example's classes before "
+            "scoring: **majority** assigns each segment its best-overlap "
+            "class; **hungarian** allows one segment per class and counts "
+            "the rest as errors. See the Metrics Guide for details."
+        ),
+    )
+
     # ----- Image input (an upload always wins over a previously picked example)
     st.markdown("---")
     input_tab, example_tab = st.tabs(["Upload Image", "Example Images"])
 
     uploaded_image = None
     example_image = None
+    gt = None
+    class_names: list[str] = []
 
     with input_tab:
         uploaded = st.file_uploader(
-            "Upload an image (JPG / PNG)",
+            "Upload an image (JPG / PNG). Uploads have no ground truth, so "
+            "metrics are shown only for the examples below.",
             type=["jpg", "jpeg", "png", "bmp", "webp"],
         )
         if uploaded is not None:
@@ -208,39 +282,49 @@ def main():
             uploaded_image = Image.open(uploaded).convert("RGB")
 
     with example_tab:
-        example_files = (
-            sorted(EXAMPLES_DIR.glob("*.png")) if EXAMPLES_DIR.exists() else []
-        )
-        if example_files:
-            cols = st.columns(min(len(example_files), 4))
-            for i, ef in enumerate(example_files):
-                with cols[i % 4]:
-                    st.image(
-                        str(ef),
-                        caption=ef.stem.replace("_", " ").title(),
+        if examples:
+            # Real photographs first, then synthetic teaching images
+            keys = sorted(examples, key=lambda k: not k.startswith("photo_"))
+            cols = st.columns(5)
+            for i, key in enumerate(keys):
+                ex = examples[key]
+                with cols[i % 5]:
+                    st.image(str(ex.image_path), use_container_width=True)
+                    if st.button(
+                        ex.title,
+                        key=f"ex_{key}",
+                        help=ex.teaches,
                         use_container_width=True,
-                    )
-                    if st.button("Use", key=f"ex_{ef.stem}"):
-                        st.session_state["_playground_example"] = str(ef)
+                    ):
+                        st.session_state["_playground_example"] = key
 
             chosen = st.session_state.get("_playground_example")
-            if chosen and Path(chosen).exists():
+            if chosen and chosen in examples:
+                ex = examples[chosen]
                 from PIL import Image
 
-                example_image = Image.open(chosen).convert("RGB")
+                example_image = Image.fromarray(load_image(ex.image_path))
+                gt = load_mask(ex.mask_path)
+                class_names = ex.classes
                 col_a, col_b = st.columns([3, 1])
-                col_a.success(f"Using example: {Path(chosen).stem}")
+                col_a.success(
+                    f"Using example: **{ex.title}** · {len(class_names)} "
+                    "ground-truth classes → metrics enabled"
+                )
                 if col_b.button("Clear example"):
                     del st.session_state["_playground_example"]
                     st.rerun()
         else:
             st.info(
                 "No example images found. Run "
-                "`python scripts/figures/generate_example_images.py` "
-                "to create synthetic examples."
+                "`python scripts/figures/generate_example_images.py` and "
+                "`python scripts/figures/prepare_real_examples.py` first."
             )
 
-    pil_image = uploaded_image if uploaded_image is not None else example_image
+    if uploaded_image is not None:
+        pil_image, gt, class_names = uploaded_image, None, []
+    else:
+        pil_image = example_image
 
     # ----- Run inference -----
     if pil_image is None:
@@ -255,15 +339,14 @@ def main():
         st.warning("Select at least one model in the sidebar.")
         return
 
-    # Resize
+    import io
+
+    import numpy as np
     from PIL import Image as PILImage
 
-    w, h = pil_image.size
-    if max(w, h) > max_size:
-        ratio = max_size / max(w, h)
-        pil_image = pil_image.resize((int(w * ratio), int(h * ratio)), PILImage.LANCZOS)
-
-    import io
+    image_np, gt = resize_pair(np.asarray(pil_image), gt, max_size)
+    pil_image = PILImage.fromarray(image_np)
+    n_classes = len(class_names) if gt is not None else 0
 
     buf = io.BytesIO()
     pil_image.save(buf, format="PNG")
@@ -271,8 +354,29 @@ def main():
 
     st.markdown("---")
     st.subheader("Results")
-    st.image(pil_image, caption="Input image", width=min(pil_image.size[0], 420))
+    in_col, gt_col, legend_col = st.columns([1, 1, 1])
+    with in_col:
+        st.image(pil_image, caption="Input image", use_container_width=True)
+    if gt is not None:
+        with gt_col:
+            st.image(
+                overlay_labels(image_np, gt, alpha=overlay_alpha),
+                caption="Ground truth overlay",
+                use_container_width=True,
+            )
+        with legend_col:
+            st.markdown("**Ground-truth classes**")
+            st.markdown(class_legend_html(class_names), unsafe_allow_html=True)
+            st.caption(
+                "These models predict ADE20K scene classes (wall, sky, "
+                "floor…), not this example's labels - so predicted segments "
+                "are mapped to the ground-truth classes by best overlap "
+                "before scoring. Metrics measure how well the model's "
+                "*partition* matches the ground truth, not whether the "
+                "class names are right."
+            )
 
+    metric_rows: list[dict] = []
     result_cols = st.columns(max(len(selected_models), 1))
 
     for idx, model_key in enumerate(selected_models):
@@ -294,6 +398,36 @@ def main():
 
             legend_html = build_class_legend(results)
             st.markdown(legend_html, unsafe_allow_html=True)
+
+            if gt is not None:
+                labels = results_to_labelmap(results, gt.shape)
+                m = compute_all(labels, gt, n_classes, mapping=mapping)
+                st.image(
+                    overlay_labels(image_np, m["mapped"], alpha=overlay_alpha),
+                    caption="Mapped to ground-truth classes",
+                    use_container_width=True,
+                )
+                metric_rows.append(
+                    {
+                        "Model": model_key,
+                        "Time (s)": round(elapsed, 2),
+                        "pixel_accuracy": m["pixel_accuracy"],
+                        "mean_iou": m["mean_iou"],
+                        "mean_dice": m["mean_dice"],
+                        "boundary_f1": m["boundary_f1"],
+                        "hd95": m["hd95"],
+                        "ari": m["ari"],
+                    }
+                )
+
+    if metric_rows:
+        st.markdown("---")
+        st.markdown("### 📊 Evaluation metrics on this example")
+        render_metric_table(metric_rows, mapping)
+        st.caption(
+            "Metric definitions, strengths, and limitations are covered in "
+            "the **Metrics Guide** page."
+        )
 
     st.markdown("---")
     st.caption(
