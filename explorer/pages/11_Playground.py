@@ -11,14 +11,15 @@ same numbers.
 
 from __future__ import annotations
 
+import hashlib
 import sys
-import time
 from pathlib import Path
 
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from seg_lab import deep_models  # noqa: E402
 from seg_lab.examples import (  # noqa: E402
     class_legend_html,
     load_image,
@@ -36,75 +37,47 @@ ARCHIVE_ROOT = Path(__file__).resolve().parent.parent.parent
 EXAMPLES_DIR = ARCHIVE_ROOT / "assets" / "examples"
 
 # ---------------------------------------------------------------------------
-# Model registry — lightweight wrappers around HF pipelines
+# Model registry & backends (implemented in seg_lab/deep_models.py)
 # ---------------------------------------------------------------------------
 
-MODEL_INFO: dict[str, dict] = {
-    "SegFormer-B0 (ADE20K)": {
-        "hf_model": "nvidia/segformer-b0-finetuned-ade-512-512",
-        "task": "image-segmentation",
-        "description": "Lightweight SegFormer (3.7M params). Fast on CPU.",
-        "weight": "light",
-    },
-    "SegFormer-B1 (ADE20K)": {
-        "hf_model": "nvidia/segformer-b1-finetuned-ade-512-512",
-        "task": "image-segmentation",
-        "description": "Mid-size SegFormer (13.7M params). Good accuracy/speed trade-off.",
-        "weight": "mid",
-    },
-    "SegFormer-B5 (ADE20K)": {
-        "hf_model": "nvidia/segformer-b5-finetuned-ade-640-640",
-        "task": "image-segmentation",
-        "description": "Large SegFormer (84M params). High accuracy, slower.",
-        "weight": "heavy",
-    },
-}
+MODEL_INFO = deep_models.MODEL_INFO
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+
+def resolve_token() -> str | None:
+    """Hugging Face token from Streamlit secrets, falling back to the env."""
+    try:
+        for key in deep_models.TOKEN_ENV_VARS:
+            if key in st.secrets:
+                value = str(st.secrets[key]).strip()
+                if value:
+                    return value
+    except Exception:  # noqa: BLE001 - no secrets.toml on this host
+        pass
+    return deep_models.token_from_env()
 
 
 @st.cache_resource(show_spinner="Loading model…")
 def load_pipeline(model_key: str):
-    """Load a HuggingFace pipeline, cached across reruns."""
-    info = MODEL_INFO[model_key]
-    try:
-        from transformers import pipeline
-    except ImportError:
-        st.error(
-            "`transformers` is not installed. "
-            "Run `pip install transformers torch` to enable model inference."
-        )
-        return None
+    """Load a local HuggingFace pipeline once per model, cached across reruns."""
+    return deep_models.load_local_pipeline(model_key)
 
-    try:
-        pipe = pipeline(
-            task=info["task"],
-            model=info["hf_model"],
-            device=-1,  # CPU; change to 0 for GPU
-        )
-        return pipe
-    except Exception as exc:
-        st.error(f"Failed to load **{model_key}**: {exc}")
-        return None
+
+@st.cache_resource(show_spinner=False)
+def api_client(token_fingerprint: str, _token: str):
+    """Reuse one Inference API client per token (hashed, never cached raw)."""
+    return deep_models.build_api_client(_token)
 
 
 @st.cache_data(show_spinner=False, max_entries=32)
-def cached_inference(model_key: str, image_bytes: bytes) -> tuple:
-    """Run inference once per (model, image); overlay tweaks reuse the cache."""
-    import io
-
-    from PIL import Image
-
-    pipe = load_pipeline(model_key)
-    if pipe is None:
-        raise RuntimeError("model unavailable")
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    t0 = time.perf_counter()
-    results = pipe(image)
-    elapsed = time.perf_counter() - t0
-    return results, elapsed
+def cached_inference(
+    backend: str, model_key: str, image_bytes: bytes, _token: str | None = None
+) -> tuple:
+    """Infer once per (backend, model, image); overlay tweaks reuse the cache."""
+    if backend == deep_models.HF_API:
+        fingerprint = hashlib.sha256((_token or "").encode()).hexdigest()[:16]
+        client = api_client(fingerprint, _token)
+        return deep_models.run_hf_api(client, model_key, image_bytes)
+    return deep_models.run_local(load_pipeline(model_key), image_bytes)
 
 
 def segment_colors(n: int):
@@ -125,7 +98,10 @@ def blend_masks(image, results, alpha: float = 0.5):
     colors = segment_colors(len(results))
 
     for i, seg in enumerate(results):
-        mask = np.array(seg["mask"].convert("L")) > 127
+        m = seg["mask"]
+        if m.size != image.size:
+            m = m.resize(image.size, Image.NEAREST)
+        mask = np.array(m.convert("L")) > 127
         overlay[mask] = (
             overlay[mask] * (1 - alpha) + colors[i % len(colors)] * alpha
         ).astype(np.uint8)
@@ -208,24 +184,83 @@ def main():
         "comparable."
     )
 
-    # Check dependencies
-    _deps_ok = True
-    try:
-        import numpy  # noqa: F401
-        import torch  # noqa: F401
-        import transformers  # noqa: F401
-        from PIL import Image  # noqa: F401
-    except ImportError as exc:
-        st.warning(
-            f"**Missing dependency:** `{exc.name}`. "
-            "Install required packages:\n\n"
-            "```bash\n"
-            "pip install transformers torch Pillow numpy\n"
-            "```"
-        )
-        _deps_ok = False
-
     examples = load_manifest()
+
+    # ----- Sidebar: where the models run -----
+    st.sidebar.subheader("Inference Backend")
+    backends = [deep_models.LOCAL, deep_models.HF_API]
+    local_missing = deep_models.missing_local_packages()
+    api_missing = deep_models.missing_api_packages()
+    backend = st.sidebar.radio(
+        "Run models",
+        backends,
+        index=backends.index(
+            deep_models.HF_API if local_missing else deep_models.LOCAL
+        ),
+        format_func=lambda b: deep_models.BACKEND_LABELS[b],
+        help=(
+            "**Local** downloads the weights and runs them on this machine's "
+            "CPU - it needs `torch` *and* `torchvision`, because from "
+            "transformers 5.x every SegFormer image processor is built on "
+            "torchvision. **Hugging Face API** posts the image to the Hub and "
+            "gets the masks back: no torch, no weights, no memory ceiling, "
+            "but it needs a free access token."
+        ),
+    )
+
+    token = resolve_token()
+    blocker: str | None = None
+
+    if backend == deep_models.LOCAL:
+        if local_missing:
+            blocker = (
+                "**Local backend unavailable — missing:** "
+                f"`{'`, `'.join(local_missing)}`\n\n"
+                "```bash\n"
+                f"{deep_models.install_hint(local_missing)}\n"
+                "```\n"
+                "…or switch the sidebar backend to **Hugging Face API "
+                "(remote)**, which needs none of these packages."
+            )
+        else:
+            st.sidebar.caption("Weights are downloaded once and run on CPU here.")
+    else:
+        if api_missing:
+            blocker = (
+                "**Hugging Face API backend unavailable — missing:** "
+                f"`{'`, `'.join(api_missing)}`\n\n"
+                "```bash\n"
+                f"{deep_models.install_hint(api_missing)}\n"
+                "```"
+            )
+        entered = st.sidebar.text_input(
+            "Hugging Face access token",
+            type="password",
+            placeholder="using stored token" if token else "hf_...",
+            help=(
+                "A free **read** token from "
+                "https://huggingface.co/settings/tokens with 'Make calls to "
+                "Inference Providers' enabled. It is also picked up from "
+                "`HF_TOKEN` in the environment or in "
+                "`.streamlit/secrets.toml`, so you never have to paste it here."
+            ),
+        ).strip()
+        token = entered or token
+        if token:
+            st.sidebar.caption(
+                f"Token loaded from {'this field' if entered else 'secrets / environment'}."
+            )
+        elif not blocker:
+            blocker = (
+                "**No Hugging Face token.** Create a free read token at "
+                "[huggingface.co/settings/tokens]"
+                "(https://huggingface.co/settings/tokens), then paste it in "
+                "the sidebar, export `HF_TOKEN=...`, or add "
+                '`HF_TOKEN = "hf_..."` to `.streamlit/secrets.toml`.'
+            )
+
+    if blocker:
+        st.warning(blocker)
 
     # ----- Sidebar: model selection & options -----
     st.sidebar.subheader("Model Selection")
@@ -237,6 +272,11 @@ def main():
 
     for m in selected_models:
         st.sidebar.caption(f"**{m}**: {MODEL_INFO[m]['description']}")
+        if backend == deep_models.LOCAL and MODEL_INFO[m]["weight"] == "heavy":
+            st.sidebar.caption(
+                "⚠️ ~340 MB of weights and well over 1 GB of RAM on CPU. The "
+                "API backend runs it on the Hub instead."
+            )
 
     st.sidebar.markdown("---")
     st.sidebar.subheader("Options")
@@ -331,8 +371,8 @@ def main():
         st.info("Select or upload an image above to begin.")
         return
 
-    if not _deps_ok:
-        st.warning("Install missing dependencies to run inference.")
+    if blocker:
+        st.info("Resolve the note above to run inference.")
         return
 
     if not selected_models:
@@ -384,8 +424,13 @@ def main():
             st.markdown(f"#### {model_key}")
             with st.spinner(f"Running {model_key}…"):
                 try:
-                    results, elapsed = cached_inference(model_key, image_bytes)
-                except Exception as exc:
+                    results, elapsed = cached_inference(
+                        backend, model_key, image_bytes, token
+                    )
+                except deep_models.BackendError as exc:
+                    st.error(str(exc))
+                    continue
+                except Exception as exc:  # noqa: BLE001
                     st.error(f"Inference failed: {exc}")
                     continue
 
@@ -431,9 +476,11 @@ def main():
 
     st.markdown("---")
     st.caption(
-        "Models are loaded from Hugging Face Hub on first use and cached "
-        "locally; inference results are cached per (model, image), so overlay "
-        "tweaks are instant. All inference runs on CPU by default."
+        f"Backend: **{deep_models.BACKEND_LABELS[backend]}**. Local runs "
+        "download the weights on first use and infer on CPU; the API backend "
+        "keeps nothing locally and runs the model on Hugging Face. Either way "
+        "results are cached per (backend, model, image), so overlay tweaks "
+        "are instant."
     )
 
 

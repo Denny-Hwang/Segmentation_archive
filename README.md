@@ -57,13 +57,33 @@ Hands-on learning pages:
 - **Metrics Guide** — an interactive study guide: distort a prediction with
   sliders and watch every metric react, plus formulas, strengths,
   weaknesses, and limitations of each metric.
-- **Playground** — run deep segmentation models (SegFormer) on your own
-  images via Hugging Face pipelines.
+- **Playground** — run deep segmentation models (SegFormer B0/B1/B5) on your
+  own images, and score them against the ground-truth examples with the same
+  metric suite as the Lab. Two interchangeable backends:
+  - **Local** — a `transformers` pipeline on CPU. Needs `torch` **and**
+    `torchvision`: from transformers 5.x every SegFormer image processor is
+    declared `@requires(backends=("torch", "torchvision"))`, so without
+    torchvision model loading fails with *"Could not load any image processor
+    class"*.
+  - **Hugging Face API** — the image is sent to the Inference API and only the
+    masks come back. No torch, no weights, no memory ceiling, so the 84M-param
+    B5 checkpoint runs even on a small hosted instance. Needs a free read
+    token.
 
 ```bash
 cd explorer
 pip install -r requirements.txt
 streamlit run app.py
+```
+
+To use the remote backend, give the app a token — a free **read** token from
+[huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) with
+*Make calls to Inference Providers* enabled — in any of three ways:
+
+```bash
+export HF_TOKEN=hf_...                       # environment
+echo 'HF_TOKEN = "hf_..."' >> .streamlit/secrets.toml   # Streamlit secrets
+# ...or just paste it into the Playground sidebar
 ```
 
 ## Related Resources
